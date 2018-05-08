@@ -1,0 +1,16 @@
+{
+    "name": "Eventakom",
+    "alias": "eventakom",
+    "description": "",
+    "keywords": [],
+    "active": 1,
+    "order": 0,
+    "providers": [
+        "Modules\\Eventakom\\Providers\\EventakomServiceProvider"
+    ],
+    "aliases": {},
+    "files": [
+        "start.php"
+    ],
+    "requires": []
+}
