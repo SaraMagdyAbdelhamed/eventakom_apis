@@ -17,6 +17,7 @@ $router->get('/', function () use ($router) {
 
 $router->group(['prefix' => 'api'], function () use ($router) {
   $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);
-
+   $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
+  $router->post('user_signup',  ['uses' => 'UsersController@signup']);
  
 });
