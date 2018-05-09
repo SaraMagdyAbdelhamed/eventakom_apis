@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fa144b48b90b92d894dc275dc51cd965",
+    "content-hash": "76a14a97cd30b0e18f8fbd6ede4b16cd",
     "packages": [
         {
             "name": "doctrine/inflector",
@@ -2250,6 +2250,52 @@
             "description": "Symfony Translation Component",
             "homepage": "https://symfony.com",
             "time": "2018-04-30T01:23:47+00:00"
+        },
+        {
+            "name": "twilio/sdk",
+            "version": "5.18.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/twilio/twilio-php.git",
+                "reference": "f59405409b9060103f7ae1d52d3d4c05400eb90e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/twilio/twilio-php/zipball/f59405409b9060103f7ae1d52d3d4c05400eb90e",
+                "reference": "f59405409b9060103f7ae1d52d3d4c05400eb90e",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "apigen/apigen": "^4.1",
+                "phpunit/phpunit": "4.5.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Twilio\\": "Twilio/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Twilio API Team",
+                    "email": "api@twilio.com"
+                }
+            ],
+            "description": "A PHP wrapper for Twilio's API",
+            "homepage": "http://github.com/twilio/twilio-php",
+            "keywords": [
+                "api",
+                "sms",
+                "twilio"
+            ],
+            "time": "2018-04-28T21:16:28+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
