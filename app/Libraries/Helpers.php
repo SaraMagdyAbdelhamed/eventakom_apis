@@ -56,7 +56,7 @@ class Helpers
 
 
        public static function mail($email ,$code ,$verification_code){
-        Mail::raw('Welcome To Eventakom Your Verification code is ('.$verification_code.')', function($msg) use($email){ 
+        Mail::raw('Welcome To Eventakom  Your Verification code is ('.$verification_code.')', function($msg) use($email){ 
             $msg->to([$email])->subject('Eventakom'); 
             $msg->from(['pentavalue.eventakom@gmail.com']); 
 
