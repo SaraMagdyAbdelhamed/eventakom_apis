@@ -181,11 +181,11 @@ if(array_key_exists('image',$request))
             if($user) {
                 if(Hash::check($request['password'],$user->password)) {
                     if($user->is_active == 1) {
-                        // $tokenobj =  $user->createToken('api_token');
-                        // $token = $tokenobj->accessToken;
-                        // $token_id = $tokenobj->token->id;
-                        // $user = new User;
-                        // $user->api_token=$token_id;
+                        $tokenobj =  $user->createToken('api_token');
+                        $token = $tokenobj->accessToken;
+                        $token_id = $tokenobj->token->id;
+                        $user = new User;
+                        $user->api_token=$token_id;
                         $user->created_at=Carbon::now()->format('Y-m-d H:i:s');
                         $user->updated_at=Carbon::now()->format('Y-m-d H:i:s');
                         $user->save();
@@ -222,6 +222,32 @@ if(array_key_exists('image',$request))
         } else {
             return Helpers::Get_Response(401,'error',trans('Invalid mobile number'),$validator->errors(),(object)[]);
         }
+    }
+
+
+    public function logout(Request $request)
+    {
+      $request = (array)json_decode($request->getContent(), true);
+      if(array_key_exists('lang_id',$request))
+          {
+            Helpers::Set_locale($request['lang_id']);
+          }
+          if(array_key_exists('api_token',$request) && $request['api_token'] != '')
+          {
+            // return "1";
+                 $user=User:: where("api_token", "=", $request['api_token'])
+                              ->first();
+                    if($user)
+                    {
+                      $user->update(['api_token'=>null]);
+                      $user->save();
+                      return Helpers::Get_Response(200,'success','','',$user);
+                    }
+                    else
+                    {
+                      return Helpers::Get_Response(400,'error',trans('messages.logged'),[],(object)[]);
+                    }
+          }
     }
 
 }

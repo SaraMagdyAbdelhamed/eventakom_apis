@@ -30,11 +30,22 @@ $app->bind('path.public', function() {
  return __DIR__ . 'public/';
 });
 
-$app->configure('modules');
-$app->register(\Nwidart\Modules\LumenModulesServiceProvider::class);
 
+$app->register(\Nwidart\Modules\LumenModulesServiceProvider::class);
+$app->configure('modules');
+// Enable auth middleware (shipped with Lumen)
+$app->routeMiddleware([
+    'auth' => App\Http\Middleware\Authenticate::class,
+]);
 // ///service for sending email
 $app->register(\Illuminate\Mail\MailServiceProvider::class);
+
+
+$app->register(Laravel\Passport\PassportServiceProvider::class);
+$app->register(Dusterio\LumenPassport\PassportServiceProvider::class);
+$app->configure('auth');
+$app->configure('app');
+
 
 /*
 |--------------------------------------------------------------------------
