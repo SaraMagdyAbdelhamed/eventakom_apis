@@ -23,5 +23,6 @@ $router->group(['prefix' => 'api'], function () use ($router) {
    $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
   $router->post('user_signup',  ['uses' => 'UsersController@signup']);
   $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
+  $router->post('login', 'UsersController@login');
  
 });

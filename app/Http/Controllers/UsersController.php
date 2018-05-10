@@ -8,6 +8,7 @@ use App\Libraries\Helpers;
 use App\Libraries\Base64ToImageService;
 use Illuminate\Support\Facades\Hash;
 use App\Libraries\TwilioSmsService;
+use Carbon\Carbon;
 
 class UsersController extends Controller
 {
@@ -159,5 +160,68 @@ if(array_key_exists('image',$request))
       
     }
 
+
+ public function login(Request $request) { 
+        $request = (array)json_decode($request->getContent(), true);
+        if(array_key_exists('lang_id',$request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,[
+            "mobile" => "required|numeric",
+            "password" =>"required|min:8|max:20",
+//            "device_token"=>'required',
+//            "lang_id"=>'required',
+//            "mobile_os"=>'required',
+        ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+        }
+        if (array_key_exists('mobile',$request) && array_key_exists('password',$request)) {
+            $user = User:: where("mobile", "=", $request['mobile'])->with('rules')->first();
+            if($user) {
+                if(Hash::check($request['password'],$user->password)) {
+                    if($user->is_active == 1) {
+                        // $tokenobj =  $user->createToken('api_token');
+                        // $token = $tokenobj->accessToken;
+                        // $token_id = $tokenobj->token->id;
+                        // $user = new User;
+                        // $user->api_token=$token_id;
+                        $user->created_at=Carbon::now()->format('Y-m-d H:i:s');
+                        $user->updated_at=Carbon::now()->format('Y-m-d H:i:s');
+                        $user->save();
+                        // $user_array = $user->toArray();           
+                        // foreach ($user_array['rules'] as  $value) {
+                        //     if(array_key_exists('lang_id',$request) && $request['lang_id']==1) {
+                        //         $rules []=  array($value['id'] => $value['name']);
+                        //     } else {
+                        //         $rules []= array($value['id'] => $value['name_ar']);          
+                        //     }
+                        //     $rule_ids [] = $value['id'];
+                        // }
+                        // $user_array['rule_ids']  = $rule_ids;
+                        // $user_array['rules'] = $rules;
+                        // $user['roles']=$rules;
+                        if($user['image'] != null) {
+                            $user['image'] = ENV('FOLDER').$user_array['image'];
+                        }
+//                        $user->update([
+//                            "device_token"=>$request['device_token'],
+//                            "lang_id"=>$request['lang_id']
+//                            "mobile_os"=>$request['mobile_os'],
+//                        ]);
+                        return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
+                    } else {
+                        return Helpers::Get_Response(400,'error',trans('messages.active'),$validator->errors(),(object)[]);
+                    }   
+                }      
+                return Helpers::Get_Response(400,'error',trans('Password is wrong'),$validator->errors(),(object)[]);      
+            } else {
+                return Helpers::Get_Response(400,'error',trans('this mobile number isn’t registered'),$validator->errors(),(object)[]);
+            }
+            return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
+        } else {
+            return Helpers::Get_Response(401,'error',trans('Invalid mobile number'),$validator->errors(),(object)[]);
+        }
+    }
 
 }
