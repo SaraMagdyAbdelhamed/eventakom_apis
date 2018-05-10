@@ -63,6 +63,8 @@ if(array_key_exists('image',$request))
          $input['code']=mt_rand(100000, 999999);        
          $input['verificaition_code'] = str_random(4);
          $input['is_verification_code_expired']=0;
+         $status =$twilio->send($request['mobile'],$input['verificaition_code']);
+         $mail=Helpers::mail($request['email'],$input['code'],$input['verificaition_code']);
          $user = User::create($input);  
          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
     }

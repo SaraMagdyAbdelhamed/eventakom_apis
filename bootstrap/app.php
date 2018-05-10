@@ -33,6 +33,9 @@ $app->bind('path.public', function() {
 $app->configure('modules');
 $app->register(\Nwidart\Modules\LumenModulesServiceProvider::class);
 
+// ///service for sending email
+$app->register(\Illuminate\Mail\MailServiceProvider::class);
+
 /*
 |--------------------------------------------------------------------------
 | Register Container Bindings
@@ -104,5 +107,7 @@ $app->router->group([
 ], function ($router) {
     require __DIR__.'/../routes/web.php';
 });
+$app->configure('services');
+$app->configure('mail');
 
 return $app;
