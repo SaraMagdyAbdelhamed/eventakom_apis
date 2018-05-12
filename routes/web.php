@@ -18,15 +18,19 @@ $router->get('/', function () use ($router) {
 });
 
 $router->group(['prefix' => 'api'], function () use ($router) {
-  $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);
-
+  //countries
+$router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);
+ //cities
+$router->get('all_cities',  ['uses' => 'GeoCitiesController@getAllCities']);
+$router->get('getcitycountry',  ['uses' => 'GeoCitiesController@getcitycountry']);
+$router->get('searchcitycountry/{keyword}',  ['uses' => 'GeoCitiesController@searchcitycountry']);
 
   //users routes
-   $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
+  $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
   $router->post('user_signup',  ['uses' => 'UsersController@signup']);
   $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
   $router->post('login', 'UsersController@login');
   $router->post('logout', 'UsersController@logout');
-  
- 
+
+
 });
