@@ -76,13 +76,55 @@ if(array_key_exists('image',$request))
         if ($validator->fails()) {
             return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
         }else{
-       $user = User::where('mobile',$request['mobile'])->first();
-       if($user->is_verification_code_expired != 1){
-       if($user->verification_count != 1){
+         $twilio_config = [
+            'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
+            'token'  => '2021c86af33bd8f3b69394a5059c34f0',
+            'from'   => '+13238701693'
+        ];
 
+        $twilio = new TwilioSmsService($twilio_config);
+
+       $user = User::where('mobile',$request['mobile'])->first();
+       $verification_code =str_random(4); 
+       if($user->is_verification_code_expired != 1 && $user->verification_count < 5){
+        
+       	//send verification code via Email , sms
+       	//increase verification count by 1
+         $user->verification_date=Carbon::now()->format('Y-m-d');
+       	 //$verification_code =str_random(4); 
+         $user->verification_code=$verification_code;
+         $user->verification_count=$user->verification_count+1;
+         $status =$twilio->send( $user->mobile,$verification_code);
+         $mail=Helpers::mail($user->email,$user->username,$verification_code);
+           $user->save();
+          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
+       	}
+       elseif($user->verification_count >= 5 && $user->verification_date != Carbon::now()->format('Y-m-d')){
+        //set is_verification_code_expired to 0
+        $user->is_verification_code_expired = 0;
+        //reset verification count to 0
+        $user->verification_count = 0;
+        // update verification date to current date
+        $user->verification_date=Carbon::now()->format('Y-m-d');
+        //send verification code via Email , sms
+        $status =$twilio->send( $user->mobile,$verification_code);
+         $mail=Helpers::mail($user->email,$user->username,$verification_code);
+        //increase verification count by 1
+         $user->verification_count=$user->verification_count+1;
+         $user->save();
+          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
+       	}
+       
+       elseif($user->verification_count >= 5 && $user->verification_date == Carbon::now()->format('Y-m-d')){
+       	 //set is_verification_code_expired to 1
+        $user->is_verification_code_expired = 1;
+         // response : sorry you have exeeded your verifications limit today
+        return Helpers::Get_Response(400,'error',trans('sorry you have exeeded your verifications limit today'),$validator->errors(),(object)[]);
        }
 
-        }
+       
+
+        
     }
 }
 
