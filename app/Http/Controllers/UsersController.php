@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use App\FixedPage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -367,6 +368,71 @@ if(array_key_exists('image',$request))
         }
 
     }
+
+
+
+    public function fixed_pages(Request $request)
+    {
+
+         $pages=FixedPage::all();
+
+         if($pages){
+        
+         return Helpers::Get_Response(200,'success','','',$pages);
+         }else{
+
+         return Helpers::Get_Response(400,'error',trans('No pages found'),$validator->errors(),(object)[]);
+
+         }
+      
+
+    }
+
+
+    public function mail_existence(Request $request)
+    {
+       $request = (array)json_decode($request->getContent(), true);
+        if(array_key_exists('lang_id',$request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,[
+            "email" => "required|exists:users,email",
+
+        ]);
+    
+     if ($validator->fails()) {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+        }else{
+     
+         return Helpers::Get_Response(200,'success','',$validator->errors(),trans('Email is exist'));
+
+         }
+        
+    }
+
+
+    public function mobile_existence(Request $request)
+    {
+       $request = (array)json_decode($request->getContent(), true);
+        if(array_key_exists('lang_id',$request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,[
+            "mobile" => "required|exists:users,mobile",
+
+        ]);
+    
+     if ($validator->fails()) {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+        }else{
+     
+         return Helpers::Get_Response(200,'success','',$validator->errors(),trans('Mobile is exist'));
+
+         }
+        
+    }
+
+
 
 
 }
