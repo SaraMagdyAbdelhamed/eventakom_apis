@@ -109,6 +109,8 @@ if(array_key_exists('image',$request))
         $user->verification_date=Carbon::now()->format('Y-m-d');
         //send verification code via Email , sms
         $status =$twilio->send( $user->mobile,$verification_code);
+         print_r($status);
+         return;
          $mail=Helpers::mail($user->email,$user->username,$verification_code);
         //increase verification count by 1
          $user->verification_count=$user->verification_count+1;
@@ -235,7 +237,7 @@ if(array_key_exists('image',$request))
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request,[
-            "mobile" => "required|numeric",
+            "mobile_email" => "required",
             "password" =>"required|min:8|max:20",
 //            "device_token"=>'required',
 //            "lang_id"=>'required',
@@ -244,8 +246,25 @@ if(array_key_exists('image',$request))
         if ($validator->fails()) {
             return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
         }
-        if (array_key_exists('mobile',$request) && array_key_exists('password',$request)) {
-            $user = User:: where("mobile", "=", $request['mobile'])->with('rules')->first();
+        if (array_key_exists('mobile_email',$request) && array_key_exists('password',$request)) {
+
+         //////
+
+         if(is_numeric($request['mobile_email'])){
+             $user = User::where("mobile", "=", $request['mobile_email'])->with('rules')->first();
+
+             if(!$user) {
+              return Helpers::Get_Response(400,'error',trans('this mobile number isn’t registered'),$validator->errors(),(object)[]);}
+          }
+          elseif (filter_var($request['mobile_email'], FILTER_VALIDATE_EMAIL)) {
+            $user = User:: where("email", "=", $request['mobile_email'])->with('rules')->first();
+            if(!$user) {
+             return Helpers::Get_Response(400,'error',trans('this e-mail isn’t registered'),$validator->errors(),(object)[]);}
+          }
+
+        	//////
+
+            // $user = User:: where("mobile", "=", $request['mobile_email'])->with('rules')->first();
             if($user) {
                 if(Hash::check($request['password'],$user->password)) {
                     if($user->is_active == 1) {
