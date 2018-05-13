@@ -25,19 +25,20 @@ $citycounty[$key]= $city->name.','.$city->geo_country->name;
     }
 
 
-    public function searchcitycountry($keyword)
+    public function searchcitycountry(Request $request)
     {
-      //$keyword = $request->input('keyword');
-      // print_r(urldecode($keyword));
-      // return;
+     $keyword = $request->input('keyword');
+    //dd($keyword);
+     
+      //return;
 
       if ($keyword!='') {
            // $citycounty = GeoCity::where("name", "LIKE","%$keyword%")
            //        ->orWhere($citycounty->geo_country->name, "LIKE", "%$keyword%");
 
-    $citycounty = GeoCity::where('name','like','%'.urldecode($keyword).'%')
+    $citycounty = GeoCity::where('name','like','%'.$keyword.'%')
      ->orWhereHas('geo_country', function ($query) use ($keyword) {
-         $query->where('name', 'like', '%'.urldecode($keyword).'%');
+         $query->where('name', 'like', '%'.$keyword.'%');
      })->get();
     // $citycounty = GeoCity::where('name','like','%'.urldecode($keyword).'%')->get();
     $result= array();
@@ -54,7 +55,7 @@ $citycounty[$key]= $city->name.','.$city->geo_country->name;
 
     }else{
 
-      // return Helpers::Get_Response(401,'error',trans('please inter any chararcter'),'','');
+       return Helpers::Get_Response(401,'error',trans('please inter any chararcter'),'','');
 
     }
             //return response()->json($result);

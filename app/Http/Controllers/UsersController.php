@@ -234,7 +234,7 @@ if(array_key_exists('image',$request))
           }
           if(array_key_exists('api_token',$request) && $request['api_token'] != '')
           {
-            // return "1";
+            
                  $user=User:: where("api_token", "=", $request['api_token'])
                               ->first();
                     if($user)

@@ -22,6 +22,6 @@ class GeoCity extends Model
     // Relationships
     public function geo_country()
     {
-        return $this->belongsTo("App\GeoCountry"); //important dont forget to add (ger_county_id) to geo_cities table
+        return $this->belongsTo("App\GeoCountry","country_id"); //important dont forget to add (ger_county_id) to geo_cities table
     }
 }

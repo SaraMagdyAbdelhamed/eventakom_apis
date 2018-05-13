@@ -23,7 +23,7 @@ $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountrie
  //cities
 $router->get('all_cities',  ['uses' => 'GeoCitiesController@getAllCities']);
 $router->get('getcitycountry',  ['uses' => 'GeoCitiesController@getcitycountry']);
-$router->get('searchcitycountry/{keyword}',  ['uses' => 'GeoCitiesController@searchcitycountry']);
+$router->get('searchcitycountry',  ['uses' => 'GeoCitiesController@searchcitycountry']);
 
   //users routes
   $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
