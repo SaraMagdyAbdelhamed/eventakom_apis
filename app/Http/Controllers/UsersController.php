@@ -9,6 +9,7 @@ use App\Libraries\Base64ToImageService;
 use Illuminate\Support\Facades\Hash;
 use App\Libraries\TwilioSmsService;
 use Carbon\Carbon;
+use \Illuminate\Support\Facades\Lang;
 
 class UsersController extends Controller
 {
@@ -168,7 +169,7 @@ if(array_key_exists('image',$request))
       {
       
          
-         return Helpers::Get_Response(400,'error',trans('Invalid verification code, please write the right one'),$validator->errors(),(object)[]);
+         return Helpers::Get_Response(400,'error',trans('messages.wrong_verification_code'),$validator->errors(),(object)[]);
        
         
       }
