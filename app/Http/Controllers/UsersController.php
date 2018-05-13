@@ -60,6 +60,31 @@ if(array_key_exists('image',$request))
     }
 
 
+    public function resend_verification_code(Request $request)
+    {
+    	$request = (array)json_decode($request->getContent(), true);
+      if(array_key_exists('lang_id',$request))
+          {
+            Helpers::Set_locale($request['lang_id']);
+          }
+
+       $validator = Validator::make($request,[
+            "mobile" => "required|numeric",
+            "lang_id" => "required|in:1,2"
+        
+        ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+        }else{
+       $user = User::where('mobile',$request['mobile'])->first();
+       if($user->is_verification_code_expired != 1){
+       if($user->verification_count != 1){
+
+       }
+
+        }
+    }
+}
 
      public function verify_verification_code(Request $request)
     {
@@ -184,7 +209,7 @@ if(array_key_exists('image',$request))
                         $tokenobj =  $user->createToken('api_token');
                         $token = $tokenobj->accessToken;
                         $token_id = $tokenobj->token->id;
-                        $user = new User;
+                        //$user = new User;
                         $user->api_token=$token_id;
                         $user->created_at=Carbon::now()->format('Y-m-d H:i:s');
                         $user->updated_at=Carbon::now()->format('Y-m-d H:i:s');

@@ -29,6 +29,7 @@ $router->get('searchcitycountry',  ['uses' => 'GeoCitiesController@searchcitycou
   $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
   $router->post('user_signup',  ['uses' => 'UsersController@signup']);
   $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
+  $router->post('resend_verification_code', ['uses' =>'UsersController@resend_verification_code']);
   $router->post('login', 'UsersController@login');
   $router->post('logout', 'UsersController@logout');
 
