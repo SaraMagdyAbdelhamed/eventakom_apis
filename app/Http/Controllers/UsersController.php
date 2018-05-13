@@ -337,4 +337,36 @@ if(array_key_exists('image',$request))
           }
     }
 
+  public function change_language(Request $request)
+    {
+
+       $request = (array)json_decode($request->getContent(), true);
+        if(array_key_exists('lang_id',$request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,[
+            "access_token" => "required",
+            "lang_id" =>"required|in:1,2"
+
+        ]);
+    
+     if ($validator->fails()) {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+        }else{
+         $user=User:: where("api_token", "=", $request['access_token'])->first();
+
+         if($user){
+         $user->update(['lang_id'=>$request['lang_id']]);
+         $user->save();
+         return Helpers::Get_Response(200,'success','','',$user);
+         }else{
+
+         return Helpers::Get_Response(400,'error',trans('No user Registerd with this token'),$validator->errors(),(object)[]);
+
+         }
+        }
+
+    }
+
+
 }

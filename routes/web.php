@@ -32,6 +32,6 @@ $router->get('searchcitycountry',  ['uses' => 'GeoCitiesController@searchcitycou
   $router->post('resend_verification_code', ['uses' =>'UsersController@resend_verification_code']);
   $router->post('login', 'UsersController@login');
   $router->post('logout', 'UsersController@logout');
-
+  $router->put('change_language', ['uses' =>'UsersController@change_language']);
 
 });
