@@ -88,6 +88,7 @@ if(array_key_exists('image',$request))
 
        $user = User::where('mobile',$request['mobile'])->first();
        $verification_code =str_random(4); 
+       $user_date = date('Y-m-d', strtotime($user->verification_date));
        if($user->is_verification_code_expired != 1 && $user->verification_count < 5){
         
        	//send verification code via Email , sms
@@ -101,8 +102,9 @@ if(array_key_exists('image',$request))
            $user->save();
           return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
        	}
-       elseif($user->verification_count >= 5 && $user->verification_date != Carbon::now()->format('Y-m-d')){
-        //set is_verification_code_expired to 0
+       	//date_format("Y-m-d", $user->verification_date) dont forget
+       elseif($user->verification_count >= 5 && $user_date != Carbon::now()->format('Y-m-d')){
+        //set is_verification_code_expired to 0 
         $user->is_verification_code_expired = 0;
         //reset verification count to 0
         $user->verification_count = 0;
@@ -110,8 +112,8 @@ if(array_key_exists('image',$request))
         $user->verification_date=Carbon::now()->format('Y-m-d');
         //send verification code via Email , sms
         $status =$twilio->send( $user->mobile,$verification_code);
-         print_r($status);
-         return;
+         // print_r($status);
+         // return;
          $mail=Helpers::mail($user->email,$user->username,$verification_code);
         //increase verification count by 1
          $user->verification_count=$user->verification_count+1;
@@ -119,7 +121,7 @@ if(array_key_exists('image',$request))
           return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
        	}
        
-       elseif($user->verification_count >= 5 && $user->verification_date == Carbon::now()->format('Y-m-d')){
+       elseif($user->verification_count >= 5 && $user_date == Carbon::now()->format('Y-m-d')){
        	 //set is_verification_code_expired to 1
         $user->is_verification_code_expired = 1;
          // response : sorry you have exeeded your verifications limit today
@@ -432,7 +434,42 @@ if(array_key_exists('image',$request))
         
     }
 
+//interests to be continued ..
 
+public function add_interests(Request $request)
+    {
+       $request = (array)json_decode($request->getContent(), true);
+        if(array_key_exists('lang_id',$request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,[
+            "access_token" => "required",
+            "interests" =>"required"
+
+        ]);
+    
+     if ($validator->fails()) {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+        }else{
+
+        	$user=User:: where("api_token", "=", $request['access_token'])->first();
+        	if($user){
+             $user_id = $user->id;
+             //interest where in ids
+              $interests_ids = $request['interests'];
+              dd($interests_ids);
+
+
+        	}else{
+
+        	return Helpers::Get_Response(400,'error',trans('user not exist'),$validator->errors(),(object)[]);	
+        	}
+     
+         return Helpers::Get_Response(200,'success','',$validator->errors(),trans('Mobile is exist'));
+
+         }
+        
+    }
 
 
 }
