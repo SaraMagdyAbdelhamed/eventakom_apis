@@ -56,9 +56,12 @@ if(array_key_exists('image',$request))
          $input['code']=mt_rand(100000, 999999);        
          $input['verification_code'] = str_random(4);
          $input['is_verification_code_expired']=0;
-         $status =$twilio->send($request['mobile'],$input['verification_code']);
-         $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
+        
          $user = User::create($input);  
+         if($user){
+           $status =$twilio->send($request['mobile'],$input['verification_code']);
+        // $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
+         }
          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
     }
 
@@ -98,9 +101,13 @@ if(array_key_exists('image',$request))
        	 //$verification_code =str_random(4); 
          $user->verification_code=$verification_code;
          $user->verification_count=$user->verification_count+1;
-         $status =$twilio->send( $user->mobile,$verification_code);
-         $mail=Helpers::mail($user->email,$user->username,$verification_code);
-           $user->save();
+         if($user->save()){
+          //send verification code via Email , sms
+        $status =$twilio->send( $user->mobile,$verification_code);
+         // print_r($status);
+         // return;
+        // $mail=Helpers::mail($user->email,$user->username,$verification_code);
+         }
           return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
        	}
        	//date_format("Y-m-d", $user->verification_date) dont forget
@@ -111,14 +118,17 @@ if(array_key_exists('image',$request))
         $user->verification_count = 0;
         // update verification date to current date
         $user->verification_date=Carbon::now()->format('Y-m-d');
-        //send verification code via Email , sms
+        
+        //increase verification count by 1
+         $user->verification_count=$user->verification_count+1;
+         
+         if($user->save()){
+          //send verification code via Email , sms
         $status =$twilio->send( $user->mobile,$verification_code);
          // print_r($status);
          // return;
-         $mail=Helpers::mail($user->email,$user->username,$verification_code);
-        //increase verification count by 1
-         $user->verification_count=$user->verification_count+1;
-         $user->save();
+        // $mail=Helpers::mail($user->email,$user->username,$verification_code);
+         }
           return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
        	}
        
@@ -127,10 +137,25 @@ if(array_key_exists('image',$request))
         $user->is_verification_code_expired = 1;
          // response : sorry you have exeeded your verifications limit today
         return Helpers::Get_Response(400,'error',trans('sorry you have exeeded your verifications limit today'),$validator->errors(),(object)[]);
+       }      
+       elseif($user->is_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d') ){
+         $user->is_verification_code_expired = 0;
+        //send verification code via Email , sms
+        //increase verification count by 1
+         $user->verification_date=Carbon::now()->format('Y-m-d');
+         //$verification_code =str_random(4); 
+         $user->verification_code=$verification_code;
+         $user->verification_count=$user->verification_count+1;
+          if($user->save()){
+          //send verification code via Email , sms
+        $status =$twilio->send( $user->mobile,$verification_code);
+         // print_r($status);
+         // return;
+        // $mail=Helpers::mail($user->email,$user->username,$verification_code);
+         }
+          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
+
        }
-
-       
-
         
     }
 }
@@ -165,10 +190,11 @@ if(array_key_exists('image',$request))
         if($user->is_active==0)
         {
        
-          $user->update(['is_active'=>1]);
+          $user->update(['is_active'=>1 ,'verification_date'=>Carbon::now()->format('Y-m-d') ]);
+        
         }
         
-        
+       
         $user->save();
       }
       else

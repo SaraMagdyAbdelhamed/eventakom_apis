@@ -22,7 +22,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     protected $fillable = [
         'first_name', 'last_name','email', 'mobile','device_token','username','tele_code','country_id','city_id','device_token','mobile_os','is_social','is_active',
-        'social_token','lang_id','is_verification_code_expired','last_login','longtuide','latitude','password','verification_code','access_token','api_token'
+        'social_token','lang_id','is_verification_code_expired','last_login','longtuide','latitude','password','verification_code','access_token','api_token','verification_date'
     ];
 
     protected $dates = ['created_at', 'updated_at'];
@@ -40,7 +40,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
             'last_name' => 'required|between:1,12',
             'email' => 'required|email|unique:users|max:35',
             'conutry_code_id' => 'required',
-            'mobile' => 'required|numeric',
+            'mobile' => 'required|numeric|unique:users',
             'password' => 'required|between:8,20',
             'photo' => 'image|max:1024', 
             //'device_token' => 'required',

@@ -19,7 +19,10 @@ $router->get('/', function () use ($router) {
 
 
 $router->group(['prefix' => 'api'], function () use ($router) {
+ $router->post('user_signup',  ['uses' => 'UsersController@signup']);
  $router->post('login', 'UsersController@login'); 
+ $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
+ $router->post('resend_verification_code', ['uses' =>'UsersController@resend_verification_code']);
   });
 
 $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function () use ($router) {
@@ -32,9 +35,6 @@ $router->get('searchcitycountry',  ['uses' => 'GeoCitiesController@searchcitycou
 
   //users routes
   $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
-  $router->post('user_signup',  ['uses' => 'UsersController@signup']);
-  $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
-  $router->post('resend_verification_code', ['uses' =>'UsersController@resend_verification_code']);
  
   $router->post('logout', 'UsersController@logout');
   $router->put('change_language', ['uses' =>'UsersController@change_language']);
