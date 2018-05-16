@@ -267,7 +267,7 @@ if(array_key_exists('image',$request))
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request,[
-            "mobile_email" => "required",
+            "mobile" => "required|numeric",
             "password" =>"required|min:8|max:20",
 //            "device_token"=>'required',
 //            "lang_id"=>'required',
@@ -276,21 +276,21 @@ if(array_key_exists('image',$request))
         if ($validator->fails()) {
             return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
         }
-        if (array_key_exists('mobile_email',$request) && array_key_exists('password',$request)) {
+        if (array_key_exists('mobile',$request) && array_key_exists('password',$request)) {
 
          //////
 
-         if(is_numeric($request['mobile_email'])){
-             $user = User::where("mobile", "=", $request['mobile_email'])->with('rules')->first();
+         if(is_numeric($request['mobile'])){
+             $user = User::where("mobile", "=", $request['mobile'])->with('rules')->first();
 
              if(!$user) {
               return Helpers::Get_Response(400,'error',trans('this mobile number isn’t registered'),$validator->errors(),(object)[]);}
           }
-          elseif (filter_var($request['mobile_email'], FILTER_VALIDATE_EMAIL)) {
-            $user = User:: where("email", "=", $request['mobile_email'])->with('rules')->first();
-            if(!$user) {
-             return Helpers::Get_Response(400,'error',trans('this e-mail isn’t registered'),$validator->errors(),(object)[]);}
-          }
+          // elseif (filter_var($request['mobile'], FILTER_VALIDATE_EMAIL)) {
+          //   $user = User:: where("email", "=", $request['mobile'])->with('rules')->first();
+          //   if(!$user) {
+          //    return Helpers::Get_Response(400,'error',trans('this e-mail isn’t registered'),$validator->errors(),(object)[]);}
+          // }
 
         	//////
 
