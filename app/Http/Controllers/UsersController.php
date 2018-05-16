@@ -12,6 +12,7 @@ use App\Libraries\TwilioSmsService;
 use Carbon\Carbon;
 use \Illuminate\Support\Facades\Lang;
 
+
 class UsersController extends Controller
 {
 
@@ -317,15 +318,19 @@ if(array_key_exists('image',$request))
 
     public function logout(Request $request)
     {
+      $api_token = $request->header('api_token') ; 
+       //dd($request->header('api_token'));
+     // $request_header = (array)json_decode($request->header('api_token'), true);
       $request = (array)json_decode($request->getContent(), true);
       if(array_key_exists('lang_id',$request))
           {
             Helpers::Set_locale($request['lang_id']);
           }
-          if(array_key_exists('api_token',$request) && $request['api_token'] != '')
-          {
+        // dd($request_header);
+          // if(array_key_exists('api_token',$request) && $request['api_token'] != '')
+          // {
             
-                 $user=User:: where("api_token", "=", $request['api_token'])
+                 $user=User:: where("api_token", "=",  $api_token )
                               ->first();
                     if($user)
                     {
@@ -337,7 +342,9 @@ if(array_key_exists('image',$request))
                     {
                       return Helpers::Get_Response(400,'error',trans('messages.logged'),[],(object)[]);
                     }
-          }
+          // }else{
+          //   return Helpers::Get_Response(400,'error',trans('messages.logged'),[],(object)[]);
+          // }
     }
 
   public function change_language(Request $request)

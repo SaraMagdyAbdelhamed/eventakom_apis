@@ -34,8 +34,12 @@ $app->bind('path.public', function() {
 $app->register(\Nwidart\Modules\LumenModulesServiceProvider::class);
 $app->configure('modules');
 // Enable auth middleware (shipped with Lumen)
+// $app->middleware([
+//    App\Http\Middleware\EventakomAuth::class
+// ]);
 $app->routeMiddleware([
     'auth' => App\Http\Middleware\Authenticate::class,
+    'EventakomAuth' => App\Http\Middleware\EventakomAuth::class
 ]);
 // ///service for sending email
 $app->register(\Illuminate\Mail\MailServiceProvider::class);
