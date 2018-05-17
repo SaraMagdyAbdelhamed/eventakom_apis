@@ -92,6 +92,7 @@ if(array_key_exists('image',$request))
 
        $user = User::where('mobile',$request['mobile'])->first();
        $verification_code =str_random(4); 
+       $sms_body = trans('your verification code is : ').$verification_code;
        $user_date = date('Y-m-d', strtotime($user->verification_date));
        if($user->is_verification_code_expired != 1 && $user->verification_count < 5){
         
@@ -103,7 +104,7 @@ if(array_key_exists('image',$request))
          $user->verification_count=$user->verification_count+1;
          if($user->save()){
           //send verification code via Email , sms
-        $status =$twilio->send( $user->mobile,$verification_code);
+        $status =$twilio->send( $user->mobile,$sms_body);
          // print_r($status);
          // return;
         // $mail=Helpers::mail($user->email,$user->username,$verification_code);
@@ -124,7 +125,7 @@ if(array_key_exists('image',$request))
          
          if($user->save()){
           //send verification code via Email , sms
-        $status =$twilio->send( $user->mobile,$verification_code);
+        $status =$twilio->send( $user->mobile,$sms_body);
          // print_r($status);
          // return;
         // $mail=Helpers::mail($user->email,$user->username,$verification_code);
@@ -136,7 +137,7 @@ if(array_key_exists('image',$request))
        	 //set is_verification_code_expired to 1
         $user->is_verification_code_expired = 1;
          // response : sorry you have exeeded your verifications limit today
-        return Helpers::Get_Response(400,'error',trans('sorry you have exeeded your verifications limit today'),$validator->errors(),(object)[]);
+        return Helpers::Get_Response(400,'error',trans('sorry you have exceeded your verifications limit today'),$validator->errors(),(object)[]);
        }      
        elseif($user->is_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d') ){
          $user->is_verification_code_expired = 0;
@@ -148,7 +149,7 @@ if(array_key_exists('image',$request))
          $user->verification_count=$user->verification_count+1;
           if($user->save()){
           //send verification code via Email , sms
-        $status =$twilio->send( $user->mobile,$verification_code);
+        $status =$twilio->send( $user->mobile,$sms_body);
          // print_r($status);
          // return;
         // $mail=Helpers::mail($user->email,$user->username,$verification_code);
@@ -503,6 +504,44 @@ public function add_interests(Request $request)
          }
         
     }
+ 
+    public function edit_profile(Request $request)
+    {
+          
+    
+        $api_token = $request->header('api_token') ; 
 
+        $request = (array)json_decode($request->getContent(), true);
+        if(array_key_exists('lang_id',$request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $user=User:: where("api_token", "=", $api_token)->first();
+        $validator = Validator::make($request,$user::$rules);
+
+          if ($validator->fails()) 
+           {
+            return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
+           }  
+  
+if(array_key_exists('image',$request))
+            {
+         $request['photo']=Base64ToImageService::convert($request['photo'],'users_images/'); 
+            }
+         $input = $request;
+         /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id verification_code is_verification_code_expired  last_login  api_token longtuide latitude*/ 
+         if(array_key_exists('passowrd',$request))
+            { $input['password'] = Hash::make($input['password']);}
+         //$input['is_active'] = 0;
+         $input['username']=$request['first_name'].''.$request['last_name'];
+         //$input['code']=mt_rand(100000, 999999);        
+         //$input['verification_code'] = str_random(4);
+         //$input['is_verification_code_expired']=0;
+         $user_update =  $user->update($input);
+         if(array_key_exists('email',$request)){
+           //$status =$twilio->send($request['mobile'],$input['verification_code']);
+          $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
+         }
+         return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
+    }
 
 }

@@ -19,6 +19,7 @@ $router->get('/', function () use ($router) {
 
 
 $router->group(['prefix' => 'api'], function () use ($router) {
+  //user routes
  $router->post('user_signup',  ['uses' => 'UsersController@signup']);
  $router->post('login', 'UsersController@login'); 
  $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
@@ -34,19 +35,17 @@ $router->get('getcitycountry',  ['uses' => 'GeoCitiesController@getcitycountry']
 $router->get('searchcitycountry',  ['uses' => 'GeoCitiesController@searchcitycountry']);
 
   //users routes
-  $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
- 
-  $router->post('logout', 'UsersController@logout');
-  $router->put('change_language', ['uses' =>'UsersController@change_language']);
-
-  $router->post('mail_existence', ['uses' =>'UsersController@mail_existence']);
-  $router->post('mobile_existence', ['uses' =>'UsersController@mobile_existence']);
-
+$router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
+$router->post('logout', 'UsersController@logout');
+$router->put('change_language', ['uses' =>'UsersController@change_language']);
+$router->post('mail_existence', ['uses' =>'UsersController@mail_existence']);
+$router->post('mobile_existence', ['uses' =>'UsersController@mobile_existence']);
+$router->post('edit_profile',  ['uses' => 'UsersController@edit_profile']);
   //fixed pages
-  $router->get('fixed_pages', ['uses' =>'UsersController@fixed_pages']);
+$router->get('fixed_pages', ['uses' =>'UsersController@fixed_pages']);
 
   //interests
-  $router->post('add_interests', ['uses' =>'UsersController@add_interests']);
+$router->post('add_interests', ['uses' =>'UsersController@add_interests']);
   
 
 });
