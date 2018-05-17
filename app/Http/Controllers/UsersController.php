@@ -700,6 +700,51 @@ class UsersController extends Controller
 
     }
 
+    public function forget_password(Request $request)
+    {
+
+        $request = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,
+            [
+                "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
+                "verification_code" => "required",
+                "new_password" => "required|between:8,20"
+            ]);
+        if ($validator->fails()) {
+   
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+        }
+        $user = User::where('mobile', $request['mobile'])->first();
+
+        if ($user) {
+            if ($user->verification_code == $request['verification_code']) {
+
+                $user->is_verification_code_expired = 1;
+              
+                   $new_password = Hash::make($request['new_password']);
+                    $user->update(['password' =>$new_password]);
+
+            
+                $user->save();
+            } else {
+
+
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
+
+
+            }
+        } else {
+            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), (object)[]);
+        }
+
+
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+
+    }
+
 
 
 
