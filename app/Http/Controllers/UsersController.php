@@ -65,43 +65,7 @@ class UsersController extends Controller
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
     }
 
-    public function edit_profile(Request $request)
-    {
-
-
-        $api_token = $request->header('api_token');
-
-        $request = (array)json_decode($request->getContent(), true);
-        if (array_key_exists('lang_id', $request)) {
-            Helpers::Set_locale($request['lang_id']);
-        }
-        $user = User:: where("api_token", "=", $api_token)->first();
-        $validator = Validator::make($request, $user::$rules);
-
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
-        }
-
-        if (array_key_exists('image', $request)) {
-            $request['photo'] = Base64ToImageService::convert($request['photo'], 'users_images/');
-        }
-        $input = $request;
-        /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id verification_code is_verification_code_expired  last_login  api_token longtuide latitude*/
-        if (array_key_exists('passowrd', $request)) {
-            $input['password'] = Hash::make($input['password']);
-        }
-        //$input['is_active'] = 0;
-        $input['username'] = $request['first_name'] . '' . $request['last_name'];
-        //$input['code']=mt_rand(100000, 999999);
-        //$input['verification_code'] = str_random(4);
-        //$input['is_verification_code_expired']=0;
-        $user_update = $user->update($input);
-        if (array_key_exists('email', $request)) {
-            //$status =$twilio->send($request['mobile'],$input['verification_code']);
-            $mail = Helpers::mail($request['email'], $input['username'], $input['verification_code']);
-        }
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
-    }
+    
 
     public function resend_verification_code(Request $request)
     {
@@ -628,7 +592,7 @@ class UsersController extends Controller
         }
 
 
-
+}
 
 
  
