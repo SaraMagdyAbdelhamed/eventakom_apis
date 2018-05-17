@@ -472,7 +472,7 @@ if(array_key_exists('image',$request))
 
 //interests to be continued ..
 
-public function add_interests(Request $request)
+public function add_user_interests(Request $request)
     {
        $request = (array)json_decode($request->getContent(), true);
         if(array_key_exists('lang_id',$request)) {
@@ -544,7 +544,7 @@ public function add_interests(Request $request)
             return Helpers::Get_Response(403,'error','',$validator->errors(),(object)[]);
            }  
   
-if(array_key_exists('image',$request))
+      if(array_key_exists('image',$request))
             {
          $request['photo']=Base64ToImageService::convert($request['photo'],'users_images/'); 
             }
