@@ -511,14 +511,33 @@ public function add_interests(Request $request)
     {
           
     
-        $api_token = $request->header('api_token') ; 
-
+        $api_token = $request->header('access-token') ; 
+        //dd($api_token);
+        $user=User:: where("api_token", "=", $api_token)->first();
+        
         $request = (array)json_decode($request->getContent(), true);
         if(array_key_exists('lang_id',$request)) {
             Helpers::Set_locale($request['lang_id']);
         }
-        $user=User:: where("api_token", "=", $api_token)->first();
-        $validator = Validator::make($request,$user::$rules);
+        if($user->email == $request['email'] ){
+          $email_valid = 'required|email|max:35';
+        }else{
+          $email_valid = 'required|email|unique:users|max:35';
+        }
+         $validator = Validator::make($request,
+                        [
+            'first_name' => 'required|between:1,12',
+            'last_name' => 'required|between:1,12',
+            'email' => $email_valid,
+            'conutry_code_id' => 'required',
+           // 'mobile' => 'required|numeric|unique:users',
+            'password' => 'required|between:8,20',
+            'photo' => 'image|max:1024', 
+            //'device_token' => 'required',
+            'mobile_os' => 'in:android,ios',
+            'lang_id' => 'in:1,2'
+                          
+                         ]);
 
           if ($validator->fails()) 
            {
@@ -531,15 +550,22 @@ if(array_key_exists('image',$request))
             }
          $input = $request;
          /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id verification_code is_verification_code_expired  last_login  api_token longtuide latitude*/ 
-         if(array_key_exists('passowrd',$request))
-            { $input['password'] = Hash::make($input['password']);}
+
+            if(Hash::check($request['password'],$user->password)) {
+             $input['password'] = $user->password;
+             }else{
+              
+              $input['password'] = Hash::make($input['password']);
+                 }
+
          //$input['is_active'] = 0;
          $input['username']=$request['first_name'].''.$request['last_name'];
+         $input['mobile']= $user->mobile;
          //$input['code']=mt_rand(100000, 999999);        
-         //$input['verification_code'] = str_random(4);
+         $input['verification_code'] = str_random(4);
          //$input['is_verification_code_expired']=0;
          $user_update =  $user->update($input);
-         if(array_key_exists('email',$request)){
+         if($user_update && $user->email != $request['email']  ){
            //$status =$twilio->send($request['mobile'],$input['verification_code']);
           $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
          }
