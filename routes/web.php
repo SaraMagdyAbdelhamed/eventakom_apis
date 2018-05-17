@@ -24,6 +24,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('login', 'UsersController@login'); 
  $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
  $router->post('resend_verification_code', ['uses' =>'UsersController@resend_verification_code']);
+ $router->post('forget_password', ['uses' =>'UsersController@forget_password']);
+ 
   });
 
 $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function () use ($router) {
