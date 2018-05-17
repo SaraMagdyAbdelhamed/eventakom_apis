@@ -45,7 +45,7 @@ $router->post('edit_profile',  ['uses' => 'UsersController@edit_profile']);
 $router->get('fixed_pages', ['uses' =>'UsersController@fixed_pages']);
 
   //interests
-$router->post('add_interests', ['uses' =>'UsersController@add_interests']);
+$router->post('add_user_interests', ['uses' =>'UsersController@add_user_interests']);
 
 
 //test router
