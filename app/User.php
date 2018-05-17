@@ -33,7 +33,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $hidden = [
-        'password','verification_code ','access_token','api_token',
+        'password','verification_code ','access_token',
     ];
 
     public static $rules = [ 'first_name' => 'required|between:1,12',

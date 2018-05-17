@@ -46,6 +46,10 @@ $router->get('fixed_pages', ['uses' =>'UsersController@fixed_pages']);
 
   //interests
 $router->post('add_interests', ['uses' =>'UsersController@add_interests']);
+
+
+//test router
+$router->get("hi",['uses' =>'UsersController@hi']);
   
 
 });

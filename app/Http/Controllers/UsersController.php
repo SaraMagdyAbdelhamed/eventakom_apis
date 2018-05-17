@@ -544,4 +544,9 @@ if(array_key_exists('image',$request))
          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
     }
 
+
+    public function hi(){
+      echo "string";
+    }
+
 }
