@@ -37,7 +37,8 @@ class EventakomAuth
      */
     public function handle($request, Closure $next, $guard = null)
     {
-          $access_token = $request->header('access-token') ; 
+          $access_token = $request->header('access-token') ;
+
          $request = (array)json_decode($request->getContent(), true);
         if(array_key_exists('lang_id',$request)) {
             Helpers::Set_locale($request['lang_id']);
