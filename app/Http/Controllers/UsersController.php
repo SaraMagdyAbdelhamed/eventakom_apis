@@ -564,10 +564,13 @@ public function add_user_interests(Request $request)
          //$input['code']=mt_rand(100000, 999999);        
          $input['verification_code'] = str_random(4);
          //$input['is_verification_code_expired']=0;
+         $old_email = $user->email;
          $user_update =  $user->update($input);
-         if($user_update && $user->email != $request['email']  ){
+         if($user_update &&   $old_email != $request['email']  ){
            //$status =$twilio->send($request['mobile'],$input['verification_code']);
           $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
+
+           $user->update(['is_email_verified'=>0]);
          }
          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
     }
