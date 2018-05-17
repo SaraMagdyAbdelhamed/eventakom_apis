@@ -33,7 +33,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $hidden = [
-        'password','verification_code ','access_token',
+        'password','verification_code ','access_token','pivot'
     ];
 
     public static $rules = [ 'first_name' => 'required|between:1,12',
@@ -97,7 +97,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->hasMany('App\User_Rate','user_id');
     }
-
+    public  function interests()
+    {
+        return $this->belongsToMany('App\Interest', 'user_interests');
+    }
 
 
 }
