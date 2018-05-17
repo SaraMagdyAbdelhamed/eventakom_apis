@@ -40,14 +40,15 @@ class AuthServiceProvider extends ServiceProvider
          Carbon::setLocale('ar');
          // Second parameter is the client Id
 // LumenPassport::tokensExpireIn(Carbon::now()->addYears(50), 2);
+            $access_token = $request->header('access-token') ; 
         $this->app['auth']->viaRequest('api', function ($request) {
-             if($request->header('api_token'))
+             if($request->header('access-token'))
              {
-                $api_token=$request->input('api_token');
+                $api_token= $access_token;
              }
              else
              {
-                 $api_token=$request->input('api_token');
+                 $api_token= $access_token;
              }
             if ($api_token) 
             {

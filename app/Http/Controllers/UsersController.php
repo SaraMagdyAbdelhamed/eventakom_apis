@@ -345,7 +345,7 @@ if(array_key_exists('image',$request))
 
     public function logout(Request $request)
     {
-      $api_token = $request->header('api_token') ; 
+      $api_token = $request->header('access-token') ; 
        //dd($request->header('api_token'));
      // $request_header = (array)json_decode($request->header('api_token'), true);
       $request = (array)json_decode($request->getContent(), true);
@@ -357,8 +357,10 @@ if(array_key_exists('image',$request))
           // if(array_key_exists('api_token',$request) && $request['api_token'] != '')
           // {
             
-                 $user=User:: where("api_token", "=",  $api_token )
-                              ->first();
+                 // $user=User:: where("api_token", "=",  $api_token )
+                 //              ->first();
+          $user=User:: where("api_token", "=",  $api_token )
+                         ->first();
                     if($user)
                     {
                       $user->update(['api_token'=>null]);
@@ -542,11 +544,6 @@ if(array_key_exists('image',$request))
           $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
          }
          return Helpers::Get_Response(200,'success','',$validator->errors(),$user);
-    }
-
-
-    public function hi(){
-      echo "string";
     }
 
 }
