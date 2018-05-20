@@ -61,8 +61,7 @@ $router->post('set_new_password','UsersController@set_new_password');
 
 
 
-//test router
-$router->get("hi",['uses' =>'UsersController@hi']);
-  
+
+
 
 });
