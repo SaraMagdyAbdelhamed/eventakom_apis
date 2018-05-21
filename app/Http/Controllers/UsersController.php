@@ -57,10 +57,12 @@ class UsersController extends Controller
         $input['code'] = mt_rand(100000, 999999);
         $input['verification_code'] = str_random(4);
         $input['is_verification_code_expired'] = 0;
-
+        
         $user = User::create($input);
         if ($user) {
-            $status = $twilio->send($request['mobile'], $input['verification_code']);
+          $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
+          $sms_body = trans('your verification code is : ') . $input['verification_code'];
+          $status = $twilio->send($sms_mobile, $sms_body);
             // $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
@@ -92,6 +94,7 @@ class UsersController extends Controller
 
             $user = User::where('mobile', $request['mobile'])->first();
             $verification_code = str_random(4);
+            $sms_mobile = $user->tele_code. '' . $user->mobile;
             $sms_body = trans('your verification code is : ') . $verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
             if ($user->is_verification_code_expired != 1 && $user->verification_count < 5) {
@@ -104,7 +107,7 @@ class UsersController extends Controller
                 $user->verification_count = $user->verification_count + 1;
                 if ($user->save()) {
                     //send verification code via Email , sms
-                    $status = $twilio->send($user->mobile, $sms_body);
+                    $status = $twilio->send($sms_mobile, $sms_body);
                     // print_r($status);
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$verification_code);
@@ -124,7 +127,7 @@ class UsersController extends Controller
 
                 if ($user->save()) {
                     //send verification code via Email , sms
-                    $status = $twilio->send($user->mobile, $sms_body);
+                    $status = $twilio->send($sms_mobile, $sms_body);
                     // print_r($status);
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$verification_code);
@@ -145,7 +148,7 @@ class UsersController extends Controller
                 $user->verification_count = $user->verification_count + 1;
                 if ($user->save()) {
                     //send verification code via Email , sms
-                    $status = $twilio->send($user->mobile, $sms_body);
+                    $status = $twilio->send($sms_mobile, $sms_body);
                     // print_r($status);
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$verification_code);
