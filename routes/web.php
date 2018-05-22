@@ -18,6 +18,7 @@ $router->get('/', function () use ($router) {
 });
 
 
+
 $router->group(['prefix' => 'api'], function () use ($router) {
   //user routes
  $router->post('user_signup',  ['uses' => 'UsersController@signup']);
@@ -25,7 +26,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('verify_verification_code', ['uses' =>'UsersController@verify_verification_code']);
  $router->post('resend_verification_code', ['uses' =>'UsersController@resend_verification_code']);
  $router->post('forget_password', ['uses' =>'UsersController@forget_password']);
- 
+ $router->post('social_login','UsersController@social_login');
+ $router->post('sms','UsersController@sms');
   });
 
 $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function () use ($router) {

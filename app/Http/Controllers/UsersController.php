@@ -787,4 +787,29 @@ class UsersController extends Controller
     }
 
 
+    // Social Login
+    public  function social_login(Request $request){
+
+
+    }
+
+
+
+
+    //test SMS
+    public function sms(Request $request){
+         $twilio_config = [
+            'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
+            'token' => '2021c86af33bd8f3b69394a5059c34f0',
+            'from' => '+13238701693'
+        ];
+         $request = (array)json_decode($request->getContent(), true);
+
+        $twilio = new TwilioSmsService($twilio_config);
+           $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
+          $sms_body = trans('your verification code is : ') . '2582';
+          $status = $twilio->send($sms_mobile, $sms_body);
+          dd($status);
+
+    }
 }

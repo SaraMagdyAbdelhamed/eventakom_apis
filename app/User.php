@@ -50,7 +50,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     // Relationships
     public function rules()
     {
-        return $this->belongsToMany('App\Rule', 'users_rules', 'user_id', 'rule_id');
+        return $this->belongsToMany('App\Rule', 'user_rules', 'user_id', 'rule_id');
     }
 
     public function user_details()
