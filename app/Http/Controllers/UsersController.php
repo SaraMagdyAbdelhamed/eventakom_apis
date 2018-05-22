@@ -733,4 +733,10 @@ class UsersController extends Controller
     }
 
 
+    // Social Login
+    public  function social_login(Request $request){
+
+
+    }
+
 }
