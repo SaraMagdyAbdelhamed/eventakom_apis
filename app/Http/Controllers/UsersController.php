@@ -809,6 +809,7 @@ class UsersController extends Controller
            $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
           $sms_body = trans('your verification code is : ') . '2582';
           $status = $twilio->send($sms_mobile, $sms_body);
+          dd($status);
 
     }
 }
