@@ -160,7 +160,7 @@ class UsersController extends Controller
         }
     }
 
-    public function verify_mobile_verification_code(Request $request)
+    public function verify_verification_code(Request $request)
     {
 
         $request = (array)json_decode($request->getContent(), true);
