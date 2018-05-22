@@ -645,13 +645,13 @@ class UsersController extends Controller
         $input['username'] = $request['first_name'] . '' . $request['last_name'];
         $input['mobile'] = $user->mobile;
         //$input['code']=mt_rand(100000, 999999);
-        $input['verification_code'] = str_random(4);
+        $input['verification_code'] = str_random(4); //change it to email_verification_code
         //$input['is_verification_code_expired']=0;
         $old_email = $user->email;
         $user_update = $user->update($input);
         if ($user_update && $old_email != $request['email']) {
             //$status =$twilio->send($request['mobile'],$input['verification_code']);
-            $mail = Helpers::mail($request['email'], $input['username'], $input['verification_code']);
+            $mail = Helpers::mail($request['email'], $input['username'], $input['verification_code']);//change it to email_verification_code
             $user->update(['is_email_verified' => 0]);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
@@ -686,6 +686,57 @@ class UsersController extends Controller
 
         }
 
+
+    }
+
+
+        public function verify_email(Request $request)
+    {
+
+        $api_token = $request->header('access-token');
+        // $user = User:: where("api_token", "=", $api_token)->first();
+
+        $request = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+        $validator = Validator::make($request,
+            [
+                "email" => "required|email",
+                "email_verification_code" => "required",
+                "lang_id" => "required|in:1,2"
+            ]);
+        if ($validator->fails()) {
+            // var_dump(current((array)$validator->errors()));
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+        }
+        $user = User::where('email', $request['email'])->where("api_token", "=", $api_token)->first();
+// dd($user->name);
+        if ($user) {
+            if ($user->email_verification_code == $request['email_verification_code']) {
+
+               // $user->is_verification_code_expired = 1;
+                if ($user->is_email_verified == 0) {
+
+                    $user->update(['is_email_verified' => 1]);
+
+                }
+
+
+                $user->save();
+            } else {
+
+
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
+
+
+            }
+        } else {
+            return Helpers::Get_Response(400, 'error', trans('Email is not registered'), $validator->errors(), (object)[]);
+        }
+
+
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
 
     }
 

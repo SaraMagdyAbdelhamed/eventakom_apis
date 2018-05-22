@@ -43,6 +43,8 @@ $router->put('change_language', ['uses' =>'UsersController@change_language']);
 $router->post('mail_existence', ['uses' =>'UsersController@mail_existence']);
 $router->post('mobile_existence', ['uses' =>'UsersController@mobile_existence']);
 $router->post('edit_profile',  ['uses' => 'UsersController@edit_profile']);
+$router->post('verify_email',  ['uses' => 'UsersController@verify_email']);
+
   //fixed pages
 $router->get('fixed_pages', ['uses' =>'UsersController@fixed_pages']);
 
