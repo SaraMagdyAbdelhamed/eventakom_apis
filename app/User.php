@@ -22,7 +22,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      */
     protected $fillable = [
         'first_name', 'last_name','email', 'mobile','device_token','username','tele_code','country_id','city_id','device_token','mobile_os','is_social','is_active',
-        'social_token','lang_id','is_mobile_verification_code_expired','last_login','longtuide','latitude','password','mobile_verification_code','access_token','api_token','verification_date','birthdate','gender_id','email_verification_code'
+        'social_token','lang_id','is_mobile_verification_code_expired','last_login','longtuide','latitude','password','mobile_verification_code','access_token','api_token','verification_date','birthdate','gender_id','email_verification_code','timezone'
     ];
 
     protected $dates = ['created_at', 'updated_at'];
