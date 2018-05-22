@@ -50,26 +50,26 @@ class UsersController extends Controller
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'users_images/');
         }
         $input = $request;
-        /*id	username	password	first_name	last_name	email	tele_code	mobile	country_id	city_id	gender_id	photo	birthdate	is_active	created_by	updated_by	created_at	updated_at	device_token	mobile_os	is_social	access_token	social_token	lang_id	verification_code	is_verification_code_expired	last_login	api_token	longtuide	latitude*/
+        /*id	username	password	first_name	last_name	email	tele_code	mobile	country_id	city_id	gender_id	photo	birthdate	is_active	created_by	updated_by	created_at	updated_at	device_token	mobile_os	is_social	access_token	social_token	lang_id	mobile_verification_code	is_mobile_verification_code_expired	last_login	api_token	longtuide	latitude*/
         $input['password'] = Hash::make($input['password']);
         $input['is_active'] = 0;
         $input['username'] = $request['first_name'] . '' . $request['last_name'];
         $input['code'] = mt_rand(100000, 999999);
-        $input['verification_code'] = str_random(4);
-        $input['is_verification_code_expired'] = 0;
+        $input['mobile_verification_code'] = str_random(4);
+        $input['is_mobile_verification_code_expired'] = 0;
         
         $user = User::create($input);
         if ($user) {
           $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
-          $sms_body = trans('your verification code is : ') . $input['verification_code'];
+          $sms_body = trans('your verification code is : ') . $input['mobile_verification_code'];
           $status = $twilio->send($sms_mobile, $sms_body);
-            // $mail=Helpers::mail($request['email'],$input['username'],$input['verification_code']);
+            // $mail=Helpers::mail($request['email'],$input['username'],$input['mobile_verification_code']);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
     }
 
 
-    public function resend_verification_code(Request $request)
+    public function resend_mobile_verification_code(Request $request)
     {
         $request = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request)) {
@@ -93,30 +93,30 @@ class UsersController extends Controller
             $twilio = new TwilioSmsService($twilio_config);
 
             $user = User::where('mobile', $request['mobile'])->first();
-            $verification_code = str_random(4);
+            $mobile_verification_code = str_random(4);
             $sms_mobile = $user->tele_code. '' . $user->mobile;
-            $sms_body = trans('your verification code is : ') . $verification_code;
+            $sms_body = trans('your verification code is : ') . $mobile_verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
-            if ($user->is_verification_code_expired != 1 && $user->verification_count < 5) {
+            if ($user->is_mobile_verification_code_expired != 1 && $user->verification_count < 5) {
 
                 //send verification code via Email , sms
                 //increase verification count by 1
                 $user->verification_date = Carbon::now()->format('Y-m-d');
-                //$verification_code =str_random(4);
-                $user->verification_code = $verification_code;
+                //$mobile_verification_code =str_random(4);
+                $user->mobile_verification_code = $mobile_verification_code;
                 $user->verification_count = $user->verification_count + 1;
                 if ($user->save()) {
                     //send verification code via Email , sms
                     $status = $twilio->send($sms_mobile, $sms_body);
                     // print_r($status);
                     // return;
-                    // $mail=Helpers::mail($user->email,$user->username,$verification_code);
+                    // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
             } //date_format("Y-m-d", $user->verification_date) dont forget
             elseif ($user->verification_count >= 5 && $user_date != Carbon::now()->format('Y-m-d')) {
-                //set is_verification_code_expired to 0
-                $user->is_verification_code_expired = 0;
+                //set is_mobile_verification_code_expired to 0
+                $user->is_mobile_verification_code_expired = 0;
                 //reset verification count to 0
                 $user->verification_count = 0;
                 // update verification date to current date
@@ -130,28 +130,28 @@ class UsersController extends Controller
                     $status = $twilio->send($sms_mobile, $sms_body);
                     // print_r($status);
                     // return;
-                    // $mail=Helpers::mail($user->email,$user->username,$verification_code);
+                    // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
             } elseif ($user->verification_count >= 5 && $user_date == Carbon::now()->format('Y-m-d')) {
-                //set is_verification_code_expired to 1
-                $user->is_verification_code_expired = 1;
+                //set is_mobile_verification_code_expired to 1
+                $user->is_mobile_verification_code_expired = 1;
                 // response : sorry you have exeeded your verifications limit today
                 return Helpers::Get_Response(400, 'error', trans('sorry you have exceeded your verifications limit today'), $validator->errors(), (object)[]);
-            } elseif ($user->is_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d')) {
-                $user->is_verification_code_expired = 0;
+            } elseif ($user->is_mobile_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d')) {
+                $user->is_mobile_verification_code_expired = 0;
                 //send verification code via Email , sms
                 //increase verification count by 1
                 $user->verification_date = Carbon::now()->format('Y-m-d');
-                //$verification_code =str_random(4);
-                $user->verification_code = $verification_code;
+                //$mobile_verification_code =str_random(4);
+                $user->mobile_verification_code = $mobile_verification_code;
                 $user->verification_count = $user->verification_count + 1;
                 if ($user->save()) {
                     //send verification code via Email , sms
                     $status = $twilio->send($sms_mobile, $sms_body);
                     // print_r($status);
                     // return;
-                    // $mail=Helpers::mail($user->email,$user->username,$verification_code);
+                    // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
 
@@ -160,7 +160,7 @@ class UsersController extends Controller
         }
     }
 
-    public function verify_verification_code(Request $request)
+    public function verify_mobile_verification_code(Request $request)
     {
 
         $request = (array)json_decode($request->getContent(), true);
@@ -170,7 +170,7 @@ class UsersController extends Controller
         $validator = Validator::make($request,
             [
                 "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
-                "verification_code" => "required",
+                "mobile_verification_code" => "required",
                 "lang_id" => "required|in:1,2"
             ]);
         if ($validator->fails()) {
@@ -180,9 +180,9 @@ class UsersController extends Controller
         $user = User::where('mobile', $request['mobile'])->first();
 // dd($user->name);
         if ($user) {
-            if ($user->verification_code == $request['verification_code']) {
+            if ($user->mobile_verification_code == $request['mobile_verification_code']) {
 
-                $user->is_verification_code_expired = 1;
+                $user->is_mobile_verification_code_expired = 1;
                 if ($user->is_active == 0) {
 
                     $user->update(['is_active' => 1, 'verification_date' => Carbon::now()->format('Y-m-d')]);
@@ -194,7 +194,7 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), (object)[]);
 
 
             }
@@ -227,7 +227,7 @@ class UsersController extends Controller
         }
         $user = User::where('mobile', $request['mobile'])->first();
         if ($user) {
-            if ($user->verificaition_code == $request['verificaition_code'] && $user->is_verification_code_expired == 1) {
+            if ($user->verificaition_code == $request['verificaition_code'] && $user->is_mobile_verification_code_expired == 1) {
                 $user->update(['password' => Hash::make($request['confirm_password'])]);
 
             } else {
@@ -634,7 +634,7 @@ class UsersController extends Controller
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'users_images/');
         }
         $input = $request;
-        /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id verification_code is_verification_code_expired  last_login  api_token longtuide latitude*/
+        /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id mobile_verification_code is_mobile_verification_code_expired  last_login  api_token longtuide latitude*/
         if (Hash::check($request['password'], $user->password)) {
             $input['password'] = $user->password;
         } else {
@@ -645,13 +645,13 @@ class UsersController extends Controller
         $input['username'] = $request['first_name'] . '' . $request['last_name'];
         $input['mobile'] = $user->mobile;
         //$input['code']=mt_rand(100000, 999999);
-        $input['verification_code'] = str_random(4); //change it to email_verification_code
-        //$input['is_verification_code_expired']=0;
+        $input['email_verification_code'] = str_random(4); //change it to email_verification_code
+        //$input['is_mobile_verification_code_expired']=0;
         $old_email = $user->email;
         $user_update = $user->update($input);
         if ($user_update && $old_email != $request['email']) {
-            //$status =$twilio->send($request['mobile'],$input['verification_code']);
-            $mail = Helpers::mail($request['email'], $input['username'], $input['verification_code']);//change it to email_verification_code
+            //$status =$twilio->send($request['mobile'],$input['mobile_verification_code']);
+         $mail = Helpers::mail($request['email'], $input['username'], $input['email_verification_code']);
             $user->update(['is_email_verified' => 0]);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
@@ -715,7 +715,7 @@ class UsersController extends Controller
         if ($user) {
             if ($user->email_verification_code == $request['email_verification_code']) {
 
-               // $user->is_verification_code_expired = 1;
+               // $user->is_mobile_verification_code_expired = 1;
                 if ($user->is_email_verified == 0) {
 
                     $user->update(['is_email_verified' => 1]);
@@ -727,7 +727,7 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), (object)[]);
 
 
             }
@@ -751,7 +751,7 @@ class UsersController extends Controller
         $validator = Validator::make($request,
             [
                 "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
-                "verification_code" => "required",
+                "mobile_verification_code" => "required",
                 "new_password" => "required|between:8,20"
             ]);
         if ($validator->fails()) {
@@ -761,9 +761,9 @@ class UsersController extends Controller
         $user = User::where('mobile', $request['mobile'])->first();
 
         if ($user) {
-            if ($user->verification_code == $request['verification_code']) {
+            if ($user->mobile_verification_code == $request['mobile_verification_code']) {
 
-                $user->is_verification_code_expired = 1;
+                $user->is_mobile_verification_code_expired = 1;
 
                 $new_password = Hash::make($request['new_password']);
                 $user->update(['password' => $new_password]);
@@ -773,7 +773,7 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), (object)[]);
 
 
             }
