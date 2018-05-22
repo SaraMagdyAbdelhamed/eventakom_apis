@@ -69,7 +69,7 @@ class UsersController extends Controller
     }
 
 
-    public function resend_mobile_verification_code(Request $request)
+    public function resend_verification_code(Request $request)
     {
         $request = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request)) {
@@ -194,7 +194,7 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
 
 
             }
