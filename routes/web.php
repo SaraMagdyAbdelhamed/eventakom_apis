@@ -66,6 +66,6 @@ $router->get('user_interests',['uses'=>'UsersController@user_interests']);
 
 //password section
 $router->post('change_password','UsersController@change_password');
-$router->post('set_new_password','UsersController@set_new_password');
+
 
 });
