@@ -64,9 +64,9 @@ class Base64ToImageService
         if(isset($base64_string) && is_string($base64_string) && strlen($base64_string))
         {
             $get_folder=explode('/', $upload_path);
-            if (!file_exists((new self)->base_path.$get_folder[0])) {
-                    mkdir((new self)->base_path.$get_folder[0], 0777, true);
-                }
+            // if (!file_exists((new self)->base_path.$get_folder[0])) {
+            //         mkdir((new self)->base_path.$get_folder[0], 0777, true);
+            //     }
             $output_file = (new self)->generateImage($upload_path, $base64_string);
             $file_stream = fopen((new self)->base_path.$output_file, 'wb');
 
