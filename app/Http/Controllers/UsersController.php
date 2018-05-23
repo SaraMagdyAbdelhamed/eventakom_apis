@@ -527,7 +527,7 @@ class UsersController extends Controller
                 return Helpers::Get_Response(400, 'error', trans('user not exist'), $validator->errors(), (object)[]);
             }
 
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('user interests added'));
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user->interests);
 
         }
 
@@ -592,28 +592,7 @@ class UsersController extends Controller
 
 
     //password
-    public function change_password(Request $request)
-    {
-        //read the request
-        $request_data = (array)json_decode($request->getContent(), true);
-        //valdiation
-        $validator = Validator::make($request_data,
-            ["new_password" => "required|Between:8,20"]);
-        //check validation result
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
-
-        } else {
-            $user = User::where('api_token', '=', $request->header('access-token'))->first();
-            $user->password = Hash::make($request_data['new_password']);
-            $user->save();
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Password Changed Successfully'));
-
-
-        }
-
-
-    }
+   
 
     public function edit_profile(Request $request)
     {
@@ -677,7 +656,7 @@ class UsersController extends Controller
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
     }
 
-    public function set_new_password(Request $request)
+    public function change_password(Request $request)
     {
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
@@ -694,11 +673,11 @@ class UsersController extends Controller
             if (Hash::check($request_data['old_password'], $user->password)) {
                 $user->password = Hash::make($request_data['new_password']);
                 $user->save();
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Password Changed Successfully'));
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(),$user);
 
 
             } else {
-                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], trans('Wrong user Password'));
+                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], (object)[]);
 
 
             }

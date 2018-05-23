@@ -36,22 +36,24 @@ class Helpers
       }
   }
 
-  public static function  localizations($table_name , $field , $item_id)
-    {
-      $value_localized = Entities::where('name',$table_name)->with([
-        'localizations' => function($query) use($field, $item_id)
-        {
-            $query->where('field', $field)->where('item_id', $item_id);
-        }
-      ])->get();
-      foreach ($value_localized as  $value) {
+   /**
+     *  Return translated entity
+     *  @param  $table_name     field in `entities` table.      ex: 'fixed_pages'
+     *  @param  $field_name     field in `entity_localizations` table.      ex: 'body'
+     *  @param  $item_id        field in `entity_localizations` table.      ex: 1
+     *  @param  $lang_id        field in `entity_localizations` table.      ex: 2
+     * 
+     *  Example:    Helper::localization('fixed_pages', 'name', '1', '2')
+     *  expected result     'عن الشركة'
+    */
+    public static function localization($table_name, $field_name, $item_id, $lang_id) {
+        $localization = Entity::where('table_name', $table_name)->with(['localizations' => function($q) use ($field_name, $item_id, $lang_id){ 
+            $q->where('field', $field_name)->where('item_id', $item_id)->where('lang_id', $lang_id); }
+        ])->first();
         
-        foreach ($value->localizations as $value1) {
-            return $value1->value;       
-        }
-      }
-     
-        
+
+        $result = isset($localization->localizations[0]) ? $localization->localizations[0]->value : "Error";
+        return $result;
     }
 
 
