@@ -49,7 +49,7 @@ class UsersController extends Controller
         }
 
         if (array_key_exists('photo', $request)) {
-            $request['photo'] = Base64ToImageService::convert($request['photo'], 'users_images/');
+            $request['photo'] = Base64ToImageService::convert($request['photo'], 'mobile_users/');
         }
         $input = $request;
         /*id	username	password	first_name	last_name	email	tele_code	mobile	country_id	city_id	gender_id	photo	birthdate	is_active	created_by	updated_by	created_at	updated_at	device_token	mobile_os	is_social	access_token	social_token	lang_id	mobile_verification_code	is_mobile_verification_code_expired	last_login	api_token	longtuide	latitude*/
@@ -72,7 +72,7 @@ class UsersController extends Controller
             $rules = user_rule::create(['user_id'=>$user_array->id ,'rule_id'=>2 ]);
             // $mail=Helpers::mail($request['email'],$input['username'],$input['mobile_verification_code']);
         }
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user_array);
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array) );
     }
 
 
