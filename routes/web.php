@@ -29,6 +29,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('forget_password', ['uses' =>'UsersController@forget_password']);
  $router->post('social_login','UsersController@social_login');
  $router->post('sms','UsersController@sms');
+    $router->get('all_interests','UsersController@all_interests');
 
    //countries
 $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);
@@ -60,7 +61,7 @@ $router->post('add_interests',['uses' =>'UsersController@add_interests']);
 $router->post('add_user_interests', ['uses' =>'UsersController@add_user_interests']);
 $router->post('edit_user_interests',['uses'=>'UsersController@edit_user_interests']);
 $router->get('user_interests',['uses'=>'UsersController@user_interests']);
-$router->get('all_interests','UsersController@all_interests');
+
 
 
 //password section
