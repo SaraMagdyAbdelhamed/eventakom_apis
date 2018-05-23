@@ -665,7 +665,7 @@ class UsersController extends Controller
 
 
             } else {
-                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], trans('Wrong user Password'));
+                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], (object)[]);
 
 
             }
