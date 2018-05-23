@@ -358,13 +358,13 @@ class UsersController extends Controller
 
     public function change_language(Request $request)
     {
-
+        $api_token = $request->header('access-token');
+     
         $request = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request)) {
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request, [
-            "access_token" => "required",
             "lang_id" => "required|in:1,2"
 
         ]);
@@ -372,7 +372,7 @@ class UsersController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
         } else {
-            $user = User:: where("api_token", "=", $request['access_token'])->first();
+            $user = User:: where("api_token", "=", $api_token)->first();
 
             if ($user) {
                 $user->update(['lang_id' => $request['lang_id']]);
