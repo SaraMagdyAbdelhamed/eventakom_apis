@@ -661,11 +661,11 @@ class UsersController extends Controller
             if (Hash::check($request_data['old_password'], $user->password)) {
                 $user->password = Hash::make($request_data['new_password']);
                 $user->save();
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Password Changed Successfully'));
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(),$user);
 
 
             } else {
-                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], $user);
+                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], (object)[]);
 
 
             }
