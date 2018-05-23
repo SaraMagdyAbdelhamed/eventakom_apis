@@ -3,7 +3,7 @@
 //created_by: Ash
 
 namespace App\Libraries;
-use App\Entities;
+use App\Entity;
 use Illuminate\Support\Facades\Mail;
 
 class Helpers
@@ -72,6 +72,8 @@ class Helpers
 
           });
     }
+
+    
 
     
 }
