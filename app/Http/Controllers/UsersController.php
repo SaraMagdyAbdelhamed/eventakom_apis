@@ -556,7 +556,7 @@ class UsersController extends Controller
     public function user_interests(Request $request)
     {
         //return all user interests
-        
+
         $user = User::where("api_token", '=', $request->header('access-token'))->first();
         return Helpers::Get_Response(200, 'success', '', [], $user->interests);
 
@@ -813,4 +813,8 @@ class UsersController extends Controller
           dd($status);
 
     }
+
+
+
+    
 }
