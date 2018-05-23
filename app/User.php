@@ -20,9 +20,11 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      *
      * @var array
      */
+
+   /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id mobile_verification_code is_mobile_verification_code_expired  last_login  api_token longtuide latitude*/
     protected $fillable = [
         'first_name', 'last_name','email', 'mobile','device_token','username','tele_code','country_id','city_id','device_token','mobile_os','is_social','is_active',
-        'social_token','lang_id','is_mobile_verification_code_expired','last_login','longtuide','latitude','password','mobile_verification_code','access_token','api_token','verification_date','birthdate','gender_id','email_verification_code','timezone','photo'
+        'social_token','lang_id','is_mobile_verification_code_expired','last_login','longtuide','latitude','password','mobile_verification_code','access_token','api_token','verification_date','birthdate','gender_id','email_verification_code','timezone','photo','is_mobile_verified'
     ];
 
     protected $dates = ['created_at', 'updated_at'];
