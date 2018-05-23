@@ -1,6 +1,7 @@
 <?php namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Libraries\Helpers;
 
 class Interest extends Model {
 
@@ -13,10 +14,11 @@ class Interest extends Model {
     ];
     protected $hidden = ['pivot'];
 
-    // public function getNameAttribute($value)
-    // {
-    //     return strtoupper($value);
-    // }
+    public function getNameAttribute($value)
+    {
+        $result= (app('translator')->getLocale()=='en') ? Helpers::localization('interests','name',$this->id,1) : Helpers::localization('interests','name',$this->id,2);
+        return ($result=='Error')? $value : $result;
+    }
      //Relationships
     public function users()
     {

@@ -570,8 +570,14 @@ class UsersController extends Controller
 
     }
 
-    public function all_interests()
+    public function all_interests(Request $request)
     {
+        if($request->get('lang_id')){
+            Helpers::Set_locale($request->get('lang_id'));
+
+        }else{
+            Helpers::Set_locale(1);
+        }
         $interests = Interest::all();
         return Helpers::Get_Response(200, 'success', '', [], $interests);
 
