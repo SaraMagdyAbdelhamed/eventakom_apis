@@ -500,7 +500,7 @@ class UsersController extends Controller
                 $user_id = $user->id;
                 //interest where in ids
                 $interests_ids = $request_data['interests'];
-                $user->interests()->attach($interests_ids);
+                $user->interests()->sync($interests_ids);
 
 
             } else {
@@ -556,6 +556,7 @@ class UsersController extends Controller
     public function user_interests(Request $request)
     {
         //return all user interests
+        
         $user = User::where("api_token", '=', $request->header('access-token'))->first();
         return Helpers::Get_Response(200, 'success', '', [], $user->interests);
 
