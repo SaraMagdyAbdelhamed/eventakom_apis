@@ -10,8 +10,9 @@ namespace App\Libraries;
 
 class Base64ToImageService
 {
+    
    
-         protected $base_path = "/home/public_html/eventakom_dev/public/";
+         protected $base_path = "/home/eventakom/public_html/eventakom_dev/public/";
 
     private function __construct(){}
 
