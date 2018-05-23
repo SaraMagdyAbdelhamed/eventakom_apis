@@ -23,8 +23,15 @@ class UsersController extends Controller
 
     public function getAllUsers()
     {
-        return response()->json(User::all());
+         $users = User::all();
+
+        if(!empty($users)){
+            $users = $users ;
+        }else{$users = array();}
+        return Helpers::Get_Response(200, 'success', '', '',$users);
     }
+
+   
 
     public function signup(Request $request)
     {
@@ -64,6 +71,8 @@ class UsersController extends Controller
         $input['country_id'] = $city->geo_country->id;
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
+        $user_array->photo = url('/').'/'.$user_array->photo;
+            // $user_array->photo = url('images/{$user_array->first_name}');
         if ($user) {
             $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
             $sms_body = trans('your verification code is : ') . $input['mobile_verification_code'];
@@ -177,6 +186,7 @@ class UsersController extends Controller
         $validator = Validator::make($request,
             [
                 "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
+                "tele_code" => "required",
                 "mobile_verification_code" => "required",
                 "lang_id" => "required|in:1,2"
             ]);
@@ -184,7 +194,7 @@ class UsersController extends Controller
             // var_dump(current((array)$validator->errors()));
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
         }
-        $user = User::where('mobile', $request['mobile'])->first();
+        $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
 // dd($user->name);
         if ($user) {
             if ($user->mobile_verification_code == $request['mobile_verification_code']) {
@@ -192,7 +202,7 @@ class UsersController extends Controller
                 $user->is_mobile_verification_code_expired = 1;
                 if ($user->is_active == 0) {
 
-                    $user->update(['is_active' => 1, 'verification_date' => Carbon::now()->format('Y-m-d')]);
+                    $user->update(['is_active' => 1,'is_mobile_verified'=>1,'is_email_verified'=>0, 'verification_date' => Carbon::now()->format('Y-m-d')]);
 
                 }
 
@@ -210,7 +220,7 @@ class UsersController extends Controller
         }
 
 
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
 
     }
 
@@ -289,7 +299,7 @@ class UsersController extends Controller
             // $user = User:: where("mobile", "=", $request['mobile_email'])->with('rules')->first();
             if ($user) {
                 if (Hash::check($request['password'], $user->password)) {
-                    if ($user->is_active == 1) {
+                    if ($user->is_active == 1 && $user->is_mobile_verified==1) {
                         $tokenobj = $user->createToken('api_token');
                         $token = $tokenobj->accessToken;
                         $token_id = $tokenobj->token->id;
@@ -297,7 +307,9 @@ class UsersController extends Controller
                         $user->api_token = $token_id;
                         $user->created_at = Carbon::now()->format('Y-m-d H:i:s');
                         $user->updated_at = Carbon::now()->format('Y-m-d H:i:s');
+                        $user->last_login = Carbon::now()->format('Y-m-d H:i:s');
                         $user->save();
+
                         // $user_array = $user->toArray();           
                         // foreach ($user_array['rules'] as  $value) {
                         //     if(array_key_exists('lang_id',$request) && $request['lang_id']==1) {
@@ -310,15 +322,15 @@ class UsersController extends Controller
                         // $user_array['rule_ids']  = $rule_ids;
                         // $user_array['rules'] = $rules;
                         // $user['roles']=$rules;
-                        if ($user['image'] != null) {
-                            $user['image'] = ENV('FOLDER') . $user_array['image'];
+                        if ($user['photo'] != null) {
+                            $user['photo'] = ENV('FOLDER') . $user['photo'];
                         }
 //                        $user->update([
 //                            "device_token"=>$request['device_token'],
 //                            "lang_id"=>$request['lang_id']
 //                            "mobile_os"=>$request['mobile_os'],
 //                        ]);
-                        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+                        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
                     } else {
                         return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), (object)[]);
                     }
@@ -327,7 +339,7 @@ class UsersController extends Controller
             } else {
                 return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), (object)[]);
             }
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
         } else {
             return Helpers::Get_Response(401, 'error', trans('Invalid mobile number'), $validator->errors(), (object)[]);
         }
@@ -425,10 +437,10 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), (object)[]);
         } else {
 
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Email is exist'));
+            return Helpers::Get_Response(204, 'error', '', $validator->errors(), trans('Email is exist'));
 
         }
 
