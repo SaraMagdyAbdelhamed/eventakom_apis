@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\User;
 use App\Interest;
 use App\FixedPage;
+use App\GeoCity;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -57,7 +58,9 @@ class UsersController extends Controller
         $input['code'] = mt_rand(100000, 999999);
         $input['mobile_verification_code'] = str_random(4);
         $input['is_mobile_verification_code_expired'] = 0;
-        
+        $city_id=$request['city_id'];
+        $city = GeoCity::find($city_id);
+        $input['country_id'] = $city->geo_country->id;
         $user = User::create($input);
         if ($user) {
           $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
@@ -443,7 +446,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
         } else {
 
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Interests added to user'));
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Mobile number is exist'));
 
         }
 

@@ -26,7 +26,7 @@ return [
     'between'              => [
          'numeric' => 'حقل :attribute يجب أن يكون بين :min و :max.',
         'file'    => 'The :attribute must be between :min and :max kilobytes.',
-        'string'  => 'حقل :attribute يجب أن يكون بين :min و :max حروف.',
+        'string'  => 'حقل :attribute يجب أن يكون بين :min و :max حرف.',
         'array'   => 'The :attribute must have between :min and :max items.',
     ],
     'boolean'              => 'حقل :attribute يجب ان يكون صح او خطا.',
