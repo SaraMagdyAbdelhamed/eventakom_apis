@@ -393,6 +393,7 @@ class UsersController extends Controller
         } else {
             $user = User:: where("api_token", "=", $api_token)->first();
 
+
             if ($user) {
                 $user->update(['lang_id' => $request['lang_id']]);
                 $user->save();
@@ -437,10 +438,10 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Email Is not found'));
         } else {
 
-            return Helpers::Get_Response(204, 'error', '', $validator->errors(), trans('Email is exist'));
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Email already exist'));
 
         }
 
@@ -459,10 +460,11 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+               return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Mobile Is not found'));
+           
         } else {
 
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Mobile number is exist'));
+          return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Mobile already exist'));
 
         }
 
