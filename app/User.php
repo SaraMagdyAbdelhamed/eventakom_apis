@@ -39,10 +39,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public static $rules = [ 'first_name' => 'required|between:1,12',
             'last_name' => 'required|between:1,12',
             'email' => 'required|email|unique:users|max:35',
-            'conutry_code_id' => 'required',
+            'city_id' => 'required',
             'mobile' => 'required|numeric|unique:users',
             'password' => 'required|between:8,20',
-            'photo' => 'image|max:1024', 
+            // 'photo' => 'image|max:1024', 
             //'device_token' => 'required',
             'mobile_os' => 'in:android,ios',
             'lang_id' => 'in:1,2'];

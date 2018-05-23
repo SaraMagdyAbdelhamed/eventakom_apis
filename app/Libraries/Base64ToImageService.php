@@ -10,10 +10,9 @@ namespace App\Libraries;
 
 class Base64ToImageService
 {
-    // protected $upload_path;
-      // protected $base_path="C:/xampp\htdocs\secure_bridge\public/";
-//    protected $base_path = "/home/evilcell/public_html/secure_bridge/public/";
-         protected $base_path = "/home/avocatoapp/public_html/secure_bridge/public/";
+    
+   
+         protected $base_path = "/home/eventakom/public_html/eventakom_dev/public/";
 
     private function __construct(){}
 
@@ -66,9 +65,9 @@ class Base64ToImageService
         if(isset($base64_string) && is_string($base64_string) && strlen($base64_string))
         {
             $get_folder=explode('/', $upload_path);
-            if (!file_exists((new self)->base_path.$get_folder[0])) {
-                    mkdir((new self)->base_path.$get_folder[0], 0777, true);
-                }
+            // if (!file_exists((new self)->base_path.$get_folder[0])) {
+            //         mkdir((new self)->base_path.$get_folder[0], 0777, true);
+            //     }
             $output_file = (new self)->generateImage($upload_path, $base64_string);
             $file_stream = fopen((new self)->base_path.$output_file, 'wb');
 

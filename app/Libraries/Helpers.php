@@ -28,11 +28,11 @@ class Helpers
   {
     if($locale == 1)
       {
-        app('translator')->setLocale('ar');
+        app('translator')->setLocale('en');
       }
      else  if($locale == 2)
       {
-        app('translator')->setLocale('en');
+        app('translator')->setLocale('ar');
       }
   }
 
