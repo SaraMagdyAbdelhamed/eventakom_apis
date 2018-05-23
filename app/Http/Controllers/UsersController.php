@@ -508,7 +508,7 @@ class UsersController extends Controller
                 return Helpers::Get_Response(400, 'error', trans('user not exist'), $validator->errors(), (object)[]);
             }
 
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('user interests added'));
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user->interests);
 
         }
 

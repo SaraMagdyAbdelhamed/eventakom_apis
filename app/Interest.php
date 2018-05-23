@@ -13,7 +13,10 @@ class Interest extends Model {
     ];
     protected $hidden = ['pivot'];
 
-
+    // public function getNameAttribute($value)
+    // {
+    //     return strtoupper($value);
+    // }
      //Relationships
     public function users()
     {
