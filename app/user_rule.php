@@ -3,7 +3,7 @@
 use Illuminate\Database\Eloquent\Model;
 
 class user_rule extends Model {
-	protected $table='users_rules';
+	protected $table='user_rules';
 	
     protected $fillable = ['user_id','rule_id'];
 

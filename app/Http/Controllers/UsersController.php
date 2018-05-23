@@ -6,6 +6,7 @@ use App\User;
 use App\Interest;
 use App\FixedPage;
 use App\GeoCity;
+use App\user_rule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -47,7 +48,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
         }
 
-        if (array_key_exists('image', $request)) {
+        if (array_key_exists('photo', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'users_images/');
         }
         $input = $request;
@@ -62,13 +63,16 @@ class UsersController extends Controller
         $city = GeoCity::find($city_id);
         $input['country_id'] = $city->geo_country->id;
         $user = User::create($input);
+        $user_array = User::where('mobile','=',$request['mobile'])->first();
         if ($user) {
             $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
             $sms_body = trans('your verification code is : ') . $input['mobile_verification_code'];
             $status = $twilio->send($sms_mobile, $sms_body);
+            //process rules
+            $rules = user_rule::create(['user_id'=>$user_array->id ,'rule_id'=>2 ]);
             // $mail=Helpers::mail($request['email'],$input['username'],$input['mobile_verification_code']);
         }
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user_array);
     }
 
 
@@ -634,8 +638,8 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
         }
 
-        if (array_key_exists('image', $request)) {
-            $request['photo'] = Base64ToImageService::convert($request['photo'], 'users_images/');
+        if (array_key_exists('photo', $request)) {
+            $request['photo'] = Base64ToImageService::convert($request['photo'], '/mobile_users/');
         }
         $input = $request;
         /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id mobile_verification_code is_mobile_verification_code_expired  last_login  api_token longtuide latitude*/
