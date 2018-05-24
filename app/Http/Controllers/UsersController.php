@@ -860,7 +860,7 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), []);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), []);
 
 
             }
