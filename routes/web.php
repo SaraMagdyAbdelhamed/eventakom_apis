@@ -29,12 +29,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('forget_password', ['uses' =>'UsersController@forget_password']);
  $router->post('social_login','UsersController@social_login');
  $router->post('sms','UsersController@sms');
-<<<<<<< HEAD
  $router->post('all_interests','UsersController@all_interests');
-=======
- $router->get('all_interests','UsersController@all_interests');
+
  $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
->>>>>>> 165355a2d570cc3091893d47c602d44d699cbe5b
+
 
    //countries
 $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);
