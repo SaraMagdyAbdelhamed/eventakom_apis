@@ -52,7 +52,7 @@ $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function (
 
   //users routes
 $router->post('logout', 'UsersController@logout');
-$router->put('change_language', ['uses' =>'UsersController@change_language']);
+$router->post('change_language', ['uses' =>'UsersController@change_language']);
 $router->post('edit_profile',  ['uses' => 'UsersController@edit_profile']);
 
 
