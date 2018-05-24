@@ -481,7 +481,7 @@ class UsersController extends Controller
             ["interest" => "required"]);
         //check validation result
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(),[]);
 
         } else {
             $api_token = $request->header('access-token');
@@ -500,6 +500,7 @@ class UsersController extends Controller
 
     public function add_user_interests(Request $request)
     {
+        
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request['lang_id']);
@@ -510,8 +511,9 @@ class UsersController extends Controller
 
         ]);
 
+
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         } else {
 
             $user = User:: where("api_token", "=", $request->header('access-token'))->first();
@@ -524,7 +526,7 @@ class UsersController extends Controller
 
             } else {
 
-                return Helpers::Get_Response(400, 'error', trans('user not exist'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(),[]);
             }
 
             return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user->interests);
@@ -563,7 +565,7 @@ class UsersController extends Controller
 
             } else {
 
-                return Helpers::Get_Response(400, 'error', trans('user not exist'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('validation.required'), $validator->errors(),[]);
             }
 
             return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('users interests updated'));
@@ -584,13 +586,13 @@ class UsersController extends Controller
 
     public function all_interests(Request $request)
     {
-        if($request->get('lang_id')){
-            Helpers::Set_locale($request->get('lang_id'));
-
-        }else{
-            Helpers::Set_locale(1);
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request['lang_id']);
         }
-        $interests = Interest::all();
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+        $interests = Interest::skip(($page-1)*$limit)->take($limit)->get();
         return Helpers::Get_Response(200, 'success', '', [], $interests);
 
 
@@ -667,11 +669,15 @@ class UsersController extends Controller
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
         //valdiation
+        if (array_key_exists('lang_id', $request)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
+
         $validator = Validator::make($request_data,
             ["new_password" => "required|Between:8,20", "old_password" => "required|Between:8,20"]);
         //check validation result
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
 
         } else {
             $user = User::where('api_token', '=', $request->header('access-token'))->first();
@@ -683,7 +689,7 @@ class UsersController extends Controller
 
 
             } else {
-                return Helpers::Get_Response(401, 'faild', 'Wrong user Password', [], (object)[]);
+                return Helpers::Get_Response(401, 'faild', trans('messages.wrong_user_password'), [], []);
 
 
             }

@@ -22,6 +22,8 @@ class Helpers
         }
     }
     return response()->json(['status'=>['code'=>$code,'message'=>$message,'error_details'=>$error_details,'validation_errors'=>$validation],'content'=>$content],200,[],JSON_UNESCAPED_UNICODE);
+
+
   }
 
   public static function Set_locale($locale)
@@ -58,12 +60,12 @@ class Helpers
 
 
        public static function mail($email ,$code ,$verification_code){
-        Mail::raw('Welcome To Eventakom  Your Verification code is ('.$verification_code.')', function($msg) use($email){ 
-            $msg->to([$email])->subject('Eventakom'); 
-            $msg->from(['pentavalue.eventakom@gmail.com']); 
+          Mail::raw('Welcome To Eventakom  Your Verification code is ('.$verification_code.')', function($msg) use($email){ 
+              $msg->to([$email])->subject('Eventakom'); 
+              $msg->from(['pentavalue.eventakom@gmail.com']); 
 
-          });
-    }
+            });
+      }
 
     public static function mail_contact($body){
         Mail::raw('Welcome To avocatoapp   New Feedback'.$body, function($msg){ 

@@ -29,7 +29,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('forget_password', ['uses' =>'UsersController@forget_password']);
  $router->post('social_login','UsersController@social_login');
  $router->post('sms','UsersController@sms');
-    $router->get('all_interests','UsersController@all_interests');
+ $router->post('all_interests','UsersController@all_interests');
 
    //countries
 $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);

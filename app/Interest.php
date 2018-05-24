@@ -16,7 +16,7 @@ class Interest extends Model {
 
     public function getNameAttribute($value)
     {
-        $result= (app('translator')->getLocale()=='en') ? Helpers::localization('interests','name',$this->id,1) : Helpers::localization('interests','name',$this->id,2);
+        $result = (app('translator')->getLocale()=='en') ? Helpers::localization('interests','name',$this->id,1) : Helpers::localization('interests','name',$this->id,2);
         return ($result=='Error')? $value : $result;
     }
      //Relationships
@@ -24,10 +24,6 @@ class Interest extends Model {
     {
         return $this->belongsToMany('App\User','user_interests');
     }
-
-
-
-
 
 
 }
