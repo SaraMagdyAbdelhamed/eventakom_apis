@@ -67,6 +67,14 @@ class Helpers
             });
       }
 
+      public static function mail_verify($email ,$code ,$verification_code){
+        Mail::raw('Welcome To Eventakom  ..Please verify your Email by visiting this link: http://eventakom.com/api/verify_email?email='.$email.'&email_verification_code='.$verification_code, function($msg) use($email){ 
+            $msg->to([$email])->subject('Eventakom'); 
+            $msg->from(['pentavalue.eventakom@gmail.com']); 
+
+          });
+    }
+
     public static function mail_contact($body){
         Mail::raw('Welcome To avocatoapp   New Feedback'.$body, function($msg){ 
             $msg->to(['info@avocatoapp.net'])->subject('SecureBridge'); 

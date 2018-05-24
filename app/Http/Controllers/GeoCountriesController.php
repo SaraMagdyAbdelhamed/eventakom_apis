@@ -12,18 +12,22 @@ class GeoCountriesController extends Controller
     {
     
         $countries = GeoCountry::all();
-
-        //arabic 
-
-    //      $countries = DB::table('geo_countries')
-    // ->join('entities', 'entities.id', '=', 'shares.user_id')
-    // ->join('follows', 'follows.user_id', '=', 'users.id')
-    // ->where('follows.follower_id', '=', 3)
-    // ->get();
-
+         $lang_id = $request->input('lang_id');
 
         if(!empty($countries)){
-        	$countries = $countries ;
+        	$countries = $countries;
+            foreach($countries as $country){
+                  if( $lang_id == 1){
+         $country->name =  $country->name;
+
+                  }elseif( $lang_id == 2){
+                $countryname =  Helpers::localization('geo_countries', 'name', $country->id, $lang_id );
+                if($countryname == "Error"){$country->name =  $country->name;
+                }else{
+                    $country->name = $countryname;
+                }
+            }
+            }
         }else{$countries = array();}
         return Helpers::Get_Response(200, 'success', '', '',$countries);
     }

@@ -52,7 +52,7 @@ class UsersController extends Controller
         $validator = Validator::make($request, $user::$rules);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
         if (array_key_exists('photo', $request)) {
@@ -66,6 +66,9 @@ class UsersController extends Controller
         $input['code'] = mt_rand(100000, 999999);
         $input['mobile_verification_code'] = str_random(4);
         $input['is_mobile_verification_code_expired'] = 0;
+        $input['email_verification_code'] = str_random(4);
+        $input['is_email_verified'] = 0;
+        $input['is_mobile_verified'] = 0;
         $city_id=$request['city_id'];
         $city = GeoCity::find($city_id);
         $input['country_id'] = $city->geo_country->id;
@@ -79,7 +82,7 @@ class UsersController extends Controller
             $status = $twilio->send($sms_mobile, $sms_body);
             //process rules
             $rules = user_rule::create(['user_id'=>$user_array->id ,'rule_id'=>2 ]);
-            // $mail=Helpers::mail($request['email'],$input['username'],$input['mobile_verification_code']);
+            $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array) );
     }
@@ -98,7 +101,7 @@ class UsersController extends Controller
 
         ]);
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         } else {
             $twilio_config = [
                 'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
@@ -109,8 +112,12 @@ class UsersController extends Controller
             $twilio = new TwilioSmsService($twilio_config);
 
             $user = User::where('mobile', $request['mobile'])->first();
+            if(!$user){
+             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+            }else{
+            // dd($user);
             $mobile_verification_code = str_random(4);
-            $sms_mobile = $user->tele_code . '' . $user->mobile;
+            $sms_mobile = $user->tele_code. '' .$user->mobile;
             $sms_body = trans('your verification code is : ') . $mobile_verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
             if ($user->is_mobile_verification_code_expired != 1 && $user->verification_count < 5) {
@@ -119,6 +126,7 @@ class UsersController extends Controller
                 //increase verification count by 1
                 $user->verification_date = Carbon::now()->format('Y-m-d');
                 //$mobile_verification_code =str_random(4);
+                $user->is_mobile_verified = 0;
                 $user->mobile_verification_code = $mobile_verification_code;
                 $user->verification_count = $user->verification_count + 1;
                 if ($user->save()) {
@@ -128,10 +136,11 @@ class UsersController extends Controller
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
             } //date_format("Y-m-d", $user->verification_date) dont forget
             elseif ($user->verification_count >= 5 && $user_date != Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 0
+                $user->is_mobile_verified = 0;
                 $user->is_mobile_verification_code_expired = 0;
                 //reset verification count to 0
                 $user->verification_count = 0;
@@ -148,14 +157,16 @@ class UsersController extends Controller
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
             } elseif ($user->verification_count >= 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 1
+                $user->is_mobile_verified = 0;
                 $user->is_mobile_verification_code_expired = 1;
                 // response : sorry you have exeeded your verifications limit today
-                return Helpers::Get_Response(400, 'error', trans('sorry you have exceeded your verifications limit today'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('sorry you have exceeded your verifications limit today'), $validator->errors(), []);
             } elseif ($user->is_mobile_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 $user->is_mobile_verification_code_expired = 0;
+                $user->is_mobile_verified = 0;
                 //send verification code via Email , sms
                 //increase verification count by 1
                 $user->verification_date = Carbon::now()->format('Y-m-d');
@@ -169,10 +180,10 @@ class UsersController extends Controller
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
 
             }
-
+}
         }
     }
 
@@ -192,7 +203,7 @@ class UsersController extends Controller
             ]);
         if ($validator->fails()) {
             // var_dump(current((array)$validator->errors()));
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
         $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
 // dd($user->name);
@@ -211,12 +222,12 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), []);
 
 
             }
         } else {
-            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), (object)[]);
+            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), []);
         }
 
 
@@ -240,7 +251,7 @@ class UsersController extends Controller
             ]);
         if ($validator->fails()) {
             // var_dump(current((array)$validator->errors()));
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
         $user = User::where('mobile', $request['mobile'])->first();
         if ($user) {
@@ -249,14 +260,14 @@ class UsersController extends Controller
 
             } else {
                 // echo $user->verificaition_code;
-                return Helpers::Get_Response(400, 'error', trans('Invalid verification code, please write the right one'), $validator->errors(), $user);
+                return Helpers::Get_Response(400, 'error', trans('Invalid verification code, please write the right one'), $validator->errors(), array($user));
 
             }
         } else {
             return Helpers::Get_Response(400, 'error', trans('messages.mobile'), $validator->errors(), []);
         }
 
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
 
     }
 
@@ -275,7 +286,7 @@ class UsersController extends Controller
 //            "mobile_os"=>'required',
         ]);
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
         if (array_key_exists('mobile', $request) && array_key_exists('password', $request)) {
 
@@ -285,13 +296,13 @@ class UsersController extends Controller
                 $user = User::where("mobile", "=", $request['mobile'])->with('rules')->first();
 
                 if (!$user) {
-                    return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), (object)[]);
+                    return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
                 }
             }
             // elseif (filter_var($request['mobile'], FILTER_VALIDATE_EMAIL)) {
             //   $user = User:: where("email", "=", $request['mobile'])->with('rules')->first();
             //   if(!$user) {
-            //    return Helpers::Get_Response(400,'error',trans('this e-mail isn’t registered'),$validator->errors(),(object)[]);}
+            //    return Helpers::Get_Response(400,'error',trans('this e-mail isn’t registered'),$validator->errors(),[]);}
             // }
 
             //////
@@ -332,16 +343,16 @@ class UsersController extends Controller
 //                        ]);
                         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
                     } else {
-                        return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), (object)[]);
+                        return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
                     }
                 }
-                return Helpers::Get_Response(400, 'error', trans('Password is wrong'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('Password is wrong'), $validator->errors(), []);
             } else {
-                return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
             }
             return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
         } else {
-            return Helpers::Get_Response(401, 'error', trans('Invalid mobile number'), $validator->errors(), (object)[]);
+            return Helpers::Get_Response(401, 'error', trans('Invalid mobile number'), $validator->errors(), []);
         }
     }
 
@@ -366,12 +377,12 @@ class UsersController extends Controller
         if ($user) {
             $user->update(['api_token' => null]);
             $user->save();
-            return Helpers::Get_Response(200, 'success', '', '', $user);
+            return Helpers::Get_Response(200, 'success', '', '', array($user));
         } else {
-            return Helpers::Get_Response(400, 'error', trans('messages.logged'), [], (object)[]);
+            return Helpers::Get_Response(400, 'error', trans('messages.logged'), [], []);
         }
         // }else{
-        //   return Helpers::Get_Response(400,'error',trans('messages.logged'),[],(object)[]);
+        //   return Helpers::Get_Response(400,'error',trans('messages.logged'),[],[]);
         // }
     }
 
@@ -389,17 +400,18 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         } else {
             $user = User:: where("api_token", "=", $api_token)->first();
+
 
             if ($user) {
                 $user->update(['lang_id' => $request['lang_id']]);
                 $user->save();
-                return Helpers::Get_Response(200, 'success', '', '', $user);
+                return Helpers::Get_Response(200, 'success', '', '', array($user));
             } else {
 
-                return Helpers::Get_Response(400, 'error', trans('No user Registerd with this token'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('No user Registerd with this token'), $validator->errors(), []);
 
             }
         }
@@ -411,13 +423,36 @@ class UsersController extends Controller
     {
 
         $pages = FixedPage::all();
+     $lang_id = $request->input('lang_id');
 
         if ($pages) {
+                foreach($pages as $page){
+         $page->body = strip_tags($page->body);
 
-            return Helpers::Get_Response(200, 'success', '', '', $pages);
+                    if( $lang_id == 1){
+         $page->name =  $page->name;
+         $page->body =  $page->body;
+                  }elseif( $lang_id == 2){
+                $pagename =  Helpers::localization('fixed_pages', 'name', $page->id, $lang_id );
+                $pagebody =  Helpers::localization('fixed_pages', 'body', $page->id, $lang_id );
+                if($pagename == "Error"){$page->name =  $page->name;
+                }else{
+                    $page->name = $pagename;
+                }
+                 if($pagebody == "Error"){$page->body =  $page->body;
+                }else{
+                    $page->body = $pagebody;
+                }
+            }
+       
+
+
+        }
+             
+            return Helpers::Get_Response(200, 'success', '', '', array($pages));
         } else {
 
-            return Helpers::Get_Response(400, 'error', trans('No pages found'), $validator->errors(), (object)[]);
+            return Helpers::Get_Response(400, 'error', trans('No pages found'), $validator->errors(), []);
 
         }
 
@@ -437,10 +472,10 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Email Is not found'));
         } else {
 
-            return Helpers::Get_Response(204, 'error', '', $validator->errors(), trans('Email is exist'));
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Email already exist'));
 
         }
 
@@ -459,10 +494,11 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+               return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Mobile Is not found'));
+           
         } else {
 
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('Mobile number is exist'));
+          return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Mobile already exist'));
 
         }
 
@@ -481,7 +517,9 @@ class UsersController extends Controller
             ["interest" => "required"]);
         //check validation result
         if ($validator->fails()) {
+
             return Helpers::Get_Response(403, 'error', '', $validator->errors(),[]);
+
 
         } else {
             $api_token = $request->header('access-token');
@@ -513,7 +551,10 @@ class UsersController extends Controller
 
 
         if ($validator->fails()) {
+
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+
+
         } else {
 
             $user = User:: where("api_token", "=", $request->header('access-token'))->first();
@@ -526,7 +567,9 @@ class UsersController extends Controller
 
             } else {
 
+
                 return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(),[]);
+
             }
 
             return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user->interests);
@@ -549,7 +592,7 @@ class UsersController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         } else {
 
             $user = User:: where("api_token", "=", $request->header('access-token'))->first();
@@ -565,7 +608,10 @@ class UsersController extends Controller
 
             } else {
 
+
                 return Helpers::Get_Response(400, 'error', trans('validation.required'), $validator->errors(),[]);
+
+
             }
 
             return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('users interests updated'));
@@ -634,7 +680,7 @@ class UsersController extends Controller
 
             ]);
         if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
         if (array_key_exists('photo', $request)) {
@@ -661,7 +707,7 @@ class UsersController extends Controller
             $mail = Helpers::mail($request['email'], $input['username'], $input['email_verification_code']);
             $user->update(['is_email_verified' => 0]);
         }
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
     }
 
     public function change_password(Request $request)
@@ -685,11 +731,14 @@ class UsersController extends Controller
             if (Hash::check($request_data['old_password'], $user->password)) {
                 $user->password = Hash::make($request_data['new_password']);
                 $user->save();
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(),$user);
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
 
 
             } else {
+
                 return Helpers::Get_Response(401, 'faild', trans('messages.wrong_user_password'), [], []);
+
+
 
 
             }
@@ -704,27 +753,29 @@ class UsersController extends Controller
     public function verify_email(Request $request)
     {
 
-        $api_token = $request->header('access-token');
+       // $api_token = $request->header('access-token');
         // $user = User:: where("api_token", "=", $api_token)->first();
-
-        $request = (array)json_decode($request->getContent(), true);
-        if (array_key_exists('lang_id', $request)) {
-            Helpers::Set_locale($request['lang_id']);
-        }
-        $validator = Validator::make($request,
-            [
-                "email" => "required|email",
-                "email_verification_code" => "required",
-                "lang_id" => "required|in:1,2"
-            ]);
-        if ($validator->fails()) {
-            // var_dump(current((array)$validator->errors()));
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
-        }
-        $user = User::where('email', $request['email'])->where("api_token", "=", $api_token)->first();
+        $email = $request->input('email');
+        $email_verification_code = $request->input('email_verification_code');
+        // $request = (array)json_decode($request->getContent(), true);
+        // if (array_key_exists('lang_id', $request)) {
+        //     Helpers::Set_locale($request['lang_id']);
+        // }
+       
+        // $validator = Validator::make($request,
+        //     [
+        //          "email" => "required|email",
+        //         "email_verification_code" => "required"
+        //         // "lang_id" => "required|in:1,2"
+        //     ]);
+        // if ($validator->fails()) {
+        //     // var_dump(current((array)$validator->errors()));
+        //     return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+        // }
+        $user = User::where('email', $email)->where("email_verification_code", "=", $email_verification_code)->first();
 // dd($user->name);
         if ($user) {
-            if ($user->email_verification_code == $request['email_verification_code']) {
+            if ($user->email_verification_code == $email_verification_code) {
 
                 // $user->is_mobile_verification_code_expired = 1;
                 if ($user->is_email_verified == 0) {
@@ -738,16 +789,17 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), []);
 
 
             }
         } else {
-            return Helpers::Get_Response(400, 'error', trans('Email is not registered'), $validator->errors(), (object)[]);
+            return Helpers::Get_Response(400, 'error', trans('Email is not registered'), [], []);
         }
 
 
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+       // return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
+         return redirect('http://eventakom.com/');
 
     }
 
@@ -767,7 +819,7 @@ class UsersController extends Controller
             ]);
         if ($validator->fails()) {
 
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), (object)[]);
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
         $user = User::where('mobile', $request['mobile'])->first();
 
@@ -784,16 +836,16 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), (object)[]);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), []);
 
 
             }
         } else {
-            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), (object)[]);
+            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), []);
         }
 
 
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), $user);
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
 
     }
 

@@ -50,12 +50,12 @@ $citycounty[$key]= $city->name.','.$city->geo_country->name;
     if (!empty($result)) {
         return Helpers::Get_Response(200,'success','','',$result);
     }else{
-        return Helpers::Get_Response(400,'error',trans('there is no result related to your input'),'','');
+        return Helpers::Get_Response(400,'error',trans('there is no result related to your input'),'',[]);
     }
 
     }else{
 
-       return Helpers::Get_Response(401,'error',trans('please inter any chararcter'),'','');
+       return Helpers::Get_Response(401,'error',trans('please inter any chararcter'),'',[]);
 
     }
             //return response()->json($result);
