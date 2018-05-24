@@ -694,10 +694,10 @@ class UsersController extends Controller
                 'first_name' => 'required|between:1,12',
                 'last_name' => 'required|between:1,12',
                 'email' => $email_valid,
-                'conutry_code_id' => 'required',
+                // 'conutry_code_id' => 'required',
                 // 'mobile' => 'required|numeric|unique:users',
                 'password' => 'required|between:8,20',
-                'photo' => 'image|max:1024',
+                // 'photo' => 'image|max:1024',
                 //'device_token' => 'required',
                 'mobile_os' => 'in:android,ios',
                 'lang_id' => 'in:1,2'
@@ -707,7 +707,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('photo', $request)) {
+        if (array_key_exists('image', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], '/mobile_users/');
         }
         $input = $request;
@@ -728,7 +728,7 @@ class UsersController extends Controller
         $user_update = $user->update($input);
         if ($user_update && $old_email != $request['email']) {
             //$status =$twilio->send($request['mobile'],$input['mobile_verification_code']);
-            $mail = Helpers::mail($request['email'], $input['username'], $input['email_verification_code']);
+           $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
             $user->update(['is_email_verified' => 0]);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
