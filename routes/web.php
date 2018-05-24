@@ -29,7 +29,8 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('forget_password', ['uses' =>'UsersController@forget_password']);
  $router->post('social_login','UsersController@social_login');
  $router->post('sms','UsersController@sms');
-    $router->get('all_interests','UsersController@all_interests');
+ $router->get('all_interests','UsersController@all_interests');
+ $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
 
    //countries
 $router->get('all_countries',  ['uses' => 'GeoCountriesController@getAllCountries']);
@@ -53,7 +54,7 @@ $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function (
 $router->post('logout', 'UsersController@logout');
 $router->put('change_language', ['uses' =>'UsersController@change_language']);
 $router->post('edit_profile',  ['uses' => 'UsersController@edit_profile']);
-$router->post('verify_email',  ['uses' => 'UsersController@verify_email']);
+
 
 
   //interests
