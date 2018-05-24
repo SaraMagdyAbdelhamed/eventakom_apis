@@ -58,10 +58,10 @@ class EventakomAuth
               }else{
 
                // return response('Unauthorized.', 401);
-                return Helpers::Get_Response(400,'error',trans('messages.logged'),[],(object)[]);
+                return Helpers::Get_Response(400,'error',trans('messages.logged'),[],[]);
               }
               
             }  
-        return Helpers::Get_Response(400,'error',trans('messages.logged'),[],(object)[]);
+        return Helpers::Get_Response(400,'error',trans('messages.logged'),[],[]);
     }
 }
