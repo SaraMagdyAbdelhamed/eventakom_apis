@@ -112,8 +112,12 @@ class UsersController extends Controller
             $twilio = new TwilioSmsService($twilio_config);
 
             $user = User::where('mobile', $request['mobile'])->first();
+            if(!$user){
+             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+            }else{
+            // dd($user);
             $mobile_verification_code = str_random(4);
-            $sms_mobile = $user->tele_code . '' . $user->mobile;
+            $sms_mobile = $user->tele_code. '' .$user->mobile;
             $sms_body = trans('your verification code is : ') . $mobile_verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
             if ($user->is_mobile_verification_code_expired != 1 && $user->verification_count < 5) {
@@ -122,6 +126,7 @@ class UsersController extends Controller
                 //increase verification count by 1
                 $user->verification_date = Carbon::now()->format('Y-m-d');
                 //$mobile_verification_code =str_random(4);
+                $user->is_mobile_verified = 0;
                 $user->mobile_verification_code = $mobile_verification_code;
                 $user->verification_count = $user->verification_count + 1;
                 if ($user->save()) {
@@ -135,6 +140,7 @@ class UsersController extends Controller
             } //date_format("Y-m-d", $user->verification_date) dont forget
             elseif ($user->verification_count >= 5 && $user_date != Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 0
+                $user->is_mobile_verified = 0;
                 $user->is_mobile_verification_code_expired = 0;
                 //reset verification count to 0
                 $user->verification_count = 0;
@@ -154,11 +160,13 @@ class UsersController extends Controller
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
             } elseif ($user->verification_count >= 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 1
+                $user->is_mobile_verified = 0;
                 $user->is_mobile_verification_code_expired = 1;
                 // response : sorry you have exeeded your verifications limit today
                 return Helpers::Get_Response(400, 'error', trans('sorry you have exceeded your verifications limit today'), $validator->errors(), []);
             } elseif ($user->is_mobile_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 $user->is_mobile_verification_code_expired = 0;
+                $user->is_mobile_verified = 0;
                 //send verification code via Email , sms
                 //increase verification count by 1
                 $user->verification_date = Carbon::now()->format('Y-m-d');
@@ -175,7 +183,7 @@ class UsersController extends Controller
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
 
             }
-
+}
         }
     }
 
