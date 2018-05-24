@@ -412,9 +412,14 @@ class UsersController extends Controller
     {
 
         $pages = FixedPage::all();
+    
 
         if ($pages) {
+                foreach($pages as $page){
+         $page->body = strip_tags($page->body);
 
+        }
+             
             return Helpers::Get_Response(200, 'success', '', '', array($pages));
         } else {
 
