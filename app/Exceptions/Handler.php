@@ -49,7 +49,7 @@ class Handler extends ExceptionHandler
     {
         if ($e instanceof MethodNotAllowedHttpException) 
         {
-            return Helpers::Get_Response(405, 'faild', 'Wrong Http Method', [],(object)[]);
+            return Helpers::Get_Response(405, 'faild', 'Wrong Http Method', [],[]);
 
         }
         return parent::render($request, $e);

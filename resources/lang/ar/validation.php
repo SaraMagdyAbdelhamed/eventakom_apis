@@ -68,7 +68,7 @@ return [
     'numeric'              => 'حقل :attribute يجب ان يكون رقم .',
     'present'              => 'The :attribute field must be present.',
     'regex'                => 'حقل :attribute الترميز غير صالح.',
-    'required'             => 'هذا الحقل مطلوب',
+    'required'             => ':attribute هذا الحقل مطلوب',
     'required_if'          => 'The :attribute field is required when :other is :value.',
     'required_unless'      => 'The :attribute field is required unless :other is in :values.',
     'required_with'        => 'The :attribute field is required when :values is present.',
@@ -151,7 +151,8 @@ return [
         'confirm_password'=>'تأكيد كلمه المرور',
         'code'=>'الكود',
         'address '=>'العنوان',
-        'birthdate'=>'يوم الميلاد'
+        'birthdate'=>'يوم الميلاد',
+        'interests'=>'الاهتمامات'
 
 
 ],
