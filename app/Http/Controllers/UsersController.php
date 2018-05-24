@@ -423,11 +423,29 @@ class UsersController extends Controller
     {
 
         $pages = FixedPage::all();
-    
+     $lang_id = $request->input('lang_id');
 
         if ($pages) {
                 foreach($pages as $page){
          $page->body = strip_tags($page->body);
+
+                    if( $lang_id == 1){
+         $page->name =  $page->name;
+         $page->body =  $page->body;
+                  }elseif( $lang_id == 2){
+                $pagename =  Helpers::localization('fixed_pages', 'name', $page->id, $lang_id );
+                $pagebody =  Helpers::localization('fixed_pages', 'body', $page->id, $lang_id );
+                if($pagename == "Error"){$page->name =  $page->name;
+                }else{
+                    $page->name = $pagename;
+                }
+                 if($pagebody == "Error"){$page->body =  $page->body;
+                }else{
+                    $page->body = $pagebody;
+                }
+            }
+       
+
 
         }
              
