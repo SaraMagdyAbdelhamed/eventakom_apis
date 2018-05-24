@@ -467,17 +467,29 @@ class UsersController extends Controller
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request, [
-            "email" => "required|exists:users,email",
+            "email" => "required",
 
         ]);
 
-        if ($validator->fails()) {
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Email Is not found'));
+          if ($validator->fails()) {
+                return Helpers::Get_Response(403, 'error', '', $validator->errors(),[]);
+           
         } else {
 
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Email already exist'));
+   $user = User::where('email', $request['email'])->first();
+
+        if ($user) {
+         return Helpers::Get_Response(204, trans('This Email is already exist'), '', $validator->errors(), []);
+
+        }else{
+
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), []);
+        }
+
+        
 
         }
+
 
     }
 
@@ -489,16 +501,28 @@ class UsersController extends Controller
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request, [
-            "mobile" => "required|exists:users,mobile",
-
+            "mobile" => "required",
+            "tele_code"=>"required"
+      
         ]);
 
+
         if ($validator->fails()) {
-               return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Mobile Is not found'));
+                return Helpers::Get_Response(403, 'error', '', $validator->errors(),[]);
            
         } else {
 
-          return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Mobile already exist'));
+   $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+
+        if ($user) {
+         return Helpers::Get_Response(204, trans('This Mobile is already exist'), '', $validator->errors(), []);
+
+        }else{
+
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), []);
+        }
+
+        
 
         }
 
