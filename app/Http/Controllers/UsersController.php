@@ -412,7 +412,7 @@ class UsersController extends Controller
         // }
     }
 
-    public function change_language(Request $request)
+    public function change_lang(Request $request)
     {
         $api_token = $request->header('access-token');
 
