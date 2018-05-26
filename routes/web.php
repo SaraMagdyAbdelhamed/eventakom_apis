@@ -71,4 +71,9 @@ $router->get('user_interests',['uses'=>'UsersController@user_interests']);
 $router->post('change_password','UsersController@change_password');
 
 
+//Events Section
+$router->post("add_event","EventsController@add_event");
+$router->post('events[/{type}]',"EventsController@list_events");
+$router->post("big_events[/{type}]","EventsController@big_events");
+
 });

@@ -25,6 +25,6 @@ return [
 	'nocases'=>'لا يوجد قضايا بعد',
 	'noaccess'=>'ليس لديك صلاحيه لمراجعه هذه القضيه',
 	'noservices'=>'لا يوجد خدمات بعد',
-	'wrong_user_password' =>'خطأ في كلمة السر'
-
+	'wrong_user_password' =>'خطأ في كلمة السر',
+	'interest_not_found'=>'هذا التصنيف غير موجود'
 ];
