@@ -734,7 +734,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('image', $request)) {
+        if (array_key_exists('photo', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], '/mobile_users/');
         }
         $input = $request;
@@ -758,7 +758,10 @@ class UsersController extends Controller
            $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
             $user->update(['is_email_verified' => 0]);
         }
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
+        $user_array = User:: where("api_token", "=", $api_token)->first();
+        $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        $user_array->photo = $base_url.$user_array->photo;
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
     }
 
     public function change_password(Request $request)
@@ -865,6 +868,7 @@ class UsersController extends Controller
         $validator = Validator::make($request,
             [
                 "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
+                "tele_code"=>"required",
                 "mobile_verification_code" => "required",
                 "new_password" => "required|between:8,20"
             ]);
@@ -895,8 +899,10 @@ class UsersController extends Controller
             return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), []);
         }
 
-
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
+        $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+        $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        $user_array->photo = $base_url.$user_array->photo;
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array));
 
     }
 
