@@ -27,4 +27,7 @@ return [
 	'noservices'=>'لا يوجد خدمات بعد',
 	'wrong_user_password' =>'خطأ في كلمة السر',
 	'interest_not_found'=>'هذا التصنيف غير موجود'
+	'wrong_mobile_verification_code'=>'كود التحقق غير صحيح'
+	
+
 ];

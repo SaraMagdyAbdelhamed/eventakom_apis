@@ -27,6 +27,7 @@ $citycounty[$key]= $city->name.','.$city->geo_country->name;
 
     public function searchcitycountry(Request $request)
     {
+     $lang_id = $request->input('lang_id');
      $keyword = $request->input('keyword');
     //dd($keyword);
      
@@ -44,7 +45,19 @@ $citycounty[$key]= $city->name.','.$city->geo_country->name;
     $result= array();
     foreach($citycounty as $key=>$city){
 
-   $result[$key]= $city->name.','.$city->geo_country->name;
+    $result[$key]= $city->name.','.$city->geo_country->name;
+//             if( $lang_id == 1){
+//          $city->name =  $city->name;
+// $result[$key]= $city->name.','.$city->geo_country->name;
+//                   }elseif( $lang_id == 2){
+//                 $cityname =  Helpers::localization('geo_cities', 'name', $city->id, $lang_id );
+//                 if($cityname == "Error"){$city->name =  $city->name;
+//                 }else{
+//                     $city->name = $cityname;
+//                 }
+//                 $result[$key]= $city->name.','.$city->geo_country->name;
+//             }
+ 
 
     }
     if (!empty($result)) {

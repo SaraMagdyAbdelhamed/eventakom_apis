@@ -31,7 +31,7 @@ class UsersController extends Controller
         return Helpers::Get_Response(200, 'success', '', '',$users);
     }
 
-   
+
 
     public function signup(Request $request)
     {
@@ -72,9 +72,12 @@ class UsersController extends Controller
         $city_id=$request['city_id'];
         $city = GeoCity::find($city_id);
         $input['country_id'] = $city->geo_country->id;
+        $input['timezone'] = $city->geo_country->timezone;
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
-        $user_array->photo = url('/').'/'.$user_array->photo;
+        //$base_url = url('/');
+        $base_url = 'http://eventakom.com/eventakom_dev/public';
+        $user_array->photo = $base_url.'/'.$user_array->photo;
             // $user_array->photo = url('images/{$user_array->first_name}');
         if ($user) {
             $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
@@ -83,6 +86,7 @@ class UsersController extends Controller
             //process rules
             $rules = user_rule::create(['user_id'=>$user_array->id ,'rule_id'=>2 ]);
             $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
+            //dd($mail);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array) );
     }
@@ -321,12 +325,12 @@ class UsersController extends Controller
                         $user->last_login = Carbon::now()->format('Y-m-d H:i:s');
                         $user->save();
 
-                        // $user_array = $user->toArray();           
+                        // $user_array = $user->toArray();
                         // foreach ($user_array['rules'] as  $value) {
                         //     if(array_key_exists('lang_id',$request) && $request['lang_id']==1) {
                         //         $rules []=  array($value['id'] => $value['name']);
                         //     } else {
-                        //         $rules []= array($value['id'] => $value['name_ar']);          
+                        //         $rules []= array($value['id'] => $value['name_ar']);
                         //     }
                         //     $rule_ids [] = $value['id'];
                         // }
@@ -444,11 +448,11 @@ class UsersController extends Controller
                     $page->body = $pagebody;
                 }
             }
-       
+
 
 
         }
-             
+
             return Helpers::Get_Response(200, 'success', '', '', array($pages));
         } else {
 
@@ -467,17 +471,29 @@ class UsersController extends Controller
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request, [
-            "email" => "required|exists:users,email",
+            "email" => "required",
 
         ]);
 
-        if ($validator->fails()) {
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Email Is not found'));
+          if ($validator->fails()) {
+                return Helpers::Get_Response(403, 'error', '', $validator->errors(),[]);
+
         } else {
 
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Email already exist'));
+   $user = User::where('email', $request['email'])->first();
+
+        if ($user) {
+         return Helpers::Get_Response(204, trans('This Email is already exist'), '', $validator->errors(), []);
+
+        }else{
+
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), []);
+        }
+
+
 
         }
+
 
     }
 
@@ -489,16 +505,28 @@ class UsersController extends Controller
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request, [
-            "mobile" => "required|exists:users,mobile",
+            "mobile" => "required",
+            "tele_code"=>"required"
 
         ]);
 
+
         if ($validator->fails()) {
-               return Helpers::Get_Response(200, 'success', '', $validator->errors(), trans('This Mobile Is not found'));
-           
+                return Helpers::Get_Response(403, 'error', '', $validator->errors(),[]);
+
         } else {
 
-          return Helpers::Get_Response(403, 'error', '', $validator->errors(), trans('This Mobile already exist'));
+   $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+
+        if ($user) {
+         return Helpers::Get_Response(204, trans('This Mobile is already exist'), '', $validator->errors(), []);
+
+        }else{
+
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), []);
+        }
+
+
 
         }
 
@@ -538,7 +566,7 @@ class UsersController extends Controller
 
     public function add_user_interests(Request $request)
     {
-        
+
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request['lang_id']);
@@ -646,7 +674,7 @@ class UsersController extends Controller
 
 
     //password
-   
+
 
     public function edit_profile(Request $request)
     {
@@ -670,10 +698,10 @@ class UsersController extends Controller
                 'first_name' => 'required|between:1,12',
                 'last_name' => 'required|between:1,12',
                 'email' => $email_valid,
-                'conutry_code_id' => 'required',
+                // 'conutry_code_id' => 'required',
                 // 'mobile' => 'required|numeric|unique:users',
                 'password' => 'required|between:8,20',
-                'photo' => 'image|max:1024',
+                // 'photo' => 'image|max:1024',
                 //'device_token' => 'required',
                 'mobile_os' => 'in:android,ios',
                 'lang_id' => 'in:1,2'
@@ -683,7 +711,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('photo', $request)) {
+        if (array_key_exists('image', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], '/mobile_users/');
         }
         $input = $request;
@@ -704,7 +732,7 @@ class UsersController extends Controller
         $user_update = $user->update($input);
         if ($user_update && $old_email != $request['email']) {
             //$status =$twilio->send($request['mobile'],$input['mobile_verification_code']);
-            $mail = Helpers::mail($request['email'], $input['username'], $input['email_verification_code']);
+           $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
             $user->update(['is_email_verified' => 0]);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
@@ -761,7 +789,7 @@ class UsersController extends Controller
         // if (array_key_exists('lang_id', $request)) {
         //     Helpers::Set_locale($request['lang_id']);
         // }
-       
+
         // $validator = Validator::make($request,
         //     [
         //          "email" => "required|email",
@@ -836,7 +864,7 @@ class UsersController extends Controller
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), []);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), []);
 
 
             }

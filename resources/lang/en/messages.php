@@ -27,5 +27,7 @@ return [
 	'noservices'=>'no services yet',
 	'wrong_user_password' =>'wrong user password',
 	'interest_not_found' =>'The interest you entered not found'
+	'wrong_mobile_verification_code'=>'wrong mobile verification code'
+
 
 ];
