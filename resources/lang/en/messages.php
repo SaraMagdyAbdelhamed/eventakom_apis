@@ -26,6 +26,8 @@ return [
 	'noaccess'=>'you have no access to show this case',
 	'noservices'=>'no services yet',
 	'wrong_user_password' =>'wrong user password',
+	'interest_not_found' =>'The interest you entered not found',
 	'wrong_mobile_verification_code'=>'wrong mobile verification code'
+
 
 ];

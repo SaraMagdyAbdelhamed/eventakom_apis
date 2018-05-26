@@ -5,7 +5,7 @@ use App\Libraries\Helpers;
 
 class Interest extends Model {
 
-    protected $fillable = [];
+    protected $fillable = ['name'];
 
     protected $dates = [];
 
@@ -13,6 +13,7 @@ class Interest extends Model {
         // Validation rules
     ];
     protected $hidden = ['pivot'];
+
 
     public function getNameAttribute($value)
     {
@@ -23,6 +24,11 @@ class Interest extends Model {
     public function users()
     {
         return $this->belongsToMany('App\User','user_interests');
+    }
+
+    public function events()
+    {
+        return $this->belongsToMany('App\Event','event_categories');
     }
 
 
