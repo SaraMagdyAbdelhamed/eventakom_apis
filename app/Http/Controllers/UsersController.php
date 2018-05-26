@@ -297,6 +297,7 @@ class UsersController extends Controller
         }
         $validator = Validator::make($request, [
             "mobile" => "required|numeric",
+            "tele_code"=>"required",
             "password" => "required|min:8|max:20",
 //            "device_token"=>'required',
 //            "lang_id"=>'required',
@@ -358,7 +359,10 @@ class UsersController extends Controller
 //                            "lang_id"=>$request['lang_id']
 //                            "mobile_os"=>$request['mobile_os'],
 //                        ]);
-                        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
+                      $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+                      $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                      $user_array->photo = $base_url.$user_array->photo;
+                        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
                     } else {
                         return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
                     }
@@ -367,7 +371,10 @@ class UsersController extends Controller
             } else {
                 return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
             }
-            return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
+            $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+            $base_url = 'http://eventakom.com/eventakom_dev/public/';
+            $user_array->photo = $base_url.$user_array->photo;
+            return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
         } else {
             return Helpers::Get_Response(401, 'error', trans('Invalid mobile number'), $validator->errors(), []);
         }
@@ -425,7 +432,10 @@ class UsersController extends Controller
             if ($user) {
                 $user->update(['lang_id' => $request['lang_id']]);
                 $user->save();
-                return Helpers::Get_Response(200, 'success', '', '', array($user));
+                $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                $user_array = User:: where("api_token", "=", $api_token)->first();
+                $user_array->photo = $base_url.$user_array->photo;
+                return Helpers::Get_Response(200, 'success', '', '', array($user_array));
             } else {
 
                 return Helpers::Get_Response(400, 'error', trans('No user Registerd with this token'), $validator->errors(), []);
