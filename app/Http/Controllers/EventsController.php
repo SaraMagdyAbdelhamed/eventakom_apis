@@ -7,6 +7,7 @@ use App\Event;
 use App\HashTag;
 use App\GeoCity;
 use App\user_rule;
+use App\AgeRange;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -36,6 +37,7 @@ class EventsController extends Controller
     /**
      * add new event
      * @param Request $request
+     * @return  \Illuminate\Http\JsonResponse
      */
 
     public function add_event(Request $request){
@@ -212,5 +214,13 @@ class EventsController extends Controller
     }
 
 
-    //
+    public function age_ranges(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],AgeRange::all());
+
+
+    }
 }
