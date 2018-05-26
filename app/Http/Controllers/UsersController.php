@@ -20,6 +20,8 @@ use \Illuminate\Support\Facades\Lang;
 
 class UsersController extends Controller
 {
+    protected   $base_url = 'http://eventakom.com/eventakom_dev/public/';
+
 
     public function getAllUsers()
     {
@@ -76,8 +78,8 @@ class UsersController extends Controller
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
         //$base_url = url('/');
-        $base_url = 'http://eventakom.com/eventakom_dev/public';
-        $user_array->photo = $base_url.'/'.$user_array->photo;
+        $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        $user_array->photo = $base_url.$user_array->photo;
             // $user_array->photo = url('images/{$user_array->first_name}');
         if ($user) {
             $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
@@ -101,6 +103,7 @@ class UsersController extends Controller
 
         $validator = Validator::make($request, [
             "mobile" => "required|numeric",
+            "tele_code" => "required",
             "lang_id" => "required|in:1,2"
 
         ]);
@@ -115,7 +118,7 @@ class UsersController extends Controller
 
             $twilio = new TwilioSmsService($twilio_config);
 
-            $user = User::where('mobile', $request['mobile'])->first();
+            $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
             if(!$user){
              return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
             }else{
@@ -140,7 +143,10 @@ class UsersController extends Controller
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
+                $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+                $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                $user_array->photo = $base_url.$user_array->photo;
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
             } //date_format("Y-m-d", $user->verification_date) dont forget
             elseif ($user->verification_count >= 5 && $user_date != Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 0
@@ -161,7 +167,10 @@ class UsersController extends Controller
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user));
+                $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+                $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                $user_array->photo = $base_url.$user_array->photo;
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
             } elseif ($user->verification_count >= 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 1
                 $user->is_mobile_verified = 0;
@@ -184,7 +193,10 @@ class UsersController extends Controller
                     // return;
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
-                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
+                $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+                $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                $user_array->photo = $base_url.$user_array->photo;
+                return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
 
             }
 }
@@ -215,7 +227,7 @@ class UsersController extends Controller
             if ($user->mobile_verification_code == $request['mobile_verification_code']) {
 
                 $user->is_mobile_verification_code_expired = 1;
-                if ($user->is_active == 0) {
+                if ($user->is_active == 0 || $user->is_mobile_verified == 0 ) {
 
                     $user->update(['is_active' => 1,'is_mobile_verified'=>1,'is_email_verified'=>0, 'verification_date' => Carbon::now()->format('Y-m-d')]);
 
@@ -233,9 +245,10 @@ class UsersController extends Controller
         } else {
             return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), []);
         }
-
-
-        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user));
+        $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+        $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        $user_array->photo = $base_url.$user_array->photo;
+        return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
 
     }
 
