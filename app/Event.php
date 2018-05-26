@@ -31,6 +31,10 @@ class Event extends Model
         return $this->belongsToMany('App\HashTag', 'event_hash_tags','event_id','hash_tag_id');
     }
 
+    public  function age_range(){
+        return $this->hasOne('App\AgeRange','age_range_id');
+    }
+
 
 
     //Localizations
