@@ -57,7 +57,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('photo', $request)) {
+        if (array_key_exists('image', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'mobile_users/');
         }
         $input = $request;
@@ -89,7 +89,8 @@ class UsersController extends Controller
             $status = $twilio->send($sms_mobile, $sms_body);
             //process rules
             $rules = user_rule::create(['user_id'=>$user_array->id ,'rule_id'=>2 ]);
-            $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
+            // $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
+            $mail=Helpers::mail_verify_withview('emails.verification',$request['email'],$input['email_verification_code']);
             //dd($mail);
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array) );
@@ -316,7 +317,7 @@ class UsersController extends Controller
         $user = User::where("mobile", "=", $request['mobile'])->where('tele_code', $request['tele_code'])->with('rules')->first();
 
                 if (!$user) {
-                    return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
+                    return Helpers::Get_Response(400, 'error', trans('messages.mobile_isn’t_registered'), $validator->errors(), []);
                 }
             }
             // elseif (filter_var($request['mobile'], FILTER_VALIDATE_EMAIL)) {
@@ -369,9 +370,9 @@ class UsersController extends Controller
                         return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
                     }
                 }
-                return Helpers::Get_Response(400, 'error', trans('Password is wrong'), $validator->errors(), []);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_password'), $validator->errors(), []);
             } else {
-                return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
+                return Helpers::Get_Response(400, 'error', trans('messages.mobile_isn’t_registered'), $validator->errors(), []);
             }
             $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
             $base_url = 'http://eventakom.com/eventakom_dev/public/';
@@ -850,11 +851,16 @@ class UsersController extends Controller
                 }
 
 
-                $user->save();
+                if($user->save()){
+
+                 $mail=Helpers::mail_verify_withview('emails.verification2',$request['email'],'verified');   
+                }else{
+                 $mail=Helpers::mail_verify_withview('emails.verification2',$request['email'],'error');   
+                }
             } else {
 
 
-                return Helpers::Get_Response(400, 'error', trans('messages.wrong_mobile_verification_code'), $validator->errors(), []);
+                return Helpers::Get_Response(400, 'error', trans('messages.wrong_verification_code'), $validator->errors(), []);
 
 
             }
