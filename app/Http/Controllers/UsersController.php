@@ -57,7 +57,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('image', $request)) {
+        if (array_key_exists('photo', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'mobile_users/');
         }
         $input = $request;
