@@ -48,13 +48,15 @@ class EventsController extends Controller
         }
         $validator = Validator::make($request_data,
             [
-                "name"              => "required|between:2,100",
-                "description"       => "required|between:2,250",
-                "venue"             => "required|between:2,100",
-                'hashtags'           =>"between:2,250",
-                "gender_id"         =>"required",
+                "name"             => "required|between:2,100",
+                "description"      => "required|between:2,250",
+                "venue"            => "required|between:2,100",
+                'hashtags'         =>"between:2,250",
+                "gender_id"        =>"required",
                 'start_datetime'   => 'required|date_format:Y-m-d H:i:s',
-                'end_datetime'     => 'required|date_format:Y-m-d H:i:s'
+                'end_datetime'     => 'required|date_format:Y-m-d H:i:s',
+                'longtuide'        => 'required',
+                'latitude'         => 'required'
 
             ]);
         if ($validator->fails()) {
@@ -62,16 +64,18 @@ class EventsController extends Controller
         }
 
         $event_data = [
-            'name' =>$request_data['name'],
-            'description'=>$request_data['description'],
-            'venue'=>$request_data['venue'],
-            'gender_id'=>$request_data['gender_id'],
+            'name'          =>$request_data['name'],
+            'description'   =>$request_data['description'],
+            'venue'         =>$request_data['venue'],
+            'gender_id'     =>$request_data['gender_id'],
             'start_datetime'=>$request_data['start_datetime'],
-            'end_datetime'=>$request_data['end_datetime'],
-            'is_active'=>0,
+            'end_datetime'  =>$request_data['end_datetime'],
+            'is_active'     =>0,
             'show_in_mobile'=>0,
-            'created_by'=>User::where('api_token','=',$request->header('access-token'))->first()->id,
-            'age_range_id'=>array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL
+            'created_by'    =>User::where('api_token','=',$request->header('access-token'))->first()->id,
+            'age_range_id'  =>array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL,
+            'longtuide'     => $request_data['longtuide'],
+            'latitude'      => $request_data['latitude']
 
         ];
 
@@ -143,7 +147,7 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        $events = $interest->events()->IsActive()->ShowInMobile();
+        $events = $interest->events()->with('prices.currency')->with('categories')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -190,14 +194,14 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
 
-        $events = Event::BigEvents()->orderBy('sort_order')->with('categories')->IsActive()->ShowInMobile();
+        $events = Event::BigEvents()->orderBy('sort_order')->with('prices.currency')->with('categories')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
-                $data = $events->UpcomingEvents()->get();
+                $data = $events->UpcomingEvents();
                 break;
 
             default:
-                $data = $events->PastEvents()->get();
+                $data = $events->PastEvents();
                 break;
         }
 
@@ -213,6 +217,12 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * list all age ranges
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
 
     public function age_ranges(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -223,4 +233,27 @@ class EventsController extends Controller
 
 
     }
+
+    public  function current_month_events(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+
+        $this_month = Event::query()->with('prices.currency')->IsActive()->ShowInMobile()->ThisMonthEvents()->WithPaginate($page,$limit)->get();
+        $next_month = Event::query()->with('prices.currency')->IsActive()->ShowInMobile()->NextMonthEvents()->WithPaginate($page,$limit)->get();
+        $result = [
+            'this_month' => $this_month,
+            'next_month' => $next_month
+        ];
+        return Helpers::Get_Response(200,'success','',[],$result);
+
+
+
+
+    }
+
 }

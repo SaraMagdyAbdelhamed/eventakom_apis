@@ -4,6 +4,7 @@ namespace App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Helpers;
+use Carbon\Carbon;
 
 class Event extends Model
 {
@@ -34,6 +35,15 @@ class Event extends Model
     public  function age_range(){
         return $this->belongsTo('App\AgeRange','age_range_id');
     }
+
+    public  function status(){
+        return $this->belongsTo('App\EventStatus','event_status_id');
+    }
+
+    public  function prices(){
+        return $this->hasMany('App\Price','event_id');
+    }
+
 
 
 
@@ -91,6 +101,15 @@ class Event extends Model
 
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
+    }
+
+    public function ScopeThisMonthEvents($query){
+        return $query->whereMonth("end_datetime",Carbon::now()->month);
+
+    }
+    public function ScopeNextMonthEvents($query){
+        return $query->whereMonth("end_datetime",Carbon::now()->addMonth()->month);
+
     }
 
     
