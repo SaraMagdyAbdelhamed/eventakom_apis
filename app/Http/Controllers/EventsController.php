@@ -17,7 +17,7 @@ use App\Libraries\TwilioSmsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Lang;
-
+use Illuminate\Support\Facades\DB;
 /**
  * Class EventsController
  * @package App\Http\Controllers
@@ -34,13 +34,50 @@ class EventsController extends Controller
         //
     }
 
+    public  function event_details(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $validator = Validator::make($request_data,
+            [
+                'event_id' =>'required'
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $event = Event::query()
+            ->where('id',$request_data['event_id'])
+            ->With('prices.currency')
+            ->with('categories')
+            ->with('hash_tags')
+            ->get();
+        // Get You May Also Like
+        $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
+        $d = DB::table('events')
+            ->leftJoin('event_categories','events.id','=','event_categories.event_id')
+            ->whereIn('event_categories.interest_id',$category_ids)
+            ->select('events.*')->distinct()
+            ->get();
+
+        return Helpers::Get_Response(200, 'success', 'saved', [], ['event'=>$event,'you_may_also_like'=>$d]);
+
+
+
+
+    }
+
     /**
      * add new event
      * @param Request $request
      * @return  \Illuminate\Http\JsonResponse
      */
 
+
     public function add_event(Request $request){
+
+
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -52,9 +89,9 @@ class EventsController extends Controller
                 "description"      => "required|between:2,250",
                 "venue"            => "required|between:2,100",
                 'hashtags'         =>"between:2,250",
-                "gender_id"        =>"required",
-                'start_datetime'   => 'required|date_format:Y-m-d H:i:s',
-                'end_datetime'     => 'required|date_format:Y-m-d H:i:s',
+                "gender_id"        => "required",
+                'start_datetime'   => 'required',
+                'end_datetime'     => 'required',
                 'longtuide'        => 'required',
                 'latitude'         => 'required'
 
@@ -68,8 +105,8 @@ class EventsController extends Controller
             'description'   =>$request_data['description'],
             'venue'         =>$request_data['venue'],
             'gender_id'     =>$request_data['gender_id'],
-            'start_datetime'=>$request_data['start_datetime'],
-            'end_datetime'  =>$request_data['end_datetime'],
+            'start_datetime'=>date('Y-m-d H:i:s',$request_data['start_datetime']),
+            'end_datetime'  =>date('Y-m-d H:i:s',$request_data['end_datetime']),
             'is_active'     =>0,
             'show_in_mobile'=>0,
             'created_by'    =>User::where('api_token','=',$request->header('access-token'))->first()->id,
@@ -147,7 +184,7 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        $events = $interest->events()->with('prices.currency')->with('categories')->IsActive()->ShowInMobile();
+        $events = $interest->events()->with('prices.currency')->with('categories')->with('hash_tags')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -194,7 +231,7 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
 
-        $events = Event::BigEvents()->orderBy('sort_order')->with('prices.currency')->with('categories')->IsActive()->ShowInMobile();
+        $events = Event::BigEvents()->orderBy('sort_order')->with('prices.currency')->with('hash_tags')->with('categories')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -234,6 +271,12 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * this will reutrn all events in this month form today to the end of month and all events in the next month
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public  function current_month_events(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -243,16 +286,45 @@ class EventsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
 
-        $this_month = Event::query()->with('prices.currency')->IsActive()->ShowInMobile()->ThisMonthEvents()->WithPaginate($page,$limit)->get();
-        $next_month = Event::query()->with('prices.currency')->IsActive()->ShowInMobile()->NextMonthEvents()->WithPaginate($page,$limit)->get();
+        $this_month = Event::query()
+            ->with('prices.currency')
+            ->with('categories')
+            ->with('hash_tags')
+            ->IsActive()
+            ->ShowInMobile()
+            ->ThisMonthEvents()
+            ->WithPaginate($page,$limit)
+            ->orderBy('end_datetime','DESC')
+            ->get();
+        $next_month = Event::query()
+            ->with('prices.currency')
+            ->with('categories')
+            ->with('hash_tags')
+            ->IsActive()
+            ->ShowInMobile()
+            ->NextMonthEvents()
+            ->WithPaginate($page,$limit)
+            ->orderBy('end_datetime','DESC')
+            ->get();
+        $start_to_today = Event::query()
+            ->with('prices.currency')
+            ->with('categories')
+            ->with('hash_tags')
+            ->IsActive()
+            ->ShowInMobile()
+            ->StartOfMothEvents()
+            ->WithPaginate($page,$limit)
+            ->orderBy('end_datetime','DESC')
+            ->get();
+
         $result = [
-            'this_month' => $this_month,
-            'next_month' => $next_month
+            'start_of_month_to_today'          => $start_to_today,
+            'start_of_today_to_end'            => $this_month,
+            'next_month'                       => $next_month
+
+
         ];
         return Helpers::Get_Response(200,'success','',[],$result);
-
-
-
 
     }
 
