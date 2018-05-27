@@ -313,7 +313,7 @@ class UsersController extends Controller
             //////
 
             if (is_numeric($request['mobile'])) {
-                $user = User::where("mobile", "=", $request['mobile'])->with('rules')->first();
+        $user = User::where("mobile", "=", $request['mobile'])->where('tele_code', $request['tele_code'])->with('rules')->first();
 
                 if (!$user) {
                     return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
@@ -707,12 +707,15 @@ class UsersController extends Controller
 
         $api_token = $request->header('access-token');
         //dd($api_token);
-        $user = User:: where("api_token", "=", $api_token)->first();
+       
 
         $request = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request)) {
             Helpers::Set_locale($request['lang_id']);
         }
+
+     $user = User:: where("api_token", "=", $api_token)->first();
+
         if ($user->email == $request['email']) {
             $email_valid = 'required|email|max:35';
         } else {
