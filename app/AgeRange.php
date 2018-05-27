@@ -24,7 +24,7 @@ class AgeRange extends Model
     // 1 entity belongs to many entity_localizations
     public function event()
     {
-        return $this->belongsTo('App\event');
+        return $this->hasOne('App\event');
     }
 
     //localisations

@@ -32,7 +32,7 @@ class Event extends Model
     }
 
     public  function age_range(){
-        return $this->hasOne('App\AgeRange','age_range_id');
+        return $this->belongsTo('App\AgeRange','age_range_id');
     }
 
 
