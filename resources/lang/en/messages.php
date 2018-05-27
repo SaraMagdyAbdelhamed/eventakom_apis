@@ -30,5 +30,7 @@ return [
 	'wrong_mobile_verification_code'=>'wrong mobile verification code',
     'your_verification_code_is'=>'your verification code is: ',
 	'exceeded_verifications_limit'=>'sorry you have exceeded your verifications limit today',
-    'mobile_number_not_registered'=>'Mobile number is not registered'
+    'mobile_number_not_registered'=>'Mobile number is not registered',
+	'invalid_verification_code'=>'Invalid verification code, please write the right one',
+	'mobile_isn’t_registered'=>'this mobile number isn’t registered'
 ];
