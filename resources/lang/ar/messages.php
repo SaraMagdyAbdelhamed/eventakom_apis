@@ -27,7 +27,11 @@ return [
 	'noservices'=>'لا يوجد خدمات بعد',
 	'wrong_user_password' =>'خطأ في كلمة السر',
 	'interest_not_found'=>'هذا التصنيف غير موجود',
-	'wrong_mobile_verification_code'=>'كود التحقق غير صحيح'
-	
+	'wrong_mobile_verification_code'=>'كود التحقق غير صحيح',
+	'your_verification_code_is'=>'كود التحقق الخاص بك هو :',
+	'exceeded_verifications_limit'=>'عذرا ..لقد استنفذت عدد المحاولات الخاصة بإرسال كود التحقق لليوم الحالي',
+	'mobile_number_not_registered'=>'رقم الموبايل غير مسجل',
+	'invalid_verification_code'=>'كود التحقق غير صحيح ، الرجاء التأكد من ادخال الكود الصحيح'
+
 
 ];
