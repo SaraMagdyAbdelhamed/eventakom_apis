@@ -41,6 +41,8 @@ class EventsController extends Controller
      */
 
     public function add_event(Request $request){
+
+
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -52,9 +54,9 @@ class EventsController extends Controller
                 "description"      => "required|between:2,250",
                 "venue"            => "required|between:2,100",
                 'hashtags'         =>"between:2,250",
-                "gender_id"        =>"required",
-                'start_datetime'   => 'required|date_format:Y-m-d H:i:s',
-                'end_datetime'     => 'required|date_format:Y-m-d H:i:s',
+                "gender_id"        => "required",
+                'start_datetime'   => 'required',
+                'end_datetime'     => 'required',
                 'longtuide'        => 'required',
                 'latitude'         => 'required'
 
@@ -68,8 +70,8 @@ class EventsController extends Controller
             'description'   =>$request_data['description'],
             'venue'         =>$request_data['venue'],
             'gender_id'     =>$request_data['gender_id'],
-            'start_datetime'=>$request_data['start_datetime'],
-            'end_datetime'  =>$request_data['end_datetime'],
+            'start_datetime'=>date('Y-m-d H:i:s',$request_data['start_datetime']),
+            'end_datetime'  =>date('Y-m-d H:i:s',$request_data['end_datetime']),
             'is_active'     =>0,
             'show_in_mobile'=>0,
             'created_by'    =>User::where('api_token','=',$request->header('access-token'))->first()->id,
@@ -234,6 +236,12 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * this will reutrn all events in this month form today to the end of month and all events in the next month
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public  function current_month_events(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -243,16 +251,39 @@ class EventsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
 
-        $this_month = Event::query()->with('prices.currency')->IsActive()->ShowInMobile()->ThisMonthEvents()->WithPaginate($page,$limit)->get();
-        $next_month = Event::query()->with('prices.currency')->IsActive()->ShowInMobile()->NextMonthEvents()->WithPaginate($page,$limit)->get();
+        $this_month = Event::query()->with('prices.currency')
+            ->with('categories')
+            ->IsActive()
+            ->ShowInMobile()
+            ->ThisMonthEvents()
+            ->WithPaginate($page,$limit)
+            ->orderBy('end_datetime','DESC')
+            ->get();
+        $next_month = Event::query()->with('prices.currency')
+            ->with('categories')
+            ->IsActive()
+            ->ShowInMobile()
+            ->NextMonthEvents()
+            ->WithPaginate($page,$limit)
+            ->orderBy('end_datetime','DESC')
+            ->get();
+        $start_to_today = Event::query()->with('prices.currency')
+            ->with('categories')
+            ->IsActive()
+            ->ShowInMobile()
+            ->StartOfMothEvents()
+            ->WithPaginate($page,$limit)
+            ->orderBy('end_datetime','DESC')
+            ->get();
+
         $result = [
-            'this_month' => $this_month,
-            'next_month' => $next_month
+            'start_of_month_to_today'          => $start_to_today,
+            'start_of_today_to_end'            => $this_month,
+            'next_month'                       => $next_month
+
+
         ];
         return Helpers::Get_Response(200,'success','',[],$result);
-
-
-
 
     }
 

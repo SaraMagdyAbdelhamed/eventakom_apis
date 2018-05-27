@@ -25,7 +25,6 @@ class Event extends Model
         return $this->belongsToMany('App\Interest', 'event_categories','event_id','interest_id');
     }
 
-
     //Many to many realation with hashtags
     public  function hash_tags()
     {
@@ -43,8 +42,6 @@ class Event extends Model
     public  function prices(){
         return $this->hasMany('App\Price','event_id');
     }
-
-
 
 
     //Localizations
@@ -65,17 +62,13 @@ class Event extends Model
         return ($result=='Error')? $value : $result;
     }
 
-
-
-
-
-
     public static function BigEvents(){
     	return static::query()->join('big_events','events.id','=','big_events.event_id')
     		   ->select('events.*','big_events.sort_order');
-    		   
 
     }
+
+    //Mutators
 
 
 
@@ -89,12 +82,12 @@ class Event extends Model
     }
 
     public function ScopeUpcomingEvents($query){
-        return $query->where("end_datetime",'>=',date('Y-m-d H:i:s'));
+        return $query->where("end_datetime",'>=',Carbon::now());
 
     }
 
     public function ScopePastEvents($query){
-        return $query->where("end_datetime",'<=',date('Y-m-d H:i:s'));
+        return $query->where("end_datetime",'<',Carbon::now());
 
     }
 
@@ -104,11 +97,16 @@ class Event extends Model
     }
 
     public function ScopeThisMonthEvents($query){
-        return $query->whereMonth("end_datetime",Carbon::now()->month);
+        return $query->whereBetween("end_datetime",[Carbon::now(),Carbon::now()->endOfMonth()]);
 
     }
     public function ScopeNextMonthEvents($query){
         return $query->whereMonth("end_datetime",Carbon::now()->addMonth()->month);
+
+    }
+
+    public function ScopeStartOfMothEvents($query){
+        return $query->whereBetween("end_datetime",[Carbon::now()->startOfMonth(),Carbon::now()]);
 
     }
 
