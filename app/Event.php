@@ -78,7 +78,7 @@ class Event extends Model
         return $query->where('show_in_mobile', '=', 1);
     }
 
-    public function ScopeUpcomeingEvents($query){
+    public function ScopeUpcomingEvents($query){
         return $query->where("end_datetime",'>=',date('Y-m-d H:i:s'));
 
     }
@@ -89,7 +89,7 @@ class Event extends Model
     }
 
 
-    public function   ScopeWithPaginate($query,$page,$limit){
+    public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
     }
 

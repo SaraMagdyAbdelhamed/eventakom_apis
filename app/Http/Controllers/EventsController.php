@@ -146,7 +146,7 @@ class EventsController extends Controller
         $events = $interest->events()->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
-                $data = $events->UpcomeingEvents();
+                $data = $events->UpcomingEvents();
                 break;
             
             default:
@@ -193,7 +193,7 @@ class EventsController extends Controller
         $events = Event::BigEvents()->orderBy('sort_order')->with('categories')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
-                $data = $events->UpcomeingEvents()->get();
+                $data = $events->UpcomingEvents()->get();
                 break;
 
             default:
