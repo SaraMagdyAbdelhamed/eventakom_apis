@@ -85,7 +85,7 @@ class UsersController extends Controller
             // $user_array->photo = url('images/{$user_array->first_name}');
         if ($user) {
             $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
-            $sms_body = trans('your verification code is : ') . $input['mobile_verification_code'];
+            $sms_body = trans('messages.your_verification_code_is') . $input['mobile_verification_code'];
             $status = $twilio->send($sms_mobile, $sms_body);
             //process rules
             $rules = user_rule::create(['user_id'=>$user_array->id ,'rule_id'=>2 ]);
@@ -127,7 +127,7 @@ class UsersController extends Controller
             // dd($user);
             $mobile_verification_code = str_random(4);
             $sms_mobile = $user->tele_code. '' .$user->mobile;
-            $sms_body = trans('your verification code is : ') . $mobile_verification_code;
+            $sms_body = trans('messages.your_verification_code_is') . $mobile_verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
             if ($user->is_mobile_verification_code_expired != 1 && $user->verification_count < 5) {
 
@@ -178,7 +178,7 @@ class UsersController extends Controller
                 $user->is_mobile_verified = 0;
                 $user->is_mobile_verification_code_expired = 1;
                 // response : sorry you have exeeded your verifications limit today
-                return Helpers::Get_Response(400, 'error', trans('sorry you have exceeded your verifications limit today'), $validator->errors(), []);
+                return Helpers::Get_Response(400, 'error', trans('messages.exceeded_verifications_limit'), $validator->errors(), []);
             } elseif ($user->is_mobile_verification_code_expired = 1 && $user->verification_count < 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 $user->is_mobile_verification_code_expired = 0;
                 $user->is_mobile_verified = 0;
@@ -245,7 +245,7 @@ class UsersController extends Controller
 
             }
         } else {
-            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), []);
+            return Helpers::Get_Response(400, 'error', trans('messages.mobile_number_not_registered'), $validator->errors(), []);
         }
         $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
         $base_url = 'http://eventakom.com/eventakom_dev/public/';
@@ -279,7 +279,7 @@ class UsersController extends Controller
 
             } else {
                 // echo $user->verificaition_code;
-                return Helpers::Get_Response(400, 'error', trans('Invalid verification code, please write the right one'), $validator->errors(), array($user));
+                return Helpers::Get_Response(400, 'error', trans('messages.invalid_verification_code'), $validator->errors(), array($user));
 
             }
         } else {
@@ -313,7 +313,7 @@ class UsersController extends Controller
             //////
 
             if (is_numeric($request['mobile'])) {
-                $user = User::where("mobile", "=", $request['mobile'])->with('rules')->first();
+        $user = User::where("mobile", "=", $request['mobile'])->where('tele_code', $request['tele_code'])->with('rules')->first();
 
                 if (!$user) {
                     return Helpers::Get_Response(400, 'error', trans('this mobile number isn’t registered'), $validator->errors(), []);
@@ -707,12 +707,15 @@ class UsersController extends Controller
 
         $api_token = $request->header('access-token');
         //dd($api_token);
-        $user = User:: where("api_token", "=", $api_token)->first();
+       
 
         $request = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request)) {
             Helpers::Set_locale($request['lang_id']);
         }
+
+        $user = User:: where("api_token", "=", $api_token)->first();
+dd($request);
         if ($user->email == $request['email']) {
             $email_valid = 'required|email|max:35';
         } else {

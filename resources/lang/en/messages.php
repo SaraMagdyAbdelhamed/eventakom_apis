@@ -27,7 +27,8 @@ return [
 	'noservices'=>'no services yet',
 	'wrong_user_password' =>'wrong user password',
 	'interest_not_found' =>'The interest you entered not found',
-	'wrong_mobile_verification_code'=>'wrong mobile verification code'
-
-
+	'wrong_mobile_verification_code'=>'wrong mobile verification code',
+    'your_verification_code_is'=>'your verification code is: ',
+	'exceeded_verifications_limit'=>'sorry you have exceeded your verifications limit today',
+    'mobile_number_not_registered'=>'Mobile number is not registered'
 ];
