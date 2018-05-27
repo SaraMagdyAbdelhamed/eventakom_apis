@@ -75,6 +75,8 @@ class UsersController extends Controller
         $city = GeoCity::find($city_id);
         $input['country_id'] = $city->geo_country->id;
         $input['timezone'] = $city->geo_country->timezone;
+        $input['longitude'] = $city->longitude;
+        $input['latitude'] = $city->latitude;
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
         //$base_url = url('/');
@@ -410,7 +412,7 @@ class UsersController extends Controller
         // }
     }
 
-    public function change_language(Request $request)
+    public function change_lang(Request $request)
     {
         $api_token = $request->header('access-token');
 
@@ -748,6 +750,12 @@ class UsersController extends Controller
         //$input['is_active'] = 0;
         $input['username'] = $request['first_name'] . '' . $request['last_name'];
         $input['mobile'] = $user->mobile;
+        $city_id=$request['city_id'];
+        $city = GeoCity::find($city_id);
+        $input['country_id'] = $city->geo_country->id;
+        $input['timezone'] = $city->geo_country->timezone;
+        $input['longitude'] = $city->longitude;
+        $input['latitude'] = $city->latitude;
         //$input['code']=mt_rand(100000, 999999);
         $input['email_verification_code'] = str_random(4); //change it to email_verification_code
         //$input['is_mobile_verification_code_expired']=0;
