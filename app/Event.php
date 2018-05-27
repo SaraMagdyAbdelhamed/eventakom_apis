@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Helpers;
 use Carbon\Carbon;
 
+
 class Event extends Model
 {
     protected $primaryKey = 'id';

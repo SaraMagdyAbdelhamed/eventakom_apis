@@ -17,7 +17,7 @@ use App\Libraries\TwilioSmsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Lang;
-
+use Illuminate\Support\Facades\DB;
 /**
  * Class EventsController
  * @package App\Http\Controllers
@@ -34,11 +34,46 @@ class EventsController extends Controller
         //
     }
 
+    public  function event_details(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $validator = Validator::make($request_data,
+            [
+                'event_id' =>'required'
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $event = Event::query()
+            ->where('id',$request_data['event_id'])
+            ->With('prices.currency')
+            ->with('categories')
+            ->with('hash_tags')
+            ->get();
+        // Get You May Also Like
+        $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
+        $d = DB::table('events')
+            ->leftJoin('event_categories','events.id','=','event_categories.event_id')
+            ->whereIn('event_categories.interest_id',$category_ids)
+            ->select('events.*')->distinct()
+            ->get();
+
+        return Helpers::Get_Response(200, 'success', 'saved', [], ['event'=>$event,'you_may_also_like'=>$d]);
+
+
+
+
+    }
+
     /**
      * add new event
      * @param Request $request
      * @return  \Illuminate\Http\JsonResponse
      */
+
 
     public function add_event(Request $request){
 
@@ -149,7 +184,7 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        $events = $interest->events()->with('prices.currency')->with('categories')->IsActive()->ShowInMobile();
+        $events = $interest->events()->with('prices.currency')->with('categories')->with('hash_tags')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -196,7 +231,7 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
 
-        $events = Event::BigEvents()->orderBy('sort_order')->with('prices.currency')->with('categories')->IsActive()->ShowInMobile();
+        $events = Event::BigEvents()->orderBy('sort_order')->with('prices.currency')->with('hash_tags')->with('categories')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -251,24 +286,30 @@ class EventsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
 
-        $this_month = Event::query()->with('prices.currency')
+        $this_month = Event::query()
+            ->with('prices.currency')
             ->with('categories')
+            ->with('hash_tags')
             ->IsActive()
             ->ShowInMobile()
             ->ThisMonthEvents()
             ->WithPaginate($page,$limit)
             ->orderBy('end_datetime','DESC')
             ->get();
-        $next_month = Event::query()->with('prices.currency')
+        $next_month = Event::query()
+            ->with('prices.currency')
             ->with('categories')
+            ->with('hash_tags')
             ->IsActive()
             ->ShowInMobile()
             ->NextMonthEvents()
             ->WithPaginate($page,$limit)
             ->orderBy('end_datetime','DESC')
             ->get();
-        $start_to_today = Event::query()->with('prices.currency')
+        $start_to_today = Event::query()
+            ->with('prices.currency')
             ->with('categories')
+            ->with('hash_tags')
             ->IsActive()
             ->ShowInMobile()
             ->StartOfMothEvents()
