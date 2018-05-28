@@ -34,7 +34,7 @@ $citycounty[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->
      $lang_id = $request->input('lang_id');
      $keyword = $request->input('keyword');
     //dd($keyword);
-      $result= array();
+      $citycounty= array();
     $locale =Helpers::Set_locale($lang_id);
       //return;
 
@@ -71,7 +71,7 @@ $citycounty[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->
     // $citycounty = GeoCity::where('name','like','%'.urldecode($keyword).'%')->get();
 
 
-    if (!empty($citycounty)) {
+    if (!empty($citycounty[0])) {
         return Helpers::Get_Response(200,'success','','',$citycounty);
     }else{
         return Helpers::Get_Response(400,'error',trans('there is no result related to your input'),'',[]);

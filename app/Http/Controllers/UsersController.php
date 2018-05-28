@@ -20,7 +20,7 @@ use \Illuminate\Support\Facades\Lang;
 
 class UsersController extends Controller
 {
-    protected   $base_url = 'http://eventakom.com/eventakom_dev/public/';
+    // protected   $base_url = 'http://eventakom.com/eventakom_dev/public/';
 
 
     public function getAllUsers()
@@ -79,10 +79,7 @@ class UsersController extends Controller
         $input['latitude'] = $city->latitude;
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
-        //$base_url = url('/');
-        $base_url = 'http://eventakom.com/eventakom_dev/public/';
-        $user_array->photo = $base_url.$user_array->photo;
-            // $user_array->photo = url('images/{$user_array->first_name}');
+ 
         if ($user) {
             $sms_mobile = $request['tele_code'] . '' . $request['mobile'];
             $sms_body = trans('messages.your_verification_code_is') . $input['mobile_verification_code'];
@@ -732,7 +729,7 @@ class UsersController extends Controller
                 'email' => $email_valid,
                 // 'conutry_code_id' => 'required',
                 // 'mobile' => 'required|numeric|unique:users',
-                'password' => 'required|between:8,20',
+                //'password' => 'required|between:8,20',
                 // 'photo' => 'image|max:1024',
                 //'device_token' => 'required',
                 'mobile_os' => 'in:android,ios',
@@ -743,17 +740,18 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('image', $request)) {
+        if (array_key_exists('photo', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], '/mobile_users/');
         }
         $input = $request;
         /*id username  password  first_name  last_name email tele_code mobile  country_id  city_id gender_id photo birthdate is_active created_by  updated_by  created_at  updated_at  device_token  mobile_os is_social access_token  social_token  lang_id mobile_verification_code is_mobile_verification_code_expired  last_login  api_token longtuide latitude*/
-        if (Hash::check($request['password'], $user->password)) {
-            $input['password'] = $user->password;
-        } else {
+        // if (Hash::check($request['password'], $user->password)) {
+        //     $input['password'] = $user->password;
+        // } else {
 
-            $input['password'] = Hash::make($input['password']);
-        }
+        //     $input['password'] = Hash::make($input['password']);
+        // }
+        $input['password'] = $user->password;
         //$input['is_active'] = 0;
         $input['username'] = $request['first_name'] . '' . $request['last_name'];
         $input['mobile'] = $user->mobile;

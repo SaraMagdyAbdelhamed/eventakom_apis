@@ -10,7 +10,7 @@ use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Support\Facades\Hash;
 use carbon\carbon;
-
+use App\Libraries\Helpers;
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use HasApiTokens, Authenticatable, Authorizable;
@@ -80,7 +80,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
      public function setBirthDateAttribute($value)
     {
+        if(Helpers::isValidTimestamp($value))
+        {
         $this->attributes['birthdate'] = gmdate("Y-m-d\TH:i:s\Z",$value);
+        }else{
+
+          return Helpers::Get_Response(403, 'error', trans('Invalid date format'), [], []);   
+        }
     }
 
 }
