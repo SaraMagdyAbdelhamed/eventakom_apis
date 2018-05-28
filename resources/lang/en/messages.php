@@ -32,5 +32,8 @@ return [
 	'exceeded_verifications_limit'=>'sorry you have exceeded your verifications limit today',
     'mobile_number_not_registered'=>'Mobile number is not registered',
 	'invalid_verification_code'=>'Invalid verification code, please write the right one',
-	'mobile_isn’t_registered'=>'this mobile number isn’t registered'
+	'mobile_isn’t_registered'=>'this mobile number isn’t registered',
+	'email_already_exist'=>'This Email is already exist',
+	'mobile_already_exist'=>'This Mobile number is already exist'
+
 ];

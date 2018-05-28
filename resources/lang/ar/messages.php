@@ -32,7 +32,10 @@ return [
 	'exceeded_verifications_limit'=>'عذرا ..لقد استنفذت عدد المحاولات الخاصة بإرسال كود التحقق لليوم الحالي',
 	'mobile_number_not_registered'=>'رقم الموبايل غير مسجل',
 	'invalid_verification_code'=>'كود التحقق غير صحيح ، الرجاء التأكد من ادخال الكود الصحيح',
-	'mobile_isn’t_registered'=>'هذا الرقم غير مسجل'
+	'mobile_isn’t_registered'=>'هذا الرقم غير مسجل',
+	'email_already_exist'=>'عنوان البريد الالكتروني مسجل بالفعل',
+    'mobile_already_exist'=>'هذا الرقم مسجل بالفعل'
+
 
 
 ];

@@ -64,10 +64,17 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->belongsToMany('App\Interest', 'user_interests');
     }
+
     public function posts(){
         return $this->hasMany('App\EventPost','user_id');
     }
 
-
+ 
+  public function getPhotoAttribute($value)
+    {
+        $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        $photo = $base_url.$value;
+        return $photo;
+    }
 
 }

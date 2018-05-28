@@ -46,9 +46,10 @@ $citycounty[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->
      ->orWhereHas('geo_country', function ($query) use ($keyword) {
          $query->where('name', 'like', '%'.$keyword.'%');
      })->get();
-     foreach($citycounty as $key=>$city){
+     // dd($citycounty);
+     foreach($citycounty as $city){
 
-     $result[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->getNameAttribute($city->geo_country->name);
+     $city->name= $city->getNameAttribute($city->name).','.$city->geo_country->getNameAttribute($city->geo_country->name);
 // dd($result);
      }
    }elseif($lang_id ==2){
@@ -59,9 +60,10 @@ $citycounty[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->
      ->where('entity_id','=',8)->where('field','=','name')
      ->select('geo_countries.*','entity_localizations.value')->where('entity_localizations.value','like','%'.$keyword.'%');
    })->get();
-   foreach($citycounty as $key=>$city){
+   foreach($citycounty as $city){
+   
+   $city->value= $city->getNameAttribute($city->name).','.$city->geo_country->getNameAttribute($city->geo_country->name);
 
-   $result[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->getNameAttribute($city->geo_country->name);
 
    }
 
@@ -69,8 +71,8 @@ $citycounty[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->
     // $citycounty = GeoCity::where('name','like','%'.urldecode($keyword).'%')->get();
 
 
-    if (!empty($result)) {
-        return Helpers::Get_Response(200,'success','','',$result);
+    if (!empty($citycounty)) {
+        return Helpers::Get_Response(200,'success','','',$citycounty);
     }else{
         return Helpers::Get_Response(400,'error',trans('there is no result related to your input'),'',[]);
     }
