@@ -498,6 +498,7 @@ class UsersController extends Controller
         }
         $validator = Validator::make($request, [
             "email" => "required",
+            "lang_id"=>"required"
 
         ]);
 
@@ -509,7 +510,7 @@ class UsersController extends Controller
    $user = User::where('email', $request['email'])->first();
 
         if ($user) {
-         return Helpers::Get_Response(204, trans('This Email is already exist'), '', $validator->errors(), []);
+         return Helpers::Get_Response(204, trans('messages.email_already_exist'), '', $validator->errors(), []);
 
         }else{
 
@@ -532,7 +533,8 @@ class UsersController extends Controller
         }
         $validator = Validator::make($request, [
             "mobile" => "required",
-            "tele_code"=>"required"
+            "tele_code"=>"required",
+            "lang_id"=>"required"
 
         ]);
 
@@ -545,7 +547,7 @@ class UsersController extends Controller
    $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
 
         if ($user) {
-         return Helpers::Get_Response(204, trans('This Mobile is already exist'), '', $validator->errors(), []);
+         return Helpers::Get_Response(204, trans('messages.mobile_already_exist'), '', $validator->errors(), []);
 
         }else{
 
@@ -722,6 +724,7 @@ class UsersController extends Controller
         } else {
             $email_valid = 'required|email|unique:users|max:35';
         }
+        
         $validator = Validator::make($request,
             [
                 'first_name' => 'required|between:1,12',
@@ -770,9 +773,9 @@ class UsersController extends Controller
            $mail=Helpers::mail_verify($request['email'],$input['username'],$input['email_verification_code']);
             $user->update(['is_email_verified' => 0]);
         }
-        $user_array = User:: where("api_token", "=", $api_token)->first();
-        $base_url = 'http://eventakom.com/eventakom_dev/public/';
-        $user_array->photo = $base_url.$user_array->photo;
+         $user_array = User:: where("api_token", "=", $api_token)->first();
+        // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        // $user_array->photo = $base_url.$user_array->photo;
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
     }
 
