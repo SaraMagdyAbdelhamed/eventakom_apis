@@ -69,11 +69,22 @@ class Event extends Model
 
     }
 
+    public  static function EventsInCategories($categories_ids){
+        return static::query()
+            ->leftJoin('event_categories','events.id','=','event_categories.event_id')
+            ->whereIn('event_categories.interest_id',$categories_ids)
+            ->select('events.*')
+            ->distinct()
+            ->with('categories')
+            ->with('prices.currency')
+            ->with('hash_tags');
+
+
+    }
+
+
     //Mutators
-
-
-
-    public function ScopeIsActive($query){
+ function ScopeIsActive($query){
         return $query->where('is_active', '=', 1);
 
     }
@@ -81,6 +92,12 @@ class Event extends Model
     public function ScopeShowInMobile($query){
         return $query->where('show_in_mobile', '=', 1);
     }
+
+    public  function ScopeSuggestedAsBigEvent($query){
+        return $query->where('suggest_big_event', '=', 1);
+
+    }
+
 
     public function ScopeUpcomingEvents($query){
         return $query->where("end_datetime",'>=',Carbon::now());

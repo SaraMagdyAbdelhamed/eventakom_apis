@@ -34,6 +34,12 @@ class EventsController extends Controller
         //
     }
 
+    /**
+     * Return Event Details by event id and return recommended events realted to this event
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public  function event_details(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -55,15 +61,13 @@ class EventsController extends Controller
             ->get();
         // Get You May Also Like
         $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
-        $d = DB::table('events')
-            ->leftJoin('event_categories','events.id','=','event_categories.event_id')
-            ->whereIn('event_categories.interest_id',$category_ids)
-            ->select('events.*')->distinct()
-            ->get();
-
-        return Helpers::Get_Response(200, 'success', 'saved', [], ['event'=>$event,'you_may_also_like'=>$d]);
+        $random = array_key_exists('random_limit',$request_data) ? $request_data['random_limit'] :10;
+        $result = Event::EventsInCategories($category_ids)->get()->random($random);
 
 
+
+
+        return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
 
 
     }
@@ -137,12 +141,7 @@ class EventsController extends Controller
 
         //read event categories and save it
         if(array_key_exists('categories',$request_data)){
-            $categories = explode(',',$request_data['categories']);
-            foreach ($categories as $category){
-                $event_category = Interest::firstOrCreate(['name'=>$category]);
-                $event->categories()->save($event_category);
-
-            }
+        $event->categories()->sync($request_data['categories']);
 
         }
 
@@ -231,10 +230,22 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
 
-        $events = Event::BigEvents()->orderBy('sort_order')->with('prices.currency')->with('hash_tags')->with('categories')->IsActive()->ShowInMobile();
+        $events = Event::query()
+            ->with('prices.currency')
+            ->with('hash_tags')
+            ->with('categories')
+            ->IsActive()
+            ->ShowInMobile()
+            ->SuggestedAsBigEvent();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
+                break;
+            case 'big_events':
+                $data = Event::BigEvents()->orderBy('sort_order','DESC')
+                    ->with('prices.currency')->with('categories')->with('hash_tags')
+                    ->IsActive()
+                    ->ShowInMobile();
                 break;
 
             default:
