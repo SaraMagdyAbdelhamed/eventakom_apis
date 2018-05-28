@@ -32,7 +32,9 @@ class EventPost extends Model
         return $this->hasMany('App\PostReply','event_post_id');
     }
 
-
+    public function ScopeWithPaginate($query,$page,$limit){
+        return $query->skip(($page-1)*$limit)->take($limit);
+    }
 
 
 }

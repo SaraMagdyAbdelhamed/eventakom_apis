@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\PostReply;
 use App\User;
 use App\Interest;
 use App\Event;
@@ -280,7 +281,6 @@ class EventsController extends Controller
         }
         return Helpers::Get_Response(200,'success','',[],AgeRange::all());
 
-
     }
 
     /**
@@ -296,7 +296,6 @@ class EventsController extends Controller
         }
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-
 
         $this_month = Event::query()
             ->with('prices.currency')
@@ -345,16 +344,71 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
         $event_posts = EventPost::query()
             ->orderBy('id','DESC')
             ->withCount('replies')
             ->with('user:id,photo')
+            ->WithPaginate($page,$limit)
             ->get();
 
         return Helpers::Get_Response(200,'success','',[],$event_posts);
 
+    }
+
+    public function delete_event_post(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user_id = User:: where("api_token", "=", $request->header('access-token'))->first()->id;
+        $event_post = EventPost::find($request_data['event_post_id']);
+        if(!$event_post){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+
+        }
+        // check if the logged user is the owner of this post
+        if($event_post->user_id == $user_id || $event_post->event->created_by == $user_id){
+            //perform delete and delete the replies
+            $event_post->replies()->delete();
+            $event_post->delete();
+            //return success of delete
+            return Helpers::Get_Response(200,'success','',[],[]);
+
+
+        }else{
+            // return that the user is unotherized
+            return Helpers::Get_Response(403,'faild',trans('messages.delete_post'),[],[]);
+
+
+        }
 
     }
+
+    public  function delete_reply(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user_id = User:: where("api_token", "=", $request->header('access-token'))->first()->id;
+        $reply = PostReply::find($request_data['reply_id']);
+        if(!$reply){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        // check if the logged user is the owner of this post
+        if($reply->created_by == $user_id || $reply->post->user_id == $user_id || $reply->post->event->created_by == $user_id){
+            //perform delete and delete the replies
+            $reply->delete();
+            //return success of delete
+            return Helpers::Get_Response(200,'success','',[],[]);
+        }else{
+            // return that the user is unotherized
+            return Helpers::Get_Response(403,'faild',trans('messages.delete_post'),[],[]);
+        }
+    }
+
 
 
 }
