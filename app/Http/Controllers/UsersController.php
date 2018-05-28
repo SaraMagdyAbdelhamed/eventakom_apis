@@ -363,8 +363,8 @@ class UsersController extends Controller
 //                            "mobile_os"=>$request['mobile_os'],
 //                        ]);
                       $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-                      $base_url = 'http://eventakom.com/eventakom_dev/public/';
-                      $user_array->photo = $base_url.$user_array->photo;
+                      // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                      // $user_array->photo = $base_url.$user_array->photo;
                         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
                     } else {
                         return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
@@ -375,8 +375,8 @@ class UsersController extends Controller
                 return Helpers::Get_Response(400, 'error', trans('messages.mobile_isn’t_registered'), $validator->errors(), []);
             }
             $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-            $base_url = 'http://eventakom.com/eventakom_dev/public/';
-            $user_array->photo = $base_url.$user_array->photo;
+            // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+            // $user_array->photo = $base_url.$user_array->photo;
             return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
         } else {
             return Helpers::Get_Response(401, 'error', trans('Invalid mobile number'), $validator->errors(), []);
@@ -743,7 +743,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('photo', $request)) {
+        if (array_key_exists('image', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], '/mobile_users/');
         }
         $input = $request;
