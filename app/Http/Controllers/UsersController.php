@@ -144,8 +144,8 @@ class UsersController extends Controller
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
                 $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-                $base_url = 'http://eventakom.com/eventakom_dev/public/';
-                $user_array->photo = $base_url.$user_array->photo;
+                // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                // $user_array->photo = $base_url.$user_array->photo;
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
             } //date_format("Y-m-d", $user->verification_date) dont forget
             elseif ($user->verification_count >= 5 && $user_date != Carbon::now()->format('Y-m-d')) {
@@ -168,8 +168,8 @@ class UsersController extends Controller
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
                 $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-                $base_url = 'http://eventakom.com/eventakom_dev/public/';
-                $user_array->photo = $base_url.$user_array->photo;
+                // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                // $user_array->photo = $base_url.$user_array->photo;
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
             } elseif ($user->verification_count >= 5 && $user_date == Carbon::now()->format('Y-m-d')) {
                 //set is_mobile_verification_code_expired to 1
@@ -194,8 +194,8 @@ class UsersController extends Controller
                     // $mail=Helpers::mail($user->email,$user->username,$mobile_verification_code);
                 }
                 $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-                $base_url = 'http://eventakom.com/eventakom_dev/public/';
-                $user_array->photo = $base_url.$user_array->photo;
+                // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+                // $user_array->photo = $base_url.$user_array->photo;
                 return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
 
             }
@@ -246,8 +246,8 @@ class UsersController extends Controller
             return Helpers::Get_Response(400, 'error', trans('messages.mobile_number_not_registered'), $validator->errors(), []);
         }
         $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-        $base_url = 'http://eventakom.com/eventakom_dev/public/';
-        $user_array->photo = $base_url.$user_array->photo;
+        // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        // $user_array->photo = $base_url.$user_array->photo;
         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
 
     }
@@ -433,8 +433,8 @@ class UsersController extends Controller
                 $user->update(['lang_id' => $request['lang_id']]);
                 $user->save();
                 $base_url = 'http://eventakom.com/eventakom_dev/public/';
-                $user_array = User:: where("api_token", "=", $api_token)->first();
-                $user_array->photo = $base_url.$user_array->photo;
+                // $user_array = User:: where("api_token", "=", $api_token)->first();
+                // $user_array->photo = $base_url.$user_array->photo;
                 return Helpers::Get_Response(200, 'success', '', '', array($user_array));
             } else {
 
@@ -918,8 +918,8 @@ class UsersController extends Controller
         }
 
         $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
-        $base_url = 'http://eventakom.com/eventakom_dev/public/';
-        $user_array->photo = $base_url.$user_array->photo;
+        // $base_url = 'http://eventakom.com/eventakom_dev/public/';
+        // $user_array->photo = $base_url.$user_array->photo;
         return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array));
 
     }
