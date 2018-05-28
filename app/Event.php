@@ -82,15 +82,18 @@ class Event extends Model
             ->with('prices.currency')
             ->with('hash_tags');
 
+    }
+
+    public static function NearByEvents($user_lng,$user_lat){
 
     }
 
 
     //Mutators
- function ScopeIsActive($query){
-        return $query->where('is_active', '=', 1);
+     function ScopeIsActive($query){
+            return $query->where('is_active', '=', 1);
 
-    }
+        }
 
     public function ScopeShowInMobile($query){
         return $query->where('show_in_mobile', '=', 1);

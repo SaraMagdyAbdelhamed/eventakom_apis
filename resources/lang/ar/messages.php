@@ -34,7 +34,8 @@ return [
 	'invalid_verification_code'=>'كود التحقق غير صحيح ، الرجاء التأكد من ادخال الكود الصحيح',
 	'mobile_isn’t_registered'=>'هذا الرقم غير مسجل',
 	'email_already_exist'=>'عنوان البريد الالكتروني مسجل بالفعل',
-    'mobile_already_exist'=>'هذا الرقم مسجل بالفعل'
+    'mobile_already_exist'=>'هذا الرقم مسجل بالفعل',
+    'delete_post'=>'ليس لديك الصلاحية لازالة هذا المنشور'
 
 
 

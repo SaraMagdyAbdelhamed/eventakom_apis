@@ -79,5 +79,7 @@ $router->post('current_month_events',"EventsController@current_month_events");
 $router->post("age_ranges","EventsController@age_ranges");
 $router->post('event_details',"EventsController@event_details");
 $router->post("event_posts","EventsController@event_posts");
+$router->post('delete_event_post',"EventsController@delete_event_post");
+$router->post('delete_reply','EventsController@delete_reply');
 
 });

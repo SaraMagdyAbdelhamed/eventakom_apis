@@ -34,6 +34,7 @@ return [
 	'invalid_verification_code'=>'Invalid verification code, please write the right one',
 	'mobile_isn’t_registered'=>'this mobile number isn’t registered',
 	'email_already_exist'=>'This Email is already exist',
-	'mobile_already_exist'=>'This Mobile number is already exist'
+	'mobile_already_exist'=>'This Mobile number is already exist',
+    'delete_post'=>'You have no access to delete this post'
 
 ];
