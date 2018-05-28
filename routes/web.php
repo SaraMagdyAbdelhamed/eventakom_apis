@@ -78,5 +78,6 @@ $router->post("big_events[/{type}]","EventsController@big_events");
 $router->post('current_month_events',"EventsController@current_month_events");
 $router->post("age_ranges","EventsController@age_ranges");
 $router->post('event_details',"EventsController@event_details");
+$router->post("event_posts","EventsController@event_posts");
 
 });

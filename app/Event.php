@@ -43,6 +43,9 @@ class Event extends Model
     public  function prices(){
         return $this->hasMany('App\Price','event_id');
     }
+    public function posts(){
+        return $this->hasMany('App\EventPost','event_id');
+    }
 
 
     //Localizations

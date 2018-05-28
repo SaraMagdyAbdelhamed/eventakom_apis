@@ -8,6 +8,7 @@ use App\HashTag;
 use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
+use App\EventPost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -243,7 +244,7 @@ class EventsController extends Controller
                 break;
             case 'big_events':
                 $data = Event::BigEvents()->orderBy('sort_order','DESC')
-                    ->with('prices.currency')->with('categories')->with('hash_tags')
+                    ->with('prices.currency')->with('categories')->with('hash_tags')->with('posts')
                     ->IsActive()
                     ->ShowInMobile();
                 break;
@@ -333,10 +334,27 @@ class EventsController extends Controller
             'start_of_today_to_end'            => $this_month,
             'next_month'                       => $next_month
 
-
         ];
         return Helpers::Get_Response(200,'success','',[],$result);
 
     }
+
+
+    public function event_posts(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $event_posts = EventPost::query()
+            ->orderBy('id','DESC')
+            ->withCount('replies')
+            ->with('user:id,photo')
+            ->get();
+
+        return Helpers::Get_Response(200,'success','',[],$event_posts);
+
+
+    }
+
 
 }

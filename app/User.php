@@ -64,6 +64,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     {
         return $this->belongsToMany('App\Interest', 'user_interests');
     }
+    public function posts(){
+        return $this->hasMany('App\EventPost','user_id');
+    }
+
 
 
 }
