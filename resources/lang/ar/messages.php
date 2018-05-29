@@ -8,7 +8,7 @@ return [
 	'wrong_mobile' => 'الرقم غير مسجل ',
 	'wrong_code'=>'هذا الكود غير متاح',
 	'mobile' => 'الرقم غير صحيح',
-	'wrong_verification_code'=>'الكود غير صحيح – برجاء التأكد منه ',
+	'wrong_verification_code'=>'رمز التفعيل غير صحيح',
 	'password_less'=> 'لابد من ادخال عدد لا يقل عن 6 حروف لكلمة المرور',
 	'not_matching_password'=> 'برجاء التحقق من كلمة المرور فهم غير متماثلين',
 	'required_fields' => 'Please enter all required fields',
@@ -29,13 +29,14 @@ return [
 	'interest_not_found'=>'هذا التصنيف غير موجود',
 	'wrong_mobile_verification_code'=>'كود التحقق غير صحيح',
 	'your_verification_code_is'=>'كود التحقق الخاص بك هو :',
-	'exceeded_verifications_limit'=>'عذرا ..لقد استنفذت عدد المحاولات الخاصة بإرسال كود التحقق لليوم الحالي',
+	'exceeded_verifications_limit'=>'لقد تخطيت الحد الأقصى لطلب رمز التفعيل اليوم',
 	'mobile_number_not_registered'=>'رقم الموبايل غير مسجل',
 	'invalid_verification_code'=>'كود التحقق غير صحيح ، الرجاء التأكد من ادخال الكود الصحيح',
-	'mobile_isn’t_registered'=>'هذا الرقم غير مسجل',
+	'mobile_isn’t_registered'=>'هذا الرقم غير مسجل لدينا',
 	'email_already_exist'=>'عنوان البريد الالكتروني مسجل بالفعل',
     'mobile_already_exist'=>'هذا الرقم مسجل بالفعل',
-    'delete_post'=>'ليس لديك الصلاحية لازالة هذا المنشور'
+    'delete_post'=>'ليس لديك الصلاحية لازالة هذا المنشور',
+	'invalid_mobile_number'=>'هذا الرقم غير صحيح ، رجاء اعد ادخاله مرة اخرى'
 
 
 

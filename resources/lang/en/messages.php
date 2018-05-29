@@ -8,7 +8,7 @@ return [
 	'wrong_mobile' => 'wrong mobile number ',
 	'wrong_code'=>'wrong code ',
 	'mobile' => 'Please enter valid number ',
-	'wrong_verification_code'=>'wrong verification code, Please check it ',
+	'wrong_verification_code'=>'Invalid Activation code',
 	'password_less'=> 'Please enter password numbers morethan 6',
 	'not_matching_password'=> 'Passwords not matched ',
 	'required_fields' => 'Please enter all required fields',
@@ -29,12 +29,14 @@ return [
 	'interest_not_found' =>'The interest you entered not found',
 	'wrong_mobile_verification_code'=>'wrong mobile verification code',
     'your_verification_code_is'=>'your verification code is: ',
-	'exceeded_verifications_limit'=>'sorry you have exceeded your verifications limit today',
+	'exceeded_verifications_limit'=>'Sorry, you have exceeded the daily number of pin requests.',
     'mobile_number_not_registered'=>'Mobile number is not registered',
 	'invalid_verification_code'=>'Invalid verification code, please write the right one',
-	'mobile_isn’t_registered'=>'this mobile number isn’t registered',
+	'mobile_isn’t_registered'=>'This mobile number isn’t registered with us',
 	'email_already_exist'=>'This Email is already exist',
 	'mobile_already_exist'=>'This Mobile number is already exist',
-    'delete_post'=>'You have no access to delete this post'
+    'delete_post'=>'You have no access to delete this post',
+	'invalid_mobile_number'=>'Invalid mobile number, re-enter it'
+
 
 ];

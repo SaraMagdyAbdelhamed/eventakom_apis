@@ -212,7 +212,7 @@ class UsersController extends Controller
         }
         $validator = Validator::make($request,
             [
-                "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
+                "mobile" => "required",
                 "tele_code" => "required",
                 "mobile_verification_code" => "required",
                 "lang_id" => "required|in:1,2"
@@ -296,7 +296,7 @@ class UsersController extends Controller
             Helpers::Set_locale($request['lang_id']);
         }
         $validator = Validator::make($request, [
-            "mobile" => "required|numeric",
+            "mobile" => "required",
             "tele_code"=>"required",
             "password" => "required|min:8|max:20",
 //            "device_token"=>'required',
@@ -316,6 +316,8 @@ class UsersController extends Controller
                 if (!$user) {
                     return Helpers::Get_Response(400, 'error', trans('messages.mobile_isn’t_registered'), $validator->errors(), []);
                 }
+            }else{
+                 return Helpers::Get_Response(400, 'error', trans('messages.invalid_mobile_number'), $validator->errors(), []);
             }
             // elseif (filter_var($request['mobile'], FILTER_VALIDATE_EMAIL)) {
             //   $user = User:: where("email", "=", $request['mobile'])->with('rules')->first();
@@ -885,7 +887,7 @@ class UsersController extends Controller
         }
         $validator = Validator::make($request,
             [
-                "mobile" => "required|regex:/^\+?[^a-zA-Z]{5,}$/",
+                "mobile" => "required",
                 "tele_code"=>"required",
                 "mobile_verification_code" => "required",
                 "new_password" => "required|between:8,20"
@@ -894,8 +896,9 @@ class UsersController extends Controller
 
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
-        $user = User::where('mobile', $request['mobile'])->first();
 
+        $user = User::where('mobile', $request['mobile'])->first();
+        if (is_numeric($request['mobile'])) {
         if ($user) {
             if ($user->mobile_verification_code == $request['mobile_verification_code']) {
 
@@ -914,8 +917,12 @@ class UsersController extends Controller
 
             }
         } else {
-            return Helpers::Get_Response(400, 'error', trans('Mobile number is not registered'), $validator->errors(), []);
+            return Helpers::Get_Response(400, 'error', trans('messages.mobile_isn’t_registered'), $validator->errors(), []);
         }
+    }else{
+         return Helpers::Get_Response(400, 'error', trans('messages.invalid_mobile_number'), $validator->errors(), []);
+
+    }
 
         $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
         // $base_url = 'http://eventakom.com/eventakom_dev/public/';

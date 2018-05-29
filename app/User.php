@@ -38,14 +38,13 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         'password','verification_code ','access_token','pivot'
     ];
 
-    public static $rules = [ 'first_name' => 'required|between:1,12',
-            'last_name' => 'required|between:1,12',
-            'email' => 'required|email|unique:users|max:35',
+    public static $rules = [ 'first_name' => 'between:1,12',
+            'last_name' => 'between:1,12',
+            'email' => 'email|unique:users|max:35',
             'city_id' => 'required',
             'mobile' => 'required|numeric|unique:users',
+            'tele_code'=>'required',
             'password' => 'required|between:8,20',
-            // 'photo' => 'image|max:1024',
-            //'device_token' => 'required',
             'mobile_os' => 'in:android,ios',
             'lang_id' => 'in:1,2'];
 
