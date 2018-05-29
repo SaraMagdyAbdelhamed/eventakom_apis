@@ -83,8 +83,6 @@ class EventsController extends Controller
 
 
     public function add_event(Request $request){
-
-
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -93,20 +91,20 @@ class EventsController extends Controller
         $validator = Validator::make($request_data,
             [
                 "name"             => "required|between:2,100",
-                "mobile"    =>'required|numeric',
+                "mobile"           => 'required|numeric',
                 "description"      => "required|between:2,250",
                 "venue"            => "required|between:2,100",
-                'hashtags'         =>"between:2,118",
+                'hashtags'         => "between:2,118",
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
                 'longtuide'        => 'required',
                 'latitude'         => 'required',
-                'email'            =>'email|max:35',
-                'website'          =>'between:10,50',
-                'photos'           =>'array|max:5',
-                'videos'           =>'array|max:2',
-                'tickets'          =>'array'
+                'email'            => 'email|max:35',
+                'website'          => 'between:10,50',
+                'photos'           => 'array|max:5',
+                'videos'           => 'array|max:2',
+                'tickets'          => 'array'
 
             ]);
         if ($validator->fails()) {
@@ -121,7 +119,7 @@ class EventsController extends Controller
             'start_datetime'    => date('Y-m-d H:i:s',$request_data['start_datetime']),
             'end_datetime'      => date('Y-m-d H:i:s',$request_data['end_datetime']),
             'is_active'         => 0,
-            'show_in_mobile'    => 0,
+            'show_in_mobile'    => 1,
             'created_by'        => User::where('api_token','=',$request->header('access-token'))->first()->id,
             'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL,
             'longtuide'         => $request_data['longtuide'],
@@ -194,23 +192,103 @@ class EventsController extends Controller
             }
 
         }
-
-
-
-
-
         return Helpers::Get_Response(200, 'success', 'saved', [], Event::latest()->with(['prices.currency','hash_tags','categories'])->first());
+    }
+
+    /**
+     * Edit Events only for Event Owner
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public  function  edit_event(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        // validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id"         =>'required',
+                "name"             => "between:2,100",
+                "mobile"           => 'numeric',
+                "description"      => "between:2,250",
+                "venue"            => "between:2,100",
+                'hashtags'         => "between:2,118",
+                'email'            => 'email|max:35',
+                'website'          => 'between:10,50',
+                'photos'           => 'array|max:5',
+                'videos'           => 'array|max:2',
+                'tickets'          => 'array'
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user_id = User::where('api_token','=',$request->header('access-token'))->first()->id;
+
+        // update main events info
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(403, 'error', 'not found', [], []);
+        }
+
+        if($event->created_by == $user_id){
+            $event_data = [
+                'name'              => array_key_exists('name',$request_data)? $request_data['name']: $event->name,
+                'description'       => array_key_exists('description',$request_data)? $request_data['description']: $event->description,
+                'venue'             => array_key_exists('venue',$request_data)? $request_data['venue']: $event->venue,
+                'gender_id'         => array_key_exists('gender_id',$request_data)? $request_data['gender_id']: $event->gender_id,
+                'start_datetime'    => array_key_exists('start_datetime',$request_data)? date('Y-m-d H:i:s',$request_data['start_datetime']): $event->start_datetime,
+                'end_datetime'      => array_key_exists('end_datetime',$request_data)? date('Y-m-d H:i:s',$request_data['end_datetime']): $event->end_datetime,
+                'updated_by'        => $user_id,
+                'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:$event->age_range_id,
+                'longtuide'         => array_key_exists('longtuide',$request_data) ?$request_data['longtuide']:$event->longtuide,
+                'latitude'          => array_key_exists('latitude',$request_data) ?$request_data['latitude']:$event->latitude,
+                'email'             => array_key_exists('email',$request_data) ? $request_data['email']: $event->email,
+                'website'           => array_key_exists('website',$request_data) ? $request_data['website']: $event->website,
+                'mobile'            => array_key_exists('mobile',$request_data) ? $request_data['mobile']: $event->mobile,
+                'event_status_id'   => 1
+            ];
+            $event->update($event_data);
+            if(array_key_exists('photos',$request_data)){
+                foreach ($request_data['photos'] as $photo){
+                    $photo_data =[
+                        'link'  => Base64ToImageService::convert($photo, 'img/events/'),
+                        'type'  => 1
+                    ];
+                    $event->media()->update($photo_data);
+                }
+            }
+            //Check for videos
+            if(array_key_exists('videos',$request_data)){
+                foreach ($request_data['videos'] as $video){
+                    $video_data =[
+                        'link'  => $video,
+                        'type'  => 2
+                    ];
+                    $event->media()->update($video_data);
+                }
+            }
+
+            return Helpers::Get_Response(200, 'success', 'saved', [], Event::query()->where('id',$request_data['event_id'])->with(['prices.currency','hash_tags','categories'])->first());
+        }
+
+        return Helpers::Get_Response(403,'faild',trans('messages.edit_event'),[],[]);
 
 
 
 
     }
 
+    public function delete_event(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
 
-
-
-
-    public  function  edit_event(Request $request){
 
     }
 
