@@ -10,6 +10,7 @@ use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
 use App\EventPost;
+use App\Price;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -92,14 +93,20 @@ class EventsController extends Controller
         $validator = Validator::make($request_data,
             [
                 "name"             => "required|between:2,100",
+                "mobile"    =>'required|numeric',
                 "description"      => "required|between:2,250",
                 "venue"            => "required|between:2,100",
-                'hashtags'         =>"between:2,250",
+                'hashtags'         =>"between:2,118",
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
                 'longtuide'        => 'required',
-                'latitude'         => 'required'
+                'latitude'         => 'required',
+                'email'            =>'email|max:35',
+                'website'          =>'between:10,50',
+                'photos'           =>'array|max:5',
+                'videos'           =>'array|max:2',
+                'tickets'          =>'array'
 
             ]);
         if ($validator->fails()) {
@@ -107,18 +114,22 @@ class EventsController extends Controller
         }
 
         $event_data = [
-            'name'          =>$request_data['name'],
-            'description'   =>$request_data['description'],
-            'venue'         =>$request_data['venue'],
-            'gender_id'     =>$request_data['gender_id'],
-            'start_datetime'=>date('Y-m-d H:i:s',$request_data['start_datetime']),
-            'end_datetime'  =>date('Y-m-d H:i:s',$request_data['end_datetime']),
-            'is_active'     =>0,
-            'show_in_mobile'=>0,
-            'created_by'    =>User::where('api_token','=',$request->header('access-token'))->first()->id,
-            'age_range_id'  =>array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL,
-            'longtuide'     => $request_data['longtuide'],
-            'latitude'      => $request_data['latitude']
+            'name'              => $request_data['name'],
+            'description'       => $request_data['description'],
+            'venue'             => $request_data['venue'],
+            'gender_id'         => $request_data['gender_id'],
+            'start_datetime'    => date('Y-m-d H:i:s',$request_data['start_datetime']),
+            'end_datetime'      => date('Y-m-d H:i:s',$request_data['end_datetime']),
+            'is_active'         => 0,
+            'show_in_mobile'    => 0,
+            'created_by'        => User::where('api_token','=',$request->header('access-token'))->first()->id,
+            'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL,
+            'longtuide'         => $request_data['longtuide'],
+            'latitude'          => $request_data['latitude'],
+            'email'             => array_key_exists('email',$request_data) ? $request_data['email']: NULL,
+            'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
+            'mobile'            => $request_data['mobile'],
+            'event_status_id'   => 1
 
         ];
 
@@ -126,8 +137,6 @@ class EventsController extends Controller
         $event = Event::create($event_data);
         if(!$event){
             return Helpers::Get_Response(403, 'error', 'not saved',[], []);
-
-
         }
 
         //read the hashtags and save it ;
@@ -143,16 +152,65 @@ class EventsController extends Controller
 
         //read event categories and save it
         if(array_key_exists('categories',$request_data)){
-        $event->categories()->sync($request_data['categories']);
+         $event->categories()->sync($request_data['categories']);
+
+        }
+
+        // Save Tickets
+        if(array_key_exists('tickets',$request_data)) {
+            foreach ($request_data['tickets'] as $ticket) {
+
+                $data = [
+                  'name'                 => array_key_exists('name',$ticket) ? $ticket['name'] : NULL ,
+                  'price'                => array_key_exists('price',$ticket) ? $ticket['price'] : NULL,
+                  'available_tickets'    => array_key_exists('available_tickets',$ticket) ? $ticket['available_tickets'] : NULL,
+                  'currency_id'         => array_key_exists('currency_id',$ticket) ? $ticket['currency_id'] : NULL
+
+                ];
+                $event->prices()->create($data);
+            }
+        }
+
+
+
+        //Save Images and Check for Sizes
+        if(array_key_exists('photos',$request_data)){
+            foreach ($request_data['photos'] as $photo){
+                $photo_data =[
+                    'link'  => Base64ToImageService::convert($photo, 'img/events/'),
+                    'type'  => 1
+                    ];
+                $event->media()->create($photo_data);
+            }
+        }
+        //Check for videos
+        if(array_key_exists('videos',$request_data)){
+            foreach ($request_data['videos'] as $video){
+                $video_data =[
+                    'link'  => $video,
+                    'type'  => 2
+                ];
+                $event->media()->create($video_data);
+            }
 
         }
 
 
 
-        return Helpers::Get_Response(200, 'success', 'saved', [], Event::latest()->with('hash_tags','categories')->first());
+
+
+        return Helpers::Get_Response(200, 'success', 'saved', [], Event::latest()->with(['prices.currency','hash_tags','categories'])->first());
 
 
 
+
+    }
+
+
+
+
+
+    public  function  edit_event(Request $request){
 
     }
 
@@ -338,6 +396,12 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * list all posts related to events
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
 
     public function event_posts(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -358,6 +422,11 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * Delete event post by the post ownere or event owner only
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function delete_event_post(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -387,6 +456,12 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * Delete reply to event post
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public  function delete_reply(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -407,6 +482,70 @@ class EventsController extends Controller
             // return that the user is unotherized
             return Helpers::Get_Response(403,'faild',trans('messages.delete_post'),[],[]);
         }
+    }
+
+    public  function recommended_events(Request $request,$type=null){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+
+        switch ($type) {
+            case 'upcoming':
+                $data =  Event::query()->whereHas('categories',function ($query){
+                    $user = User::where("api_token", "=", Request::capture()->header('access-token'))->first();
+                    $user_interests = $user->interests->pluck('pivot.interest_id');
+                    $query->whereIn("interest_id",$user_interests);
+                })->with(['prices.currency','hash_tags','categories'])
+                    ->IsActive()
+                    ->ShowInMobile()
+                    ->UpcomingEvents()
+                    ->withPaginate($page,$limit)
+                    ->get();
+
+                if($data->isEmpty()){
+                    $data =  Event::query()
+                        ->has('categories')
+                        ->with(['prices.currency','hash_tags','categories'])
+                        ->IsActive()
+                        ->ShowInMobile()
+                        ->UpcomingEvents()
+                        ->withPaginate($page,$limit)
+                        ->get();
+                }
+
+                break;
+
+            default:
+                $data =  Event::query()->whereHas('categories',function ($query){
+                    $user = User::where("api_token", "=", Request::capture()->header('access-token'))->first();
+                    $user_interests = $user->interests->pluck('pivot.interest_id');
+                    $query->whereIn("interest_id",$user_interests);
+                })->with(['prices.currency','hash_tags','categories'])
+                    ->IsActive()
+                    ->ShowInMobile()
+                    ->pastEvents()
+                    ->withPaginate($page,$limit)
+                    ->get();
+
+                if($data->isEmpty()){
+                    $data =  Event::query()
+                        ->has('categories')
+                        ->with(['prices.currency','hash_tags','categories'])
+                        ->IsActive()
+                        ->ShowInMobile()
+                        ->PastEvents()
+                        ->withPaginate($page,$limit)
+                        ->get();
+                }
+                break;
+        }
+
+        return Helpers::Get_Response(200,'success','',[],$data);
+
     }
 
 
