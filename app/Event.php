@@ -15,7 +15,13 @@ class Event extends Model
     protected $hidden = ['pivot'];
 
 
-    protected $fillable = ['name', 'description','website','mobile','email','code','address','longtuide','latitude','venue','start_datetime','end_datetime','suggest_big_event','show_in_mobile','gender_id','age_range_id','is_paid','use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by'];
+    protected $fillable = ['name', 'description',
+        'website','mobile','email','code',
+        'address','longtuide','latitude',
+        'venue','start_datetime','end_datetime',
+        'suggest_big_event','show_in_mobile'
+        ,'gender_id','age_range_id','is_paid',
+        'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','is_backend'];
 
     // relations
 
@@ -43,6 +49,10 @@ class Event extends Model
     public  function prices(){
         return $this->hasMany('App\Price','event_id');
     }
+    public function media(){
+        return $this->hasMany('App\EventMedia' , 'event_id');
+    }
+
     public function posts(){
         return $this->hasMany('App\EventPost','event_id');
     }

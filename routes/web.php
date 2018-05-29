@@ -73,6 +73,8 @@ $router->post('change_password','UsersController@change_password');
 
 //Events Section
 $router->post("add_event","EventsController@add_event");
+$router->post("edit_event","EventsController@edit_event");
+$router->post("delete_event","EventsController@delete_event");
 $router->post('events[/{type}]',"EventsController@list_events");
 $router->post("big_events[/{type}]","EventsController@big_events");
 $router->post('current_month_events',"EventsController@current_month_events");
@@ -81,5 +83,6 @@ $router->post('event_details',"EventsController@event_details");
 $router->post("event_posts","EventsController@event_posts");
 $router->post('delete_event_post',"EventsController@delete_event_post");
 $router->post('delete_reply','EventsController@delete_reply');
+$router->post('recommended_events[/{type}]','EventsController@recommended_events');
 
 });

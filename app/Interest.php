@@ -12,7 +12,7 @@ class Interest extends Model {
     public static $rules = [
         // Validation rules
     ];
-    protected $hidden = ['pivot'];
+//    protected $hidden = ['pivot'];
 
 
     public function getNameAttribute($value)
