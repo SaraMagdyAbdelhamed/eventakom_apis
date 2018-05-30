@@ -203,7 +203,7 @@ class EventsController extends Controller
     }
 
     /**
-     * Edit Events only for Event Owner
+     * Edit Events for event owner only and return unauthorized in case of wrong event owner
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -257,6 +257,7 @@ class EventsController extends Controller
                 'email'             => array_key_exists('email',$request_data) ? $request_data['email']: $event->email,
                 'website'           => array_key_exists('website',$request_data) ? $request_data['website']: $event->website,
                 'mobile'            => array_key_exists('mobile',$request_data) ? $request_data['mobile']: $event->mobile,
+                'tele_code'         => array_key_exists('tele_code',$request_data) ? $request_data['tele_code']: $event->tele_code,
                 'event_status_id'   => 1
             ];
             $event->update($event_data);
@@ -290,11 +291,24 @@ class EventsController extends Controller
 
     }
 
+
+
+
     public function delete_event(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $event = Event::find($request_data['event_id']);
 
 
     }
