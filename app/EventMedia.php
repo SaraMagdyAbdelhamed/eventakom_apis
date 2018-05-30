@@ -25,6 +25,18 @@ class EventMedia extends Model
         return $this->belongsTo('App\Event');
     }
 
+    public function getLinkAttribute($value){
+        if($this->type == 1){
+            $base_url = 'http://eventakom.com/eventakom_dev/public/';
+            $photo = $base_url.$value;
+            return $photo;
+
+        }
+        return $value;
+
+    }
+
+
 
 
 }
