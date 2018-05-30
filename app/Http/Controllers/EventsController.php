@@ -56,20 +56,24 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
+
+
         $event = Event::query()
             ->where('id',$request_data['event_id'])
             ->With('prices.currency')
             ->with('categories')
             ->with('hash_tags')
+            ->with('media')
             ->get();
         // Get You May Also Like
+        if($event->isEmpty()){
+            return Helpers::Get_Response(403, 'error', 'not found', [], []);
+
+        }
+
         $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
         $random = array_key_exists('random_limit',$request_data) ? $request_data['random_limit'] :10;
         $result = Event::EventsInCategories($category_ids)->get()->random($random);
-
-
-
-
         return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
 
 
