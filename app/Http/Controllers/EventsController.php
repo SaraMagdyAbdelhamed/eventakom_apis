@@ -61,10 +61,7 @@ class EventsController extends Controller
 
         $event = Event::query()
             ->where('id',$request_data['event_id'])
-            ->With('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
-            ->with('media')
+            ->with('prices.currency','categories','hash_tags','media','posts.replies')
             ->get();
         // Get You May Also Like
         if($event->isEmpty()){
@@ -379,7 +376,7 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        $events = $interest->events()->with('prices.currency')->with('categories')->with('hash_tags')->IsActive()->ShowInMobile();
+        $events = $interest->events()->with('prices.currency','categories','hash_tags','media')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -420,9 +417,7 @@ class EventsController extends Controller
 
 
         $events = Event::query()
-            ->with('prices.currency')
-            ->with('hash_tags')
-            ->with('categories')
+            ->with('prices.currency','hash_tags','categories','media')
             ->IsActive()
             ->ShowInMobile()
             ->SuggestedAsBigEvent();
@@ -432,7 +427,7 @@ class EventsController extends Controller
                 break;
             case 'slider':
                 $data = Event::BigEvents()->orderBy('sort_order','DESC')
-                    ->with('prices.currency')->with('categories')->with('hash_tags')->with('posts')
+                    ->with('prices.currency','categories','hash_tags','media')
                     ->IsActive()
                     ->ShowInMobile();
                 break;
@@ -485,9 +480,7 @@ class EventsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
         $this_month = Event::query()
-            ->with('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
             ->ThisMonthEvents()
@@ -495,9 +488,7 @@ class EventsController extends Controller
             ->orderBy('end_datetime','DESC')
             ->get();
         $next_month = Event::query()
-            ->with('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
             ->NextMonthEvents()
@@ -505,9 +496,7 @@ class EventsController extends Controller
             ->orderBy('end_datetime','DESC')
             ->get();
         $start_to_today = Event::query()
-            ->with('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
             ->StartOfMothEvents()
