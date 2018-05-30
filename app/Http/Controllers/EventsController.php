@@ -281,7 +281,7 @@ class EventsController extends Controller
                 }
             }
 
-            return Helpers::Get_Response(200, 'success', 'saved', [], Event::query()->where('id',$request_data['event_id'])->with(['prices.currency','hash_tags','categories'])->first());
+            return Helpers::Get_Response(200, 'success', '', [], Event::query()->where('id',$request_data['event_id'])->with(['prices.currency','hash_tags','categories'])->first());
         }
 
         return Helpers::Get_Response(403,'faild',trans('messages.edit_event'),[],[]);
@@ -308,7 +308,37 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
+        $user_id = User::where('api_token','=',$request->header('access-token'))->first()->id;
+
+        // update main events info
         $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(403, 'error', 'not found', [], []);
+        }
+
+        // Check for Event Ownership
+        if($event->created_by == $user_id){
+            //delete relationships
+            //detach categories
+            $event->categories()->detach();
+            $event->hash_tags()->detach();
+            $event->prices()->delete();
+            $event->media()->delete();
+
+
+            //delete Event
+            $event->delete();
+
+            return Helpers::Get_Response(200, 'success', '', [], []);
+
+
+
+
+        }
+
+        return Helpers::Get_Response(403,'faild',trans('messages.delete_event'),[],[]);
+
+
 
 
     }

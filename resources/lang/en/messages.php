@@ -37,7 +37,8 @@ return [
 	'mobile_already_exist'=>'This Mobile number is already exist',
     'delete_post'=>'You have no access to delete this post',
 	'invalid_mobile_number'=>'Invalid mobile number, re-enter it',
-    'edit_event'=>'You have no access to edit this event'
+    'edit_event'=>'You have no access to edit this event',
+    'delete_event'=>'You have no access to delete this event'
 
 
 ];
