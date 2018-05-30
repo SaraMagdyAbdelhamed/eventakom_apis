@@ -60,6 +60,17 @@ class Event extends Model
         return $this->hasMany('App\EventPost','event_id');
     }
 
+    public function GoingUsers(){
+        return $this->belongsToMany('App\User', 'user_going','event_id','user_id');
+
+    }
+
+    public function CalenderUsers(){
+        return $this->belongsToMany('App\User', 'user_calenders','event_id','user_id')->withPivot('from_date','to_date');
+
+    }
+
+
 
     //Localizations
 
@@ -146,6 +157,8 @@ class Event extends Model
         return $query->whereBetween("end_datetime",[Carbon::now()->startOfMonth(),Carbon::now()]);
 
     }
+
+
 
     
 }

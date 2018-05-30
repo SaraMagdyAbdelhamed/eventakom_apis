@@ -68,6 +68,15 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany('App\EventPost','user_id');
     }
 
+    public function GoingEvents()
+    {
+        return $this->belongsToMany('App\Event', 'user_going');
+    }
+    public function CalenderEvents(){
+        return $this->belongsToMany('App\Event', 'user_calenders')->withPivot('from_date','to_date');
+
+    }
+
  
   public function getPhotoAttribute($value)
     {

@@ -417,14 +417,7 @@ class EventsController extends Controller
         }
 
         //Validate
-        $validator = Validator::make($request_data,
-            [
-                "interest_id" => "required"
 
-            ]);
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
-        }
 
         $events = Event::query()
             ->with('prices.currency')
@@ -437,7 +430,7 @@ class EventsController extends Controller
             case 'upcoming':
                 $data = $events->UpcomingEvents();
                 break;
-            case 'big_events':
+            case 'slider':
                 $data = Event::BigEvents()->orderBy('sort_order','DESC')
                     ->with('prices.currency')->with('categories')->with('hash_tags')->with('posts')
                     ->IsActive()
@@ -737,9 +730,15 @@ class EventsController extends Controller
     }
 
 
+    public function user_going(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
 
 
 
+    }
 
 
 
