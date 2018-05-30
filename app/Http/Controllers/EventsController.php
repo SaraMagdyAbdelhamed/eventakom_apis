@@ -691,7 +691,11 @@ class EventsController extends Controller
 
     }
 
-
+    /**
+     * list all currencies
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public function  all_currencies(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -703,7 +707,11 @@ class EventsController extends Controller
 
     }
 
-
+    /**
+     * list all genders
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function all_genders(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -711,12 +719,21 @@ class EventsController extends Controller
         }
         return Helpers::Get_Response(200,'success','',[],Gender::all());
 
-
     }
 
+    /**
+     * list all event categories
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public function  event_categories(Request $request){
-
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $categories = Interest::query()->has('events')->get();
+        return Helpers::Get_Response(200,'success','',[],$categories);
     }
 
 
