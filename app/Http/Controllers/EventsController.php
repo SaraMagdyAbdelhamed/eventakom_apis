@@ -91,10 +91,12 @@ class EventsController extends Controller
         $validator = Validator::make($request_data,
             [
                 "name"             => "required|between:2,100",
+                "tele_code"        => "required",
                 "mobile"           => 'required|numeric',
                 "description"      => "required|between:2,250",
                 "venue"            => "required|between:2,100",
                 'hashtags'         => "between:2,118",
+                'age_range_id'     => 'required',
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
@@ -104,7 +106,8 @@ class EventsController extends Controller
                 'website'          => 'between:10,50',
                 'photos'           => 'array|max:5',
                 'videos'           => 'array|max:2',
-                'tickets'          => 'array'
+                'tickets'          => 'array',
+                "categories"       => 'array'
 
             ]);
         if ($validator->fails()) {
@@ -121,13 +124,16 @@ class EventsController extends Controller
             'is_active'         => 0,
             'show_in_mobile'    => 1,
             'created_by'        => User::where('api_token','=',$request->header('access-token'))->first()->id,
-            'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL,
+            'age_range_id'      => $request_data['age_range_id'],
             'longtuide'         => $request_data['longtuide'],
             'latitude'          => $request_data['latitude'],
             'email'             => array_key_exists('email',$request_data) ? $request_data['email']: NULL,
             'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
             'mobile'            => $request_data['mobile'],
-            'event_status_id'   => 1
+            'event_status_id'   => 1,
+            "tele_code"         => $request_data["tele_code"],
+            "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
+            "use_ticketing_system" =>array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
 
         ];
 
@@ -162,6 +168,7 @@ class EventsController extends Controller
                   'name'                 => array_key_exists('name',$ticket) ? $ticket['name'] : NULL ,
                   'price'                => array_key_exists('price',$ticket) ? $ticket['price'] : NULL,
                   'available_tickets'    => array_key_exists('available_tickets',$ticket) ? $ticket['available_tickets'] : NULL,
+                  'current_available_tickets' =>array_key_exists('available_tickets',$ticket) ? $ticket['available_tickets'] : NULL,
                   'currency_id'         => array_key_exists('currency_id',$ticket) ? $ticket['currency_id'] : NULL
 
                 ];
@@ -192,7 +199,7 @@ class EventsController extends Controller
             }
 
         }
-        return Helpers::Get_Response(200, 'success', 'saved', [], Event::latest()->with(['prices.currency','hash_tags','categories'])->first());
+        return Helpers::Get_Response(200, 'success', 'saved', [], [Event::latest()->with(['prices.currency','hash_tags','categories'])->first()]);
     }
 
     /**
