@@ -1,11 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Currency;
 use App\PostReply;
 use App\User;
 use App\Interest;
 use App\Event;
 use App\HashTag;
+use App\Gender;
 use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
@@ -57,7 +59,6 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
 
-
         $event = Event::query()
             ->where('id',$request_data['event_id'])
             ->With('prices.currency')
@@ -70,12 +71,10 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', 'not found', [], []);
 
         }
-
         $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
         $random = array_key_exists('random_limit',$request_data) ? $request_data['random_limit'] :10;
         $result = Event::EventsInCategories($category_ids)->get()->random($random);
         return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
-
 
     }
 
@@ -295,7 +294,11 @@ class EventsController extends Controller
 
     }
 
-
+    /**
+     * Delete Event By event Owner only
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
 
     public function delete_event(Request $request){
@@ -617,6 +620,13 @@ class EventsController extends Controller
         }
     }
 
+    /**
+     * return recommended events related to user main interests or in all categories
+     * @param Request $request
+     * @param null $type or 'upcoming'
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public  function recommended_events(Request $request,$type=null){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -680,6 +690,40 @@ class EventsController extends Controller
         return Helpers::Get_Response(200,'success','',[],$data);
 
     }
+
+
+
+    public function  all_currencies(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],Currency::all());
+
+
+    }
+
+
+    public function all_genders(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],Gender::all());
+
+
+    }
+
+
+    public function  event_categories(Request $request){
+
+    }
+
+
+
+
+
+
 
 
 

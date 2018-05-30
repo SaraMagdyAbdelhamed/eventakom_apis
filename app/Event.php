@@ -41,6 +41,9 @@ class Event extends Model
     public  function age_range(){
         return $this->belongsTo('App\AgeRange','age_range_id');
     }
+    public  function gender(){
+        return $this->belongsTo('App\Gender','gender_id');
+    }
 
     public  function status(){
         return $this->belongsTo('App\EventStatus','event_status_id');

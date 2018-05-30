@@ -30,8 +30,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('social_login','UsersController@social_login');
  $router->post('sms','UsersController@sms');
  $router->post('all_interests','UsersController@all_interests');
+ $router->post('all_currencies','EventsController@all_currencies');
+ $router->post('all_genders','EventsController@all_genders');
+ $router->post('event_categories','EventsController@event_categories');
 
- $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
+
+    $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
 
 
    //countries
@@ -84,5 +88,6 @@ $router->post("event_posts","EventsController@event_posts");
 $router->post('delete_event_post',"EventsController@delete_event_post");
 $router->post('delete_reply','EventsController@delete_reply');
 $router->post('recommended_events[/{type}]','EventsController@recommended_events');
+
 
 });
