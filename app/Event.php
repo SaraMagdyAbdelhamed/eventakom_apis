@@ -90,6 +90,9 @@ class Event extends Model
         return ($result=='Error')? $value : $result;
     }
 
+
+    // Static functions
+
     public static function BigEvents(){
     	return static::query()->join('big_events','events.id','=','big_events.event_id')
     		   ->select('events.*','big_events.sort_order');
@@ -117,8 +120,8 @@ class Event extends Model
 
 
 
-    //Mutators
-     function ScopeIsActive($query){
+    //Query Scopes
+    public function ScopeIsActive($query){
             return $query->where('is_active', '=', 1);
 
         }
