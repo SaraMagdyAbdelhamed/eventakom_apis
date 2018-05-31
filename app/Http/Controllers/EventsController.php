@@ -71,7 +71,15 @@ class EventsController extends Controller
         }
         $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
         $random = array_key_exists('random_limit',$request_data) ? $request_data['random_limit'] :10;
-        $result = Event::EventsInCategories($category_ids)->get()->random($random);
+        $count = Event::EventsInCategories($category_ids)->get()->count();
+        if($count < 10){
+            $result = Event::EventsInCategories($category_ids)->get()->random($count);
+
+        }else{
+            $result = Event::EventsInCategories($category_ids)->get()->random($random);
+
+
+        }
         return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
 
     }
