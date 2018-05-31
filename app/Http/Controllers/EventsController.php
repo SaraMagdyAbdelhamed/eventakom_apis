@@ -900,12 +900,51 @@ class EventsController extends Controller
             ->get();
         return Helpers::Get_Response(200,'success','',[],$events);
 
-
-
     }
 
 
     public function search(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "keyword" => "required",
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $keyword = $request_data['keyword'];
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+        //search in events table if english
+
+        $events = Event::query()
+            ->where('name','like','%'.$keyword.'%')
+            ->with('prices.currency','categories','hash_tags','media')
+            ->IsActive()
+            ->ShowInMobile()
+            ->WithPaginate($page,$limit)
+            ->get();
+
+        //search in entity_localizations if arabic
+        if(array_key_exists('lang_id',$request_data)){
+            if($request_data['lang_id'] == 2){
+                $events = Event::event_entity_ar()
+                    ->where('entity_localizations.value','like','%'.$keyword.'%')
+                    ->with('prices.currency','categories','hash_tags','media')
+                    ->IsActive()
+                    ->ShowInMobile()
+                    ->WithPaginate($page,$limit)
+                    ->get();
+            }
+        }
+        //return result
+        return Helpers::Get_Response(200,'success','',[],$events);
+
 
 
     }

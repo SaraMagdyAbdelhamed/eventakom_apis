@@ -108,9 +108,13 @@ class Event extends Model
 
     }
 
-    public static function NearByEvents($user_lng,$user_lat){
-
+    public static function event_entity_ar(){
+        return static::query()->join('entity_localizations','events.id','=','entity_localizations.item_id')
+            ->where('entity_id','=',4)->where('field','=','name')
+            ->select('events.*');
     }
+
+
 
 
     //Mutators
@@ -138,7 +142,6 @@ class Event extends Model
         return $query->where("end_datetime",'<',Carbon::now());
 
     }
-
 
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
