@@ -90,7 +90,6 @@ class EventsController extends Controller
      * @return  \Illuminate\Http\JsonResponse
      */
 
-
     public function add_event(Request $request){
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
@@ -475,7 +474,8 @@ class EventsController extends Controller
     }
 
     /**
-     * this will reutrn all events in this month form today to the end of month and all events in the next month
+     * this will reutrn all events in this month
+     * form today to the end of month and all events in the next month
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -910,6 +910,11 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * search in all events according to specific keyword
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public function search(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -952,6 +957,64 @@ class EventsController extends Controller
         }
         //return result
         return Helpers::Get_Response(200,'success','',[],$events);
+
+    }
+
+    /**
+     * List logged user Events
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public  function  my_events(Request $request){
+
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $events = $user->events()
+                  ->with('prices.currency','categories','hash_tags','media')
+                  ->get();
+        return Helpers::Get_Response(200,'success','',[],$events);
+
+    }
+
+
+    /**
+     * Add post to event
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public  function  add_post(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required",
+                "post"     => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $post = $event->posts()->create([
+            "user_id" => $user->id,
+            "post"    => $request_data['post']
+        ]);
+
+        return Helpers::Get_Response(200,'success','',[],[$post]);
+
+
 
 
 

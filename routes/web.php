@@ -96,7 +96,8 @@ $router->post('add_user_favourites','EventsController@add_user_favourites');
 $router->post('add_user_calenders','EventsController@user_calenders');
 $router->post('calender_events',"EventsController@calender_events");
 $router->post('nearby_events',"EventsController@nearby_events");
-
+$router->post("my_events","EventsController@my_events");
+$router->post("add_post","EventsController@add_post");
 
 
 
