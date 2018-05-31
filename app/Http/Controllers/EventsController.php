@@ -139,6 +139,7 @@ class EventsController extends Controller
             'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
             'mobile'            => $request_data['mobile'],
             'event_status_id'   => 1,
+            'is_backend'        => 0,
             "tele_code"         => $request_data["tele_code"],
             "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
             "use_ticketing_system" =>array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0

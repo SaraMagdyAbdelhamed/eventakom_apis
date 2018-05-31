@@ -21,7 +21,7 @@ class Event extends Model
         'venue','start_datetime','end_datetime',
         'suggest_big_event','show_in_mobile'
         ,'gender_id','age_range_id','is_paid',
-        'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','is_backend'];
+        'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','tele_code','is_backend'];
 
     // relations
 
