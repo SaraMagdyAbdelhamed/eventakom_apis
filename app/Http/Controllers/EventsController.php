@@ -889,10 +889,14 @@ class EventsController extends Controller
         $lat = $request_data['user_lat'];
         $lng = $request_data['user_lng'];
         $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
         $events = Event::query()->Distance($lat,$lng,$radius,"km")
             ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
+            ->WithPaginate($page,$limit)
             ->get();
         return Helpers::Get_Response(200,'success','',[],$events);
 
