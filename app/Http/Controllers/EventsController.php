@@ -8,6 +8,7 @@ use App\Interest;
 use App\Event;
 use App\HashTag;
 use App\Gender;
+use App\TrendingKeyword;
 use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
@@ -733,7 +734,7 @@ class EventsController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function user_going(Request $request){
+    public function add_user_going(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
@@ -754,9 +755,44 @@ class EventsController extends Controller
     }
 
 
+    /**
+     * Add entity and item in user favourites
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function add_user_favourites(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $validator = Validator::make($request_data,
+            [
+                "entity_id" => "required",
+                "item_id"   => "required",
+                "name"      => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+
+        // insert in user_favourite Table
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
 
 
-    public function user_favourites(Request $request){
+        $insert = DB::table('user_favorites')->insert([
+            'name'      =>$request_data['name'],
+            'user_id'   => $user->id,
+            'entity_id' => $request_data['entity_id'],
+            'item_id'   => $request_data['item_id']
+
+        ]);
+        if(!$insert){
+            return Helpers::Get_Response(401,'failed','Error in saving',[],[]);
+
+        }
+
+        return Helpers::Get_Response(200,'success','',[],[]);
 
     }
 
@@ -792,6 +828,11 @@ class EventsController extends Controller
 
     }
 
+    /**
+     * List events in user calender
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public function calender_events(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -805,9 +846,74 @@ class EventsController extends Controller
                   ->get();
         return Helpers::Get_Response(200,'success','',[],$events);
 
+    }
+
+
+    /**
+     * list Trending Keywords
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function trending_keywords(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],TrendingKeyword::all());
+
+    }
+
+    /**
+     * list nearby events related to user location
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function nearby_events(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "user_lat" => "required",
+                "user_lng" => "required",
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+
+        // PerFrom The Query
+        $lat = $request_data['user_lat'];
+        $lng = $request_data['user_lng'];
+        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
+        $events = Event::query()->Distance($lat,$lng,$radius,"km")
+            ->with('prices.currency','categories','hash_tags','media')
+            ->IsActive()
+            ->ShowInMobile()
+            ->get();
+        return Helpers::Get_Response(200,'success','',[],$events);
+
 
 
     }
+
+
+    public function search(Request){
+
+
+    }
+
+
+
+
+
+
+
+
+
 
 
 
