@@ -901,7 +901,7 @@ class EventsController extends Controller
     }
 
 
-    public function search(Request){
+    public function search(Request $request){
 
 
     }
