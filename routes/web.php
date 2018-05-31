@@ -87,5 +87,11 @@ $router->post("delete_event","EventsController@delete_event");
 $router->post('delete_event_post',"EventsController@delete_event_post");
 $router->post('delete_reply','EventsController@delete_reply');
 $router->post('user_going','EventsController@user_going');
+$router->post('user_favourites','EventsController@user_favourites');
+$router->post('user_calenders','EventsController@user_calenders');
+$router->post('calender_events',"EventsController@calender_events");
+
+
+
 
 });

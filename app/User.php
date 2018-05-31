@@ -73,7 +73,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->belongsToMany('App\Event', 'user_going');
     }
     public function CalenderEvents(){
-        return $this->belongsToMany('App\Event', 'user_calenders')->withPivot('from_date','to_date');
+        return $this->belongsToMany('App\Event', 'user_calendars')->withPivot('from_date','to_date');
 
     }
 

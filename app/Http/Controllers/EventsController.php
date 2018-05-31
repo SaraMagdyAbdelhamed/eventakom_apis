@@ -569,7 +569,6 @@ class EventsController extends Controller
             // return that the user is unotherized
             return Helpers::Get_Response(403,'faild',trans('messages.delete_post'),[],[]);
 
-
         }
 
     }
@@ -584,6 +583,15 @@ class EventsController extends Controller
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "reply_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
         $user_id = User:: where("api_token", "=", $request->header('access-token'))->first()->id;
         $reply = PostReply::find($request_data['reply_id']);
@@ -719,11 +727,83 @@ class EventsController extends Controller
     }
 
 
+    /**
+     * add new Event in User Going
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
     public function user_going(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user->GoingEvents()->sync([$request_data['event_id']]);
+        return Helpers::Get_Response(200,'success','',[],[]);
+
+    }
+
+
+
+
+    public function user_favourites(Request $request){
+
+    }
+
+    /**
+     * Add Event in user calender
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function user_calenders(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $event = Event::find($request_data['event_id']);
+        $user->CalenderEvents()->attach($request_data['event_id'],
+            [
+                'from_date' => $event->start_datetime ,
+                'to_date'   =>$event->end_datetime
+            ]
+            );
+        return Helpers::Get_Response(200,'success','',[],[]);
+
+    }
+
+
+    public function calender_events(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $events = $user->CalenderEvents()
+                  ->with('prices.currency','categories','hash_tags','media')
+                  ->orderBy('end_datetime','DESC')
+                  ->get();
+        return Helpers::Get_Response(200,'success','',[],$events);
 
 
 
