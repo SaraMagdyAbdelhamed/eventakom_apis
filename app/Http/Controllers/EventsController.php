@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Currency;
 use App\PostReply;
 use App\User;
 use App\Interest;
 use App\Event;
 use App\HashTag;
+use App\Gender;
+use App\TrendingKeyword;
 use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
@@ -32,6 +35,7 @@ class EventsController extends Controller
      *
      * @return void
      */
+
     public function __construct()
     {
         //
@@ -50,28 +54,34 @@ class EventsController extends Controller
         }
         $validator = Validator::make($request_data,
             [
-                'event_id' =>'required'
+                'event_id' => 'required'
 
             ]);
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
+        //$user = User::where('api_token',$request->header('access-token'))->first()->id;
         $event = Event::query()
             ->where('id',$request_data['event_id'])
-            ->With('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media','posts.replies')
+            ->withCount('GoingUsers')
             ->get();
+
         // Get You May Also Like
+        if($event->isEmpty()){
+            return Helpers::Get_Response(403, 'error', 'not found', [], []);
+        }
         $category_ids = Event::find($request_data['event_id'])->categories->pluck('pivot.interest_id');
         $random = array_key_exists('random_limit',$request_data) ? $request_data['random_limit'] :10;
-        $result = Event::EventsInCategories($category_ids)->get()->random($random);
+        $count = Event::EventsInCategories($category_ids)->get()->count();
+        if($count < 10){
+            $result = Event::EventsInCategories($category_ids)->get()->random($count);
 
+        }else{
+            $result = Event::EventsInCategories($category_ids)->get()->random($random);
 
-
-
+        }
         return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
-
 
     }
 
@@ -81,10 +91,7 @@ class EventsController extends Controller
      * @return  \Illuminate\Http\JsonResponse
      */
 
-
     public function add_event(Request $request){
-
-
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
@@ -93,20 +100,23 @@ class EventsController extends Controller
         $validator = Validator::make($request_data,
             [
                 "name"             => "required|between:2,100",
-                "mobile"    =>'required|numeric',
+                "tele_code"        => "required",
+                "mobile"           => 'required|numeric',
                 "description"      => "required|between:2,250",
                 "venue"            => "required|between:2,100",
-                'hashtags'         =>"between:2,118",
+                'hashtags'         => "between:2,118",
+                'age_range_id'     => 'required',
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
                 'longtuide'        => 'required',
                 'latitude'         => 'required',
-                'email'            =>'email|max:35',
-                'website'          =>'between:10,50',
-                'photos'           =>'array|max:5',
-                'videos'           =>'array|max:2',
-                'tickets'          =>'array'
+                'email'            => 'email|max:35',
+                'website'          => 'between:10,50',
+                'photos'           => 'array|max:5',
+                'videos'           => 'array|max:2',
+                'tickets'          => 'array',
+                "categories"       => 'array'
 
             ]);
         if ($validator->fails()) {
@@ -121,15 +131,19 @@ class EventsController extends Controller
             'start_datetime'    => date('Y-m-d H:i:s',$request_data['start_datetime']),
             'end_datetime'      => date('Y-m-d H:i:s',$request_data['end_datetime']),
             'is_active'         => 0,
-            'show_in_mobile'    => 0,
+            'show_in_mobile'    => 1,
             'created_by'        => User::where('api_token','=',$request->header('access-token'))->first()->id,
-            'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:NULL,
+            'age_range_id'      => $request_data['age_range_id'],
             'longtuide'         => $request_data['longtuide'],
             'latitude'          => $request_data['latitude'],
             'email'             => array_key_exists('email',$request_data) ? $request_data['email']: NULL,
             'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
             'mobile'            => $request_data['mobile'],
-            'event_status_id'   => 1
+            'event_status_id'   => 1,
+            'is_backend'        => 0,
+            "tele_code"         => $request_data["tele_code"],
+            "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
+            "use_ticketing_system" =>array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
 
         ];
 
@@ -164,6 +178,7 @@ class EventsController extends Controller
                   'name'                 => array_key_exists('name',$ticket) ? $ticket['name'] : NULL ,
                   'price'                => array_key_exists('price',$ticket) ? $ticket['price'] : NULL,
                   'available_tickets'    => array_key_exists('available_tickets',$ticket) ? $ticket['available_tickets'] : NULL,
+                  'current_available_tickets' =>array_key_exists('available_tickets',$ticket) ? $ticket['available_tickets'] : NULL,
                   'currency_id'         => array_key_exists('currency_id',$ticket) ? $ticket['currency_id'] : NULL
 
                 ];
@@ -194,26 +209,153 @@ class EventsController extends Controller
             }
 
         }
-
-
-
-
-
-        return Helpers::Get_Response(200, 'success', 'saved', [], Event::latest()->with(['prices.currency','hash_tags','categories'])->first());
-
-
-
-
+        return Helpers::Get_Response(200, 'success', 'saved', [], [Event::latest()->with(['prices.currency','hash_tags','categories'])->first()]);
     }
 
-
-
-
+    /**
+     * Edit Events for event owner only and return unauthorized in case of wrong event owner
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public  function  edit_event(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        // validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id"         =>'required',
+                "name"             => "between:2,100",
+                "mobile"           => 'numeric',
+                "description"      => "between:2,250",
+                "venue"            => "between:2,100",
+                'hashtags'         => "between:2,118",
+                'email'            => 'email|max:35',
+                'website'          => 'between:10,50',
+                'photos'           => 'array|max:5',
+                'videos'           => 'array|max:2',
+                'tickets'          => 'array'
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user_id = User::where('api_token','=',$request->header('access-token'))->first()->id;
+
+        // update main events info
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(403, 'error', 'not found', [], []);
+        }
+
+        if($event->created_by == $user_id){
+            $event_data = [
+                'name'              => array_key_exists('name',$request_data)? $request_data['name']: $event->name,
+                'description'       => array_key_exists('description',$request_data)? $request_data['description']: $event->description,
+                'venue'             => array_key_exists('venue',$request_data)? $request_data['venue']: $event->venue,
+                'gender_id'         => array_key_exists('gender_id',$request_data)? $request_data['gender_id']: $event->gender_id,
+                'start_datetime'    => array_key_exists('start_datetime',$request_data)? date('Y-m-d H:i:s',$request_data['start_datetime']): $event->start_datetime,
+                'end_datetime'      => array_key_exists('end_datetime',$request_data)? date('Y-m-d H:i:s',$request_data['end_datetime']): $event->end_datetime,
+                'updated_by'        => $user_id,
+                'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:$event->age_range_id,
+                'longtuide'         => array_key_exists('longtuide',$request_data) ?$request_data['longtuide']:$event->longtuide,
+                'latitude'          => array_key_exists('latitude',$request_data) ?$request_data['latitude']:$event->latitude,
+                'email'             => array_key_exists('email',$request_data) ? $request_data['email']: $event->email,
+                'website'           => array_key_exists('website',$request_data) ? $request_data['website']: $event->website,
+                'mobile'            => array_key_exists('mobile',$request_data) ? $request_data['mobile']: $event->mobile,
+                'tele_code'         => array_key_exists('tele_code',$request_data) ? $request_data['tele_code']: $event->tele_code,
+                'event_status_id'   => 1
+            ];
+            $event->update($event_data);
+            if(array_key_exists('photos',$request_data)){
+                foreach ($request_data['photos'] as $photo){
+                    $photo_data =[
+                        'link'  => Base64ToImageService::convert($photo, 'img/events/'),
+                        'type'  => 1
+                    ];
+                    $event->media()->update($photo_data);
+                }
+            }
+            //Check for videos
+            if(array_key_exists('videos',$request_data)){
+                foreach ($request_data['videos'] as $video){
+                    $video_data =[
+                        'link'  => $video,
+                        'type'  => 2
+                    ];
+                    $event->media()->update($video_data);
+                }
+            }
+
+            return Helpers::Get_Response(200, 'success', '', [], Event::query()->where('id',$request_data['event_id'])->with(['prices.currency','hash_tags','categories'])->first());
+        }
+
+        return Helpers::Get_Response(403,'faild',trans('messages.edit_event'),[],[]);
+
+
+
 
     }
 
+    /**
+     * Delete Event By event Owner only
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+
+    public function delete_event(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user_id = User::where('api_token','=',$request->header('access-token'))->first()->id;
+
+        // update main events info
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(403, 'error', 'not found', [], []);
+        }
+
+        // Check for Event Ownership
+        if($event->created_by == $user_id){
+            //delete relationships
+            //detach categories
+            $event->categories()->detach();
+            $event->hash_tags()->detach();
+            $event->prices()->delete();
+            $event->media()->delete();
+
+
+            //delete Event
+            $event->delete();
+
+            return Helpers::Get_Response(200, 'success', '', [], []);
+
+
+
+
+        }
+
+        return Helpers::Get_Response(403,'faild',trans('messages.delete_event'),[],[]);
+
+
+
+
+    }
 
 
     /**
@@ -243,7 +385,7 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        $events = $interest->events()->with('prices.currency')->with('categories')->with('hash_tags')->IsActive()->ShowInMobile();
+        $events = $interest->events()->with('prices.currency','categories','hash_tags','media')->IsActive()->ShowInMobile();
         switch ($type) {
             case 'upcoming':
                 $data = $events->UpcomingEvents();
@@ -281,19 +423,10 @@ class EventsController extends Controller
         }
 
         //Validate
-        $validator = Validator::make($request_data,
-            [
-                "interest_id" => "required"
 
-            ]);
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
-        }
 
         $events = Event::query()
-            ->with('prices.currency')
-            ->with('hash_tags')
-            ->with('categories')
+            ->with('prices.currency','hash_tags','categories','media')
             ->IsActive()
             ->ShowInMobile()
             ->SuggestedAsBigEvent();
@@ -301,9 +434,9 @@ class EventsController extends Controller
             case 'upcoming':
                 $data = $events->UpcomingEvents();
                 break;
-            case 'big_events':
+            case 'slider':
                 $data = Event::BigEvents()->orderBy('sort_order','DESC')
-                    ->with('prices.currency')->with('categories')->with('hash_tags')->with('posts')
+                    ->with('prices.currency','categories','hash_tags','media')
                     ->IsActive()
                     ->ShowInMobile();
                 break;
@@ -342,7 +475,8 @@ class EventsController extends Controller
     }
 
     /**
-     * this will reutrn all events in this month form today to the end of month and all events in the next month
+     * this will reutrn all events in this month
+     * form today to the end of month and all events in the next month
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
@@ -356,9 +490,7 @@ class EventsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
         $this_month = Event::query()
-            ->with('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
             ->ThisMonthEvents()
@@ -366,9 +498,7 @@ class EventsController extends Controller
             ->orderBy('end_datetime','DESC')
             ->get();
         $next_month = Event::query()
-            ->with('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
             ->NextMonthEvents()
@@ -376,9 +506,7 @@ class EventsController extends Controller
             ->orderBy('end_datetime','DESC')
             ->get();
         $start_to_today = Event::query()
-            ->with('prices.currency')
-            ->with('categories')
-            ->with('hash_tags')
+            ->with('prices.currency','categories','hash_tags','media')
             ->IsActive()
             ->ShowInMobile()
             ->StartOfMothEvents()
@@ -451,7 +579,6 @@ class EventsController extends Controller
             // return that the user is unotherized
             return Helpers::Get_Response(403,'faild',trans('messages.delete_post'),[],[]);
 
-
         }
 
     }
@@ -466,6 +593,15 @@ class EventsController extends Controller
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "reply_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
         $user_id = User:: where("api_token", "=", $request->header('access-token'))->first()->id;
         $reply = PostReply::find($request_data['reply_id']);
@@ -483,6 +619,13 @@ class EventsController extends Controller
             return Helpers::Get_Response(403,'faild',trans('messages.delete_post'),[],[]);
         }
     }
+
+    /**
+     * return recommended events related to user main interests or in all categories
+     * @param Request $request
+     * @param null $type or 'upcoming'
+     * @return \Illuminate\Http\JsonResponse
+     */
 
     public  function recommended_events(Request $request,$type=null){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -547,6 +690,355 @@ class EventsController extends Controller
         return Helpers::Get_Response(200,'success','',[],$data);
 
     }
+
+    /**
+     * list all currencies
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function  all_currencies(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],Currency::all());
+
+
+    }
+
+    /**
+     * list all genders
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function all_genders(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],Gender::all());
+
+    }
+
+    /**
+     * list all event categories
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function  event_categories(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $categories = Interest::query()->has('events')->get();
+        return Helpers::Get_Response(200,'success','',[],$categories);
+    }
+
+
+    /**
+     * add new Event in User Going
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function add_user_going(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        if($user->GoingEvents()->where("event_id",$request_data['event_id'])->first()){
+            $user->GoingEvents()->detach($request_data['event_id']);
+            return Helpers::Get_Response(200,'deleted successfully','',[],[]);
+        }
+        $user->GoingEvents()->sync([$request_data['event_id']]);
+        return Helpers::Get_Response(200,'success','',[],[]);
+
+    }
+
+
+    /**
+     * Add entity and item in user favourites
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function add_user_favourites(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $validator = Validator::make($request_data,
+            [
+                "entity_id" => "required",
+                "item_id"   => "required",
+                "name"      => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+
+        // insert in user_favourite Table
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+
+        // check if its in user favouirte so remove it and return []
+        $check = DB::table('user_favorites')
+                ->where([
+                    ['user_id' , '=' , $user->id],
+                    ['entity_id' , '=',$request_data['entity_id']],
+                    ['item_id','=',$request_data['item_id']]
+                    ]);
+        if(!$check->get()->isEmpty()){
+            $check->delete();
+            return Helpers::Get_Response(200,'deleted','',[],[]);
+        }
+        $insert = DB::table('user_favorites')->insert([
+            'name'      =>$request_data['name'],
+            'user_id'   => $user->id,
+            'entity_id' => $request_data['entity_id'],
+            'item_id'   => $request_data['item_id']
+
+        ]);
+        if(!$insert){
+            return Helpers::Get_Response(401,'failed','Error in saving',[],[]);
+
+        }
+
+        return Helpers::Get_Response(200,'success','',[],[]);
+
+    }
+
+    /**
+     * Add Event in user calender
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function add_user_calenders(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $event = Event::find($request_data['event_id']);
+        $user->CalenderEvents()->attach($request_data['event_id'],
+            [
+                'from_date' => $event->start_datetime ,
+                'to_date'   =>$event->end_datetime
+            ]
+            );
+        return Helpers::Get_Response(200,'success','',[],[]);
+
+    }
+
+    /**
+     * List events in user calender
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function calender_events(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $events = $user->CalenderEvents()
+                  ->with('prices.currency','categories','hash_tags','media')
+                  ->orderBy('end_datetime','DESC')
+                  ->get();
+        return Helpers::Get_Response(200,'success','',[],$events);
+
+    }
+
+
+    /**
+     * list Trending Keywords
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function trending_keywords(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        return Helpers::Get_Response(200,'success','',[],TrendingKeyword::all());
+
+    }
+
+    /**
+     * list nearby events related to user location
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function nearby_events(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "user_lat" => "required",
+                "user_lng" => "required",
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+
+        // PerFrom The Query
+        $lat = $request_data['user_lat'];
+        $lng = $request_data['user_lng'];
+        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+        $events = Event::query()->Distance($lat,$lng,$radius,"km")
+            ->with('prices.currency','categories','hash_tags','media')
+            ->IsActive()
+            ->ShowInMobile()
+            ->WithPaginate($page,$limit)
+            ->get();
+        return Helpers::Get_Response(200,'success','',[],$events);
+
+    }
+
+    /**
+     * search in all events according to specific keyword
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public function search(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "keyword" => "required",
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $keyword = Helpers::CleanText($request_data['keyword']);
+        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+        //search in events table if english
+
+        $events = Event::query()
+            ->where('name','like','%'.$keyword.'%')
+            ->with('prices.currency','categories','hash_tags','media')
+            ->IsActive()
+            ->ShowInMobile()
+            ->WithPaginate($page,$limit)
+            ->get();
+
+        //search in entity_localizations if arabic
+        if(array_key_exists('lang_id',$request_data)){
+            if($request_data['lang_id'] == 2){
+                $events = Event::event_entity_ar()
+                    ->where('entity_localizations.value','like','%'.$keyword.'%')
+                    ->with('prices.currency','categories','hash_tags','media')
+                    ->IsActive()
+                    ->ShowInMobile()
+                    ->WithPaginate($page,$limit)
+                    ->get();
+            }
+        }
+        //return result
+        return Helpers::Get_Response(200,'success','',[],$events);
+
+    }
+
+    /**
+     * List logged user Events
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public  function  my_events(Request $request){
+
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $events = $user->events()
+                  ->with('prices.currency','categories','hash_tags','media')
+                  ->get();
+        return Helpers::Get_Response(200,'success','',[],$events);
+
+    }
+
+
+    /**
+     * Add post to event
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+
+    public  function  add_post(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_id" => "required",
+                "post"     => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $post = $event->posts()->create([
+            "user_id" => $user->id,
+            "post"    => $request_data['post']
+        ]);
+
+        return Helpers::Get_Response(200,'success','',[],[$post]);
+    }
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -94,12 +94,51 @@ class Helpers
     }
 
   
-  public static function isValidTimestamp($timestamp)
-{
-   return ((string) (int) $timestamp === $timestamp)
-       && ($timestamp <= PHP_INT_MAX)
-       && ($timestamp >= ~PHP_INT_MAX);
-}
+      public static function isValidTimestamp($timestamp)
+    {
+       return ((string) (int) $timestamp === $timestamp)
+           && ($timestamp <= PHP_INT_MAX)
+           && ($timestamp >= ~PHP_INT_MAX);
+    }
+
+    /**
+     * use this function in order to remove al hamazat and al tashkeel to
+     * perform search more accurate in arabic search
+     * @param $text
+     * @return mixed
+     */
+    public static function CleanText($text){
+        $arr = ['أ' => 'ا',
+            'إ' => 'ا',
+            'آ' => 'ا',
+            "ة" => 'ه',
+            "ّ" => '',
+            "َّ" => '',
+            "ُّ" => '',
+            "ٌّ" => '',
+            "ًّ" => '',
+            "ِّ" => '',
+            "ٍّ" => '',
+            "ْ" => '',
+            "َ" => '',
+            "ً" => '',
+            "ُ" => '',
+            "ِ" => '',
+            "ٍ" => '',
+            "ٰ" => '',
+            "ٌ" => '',
+            "ۖ" => '',
+            "ۗ" => '',
+            "ـ" => ''
+        ];
+        foreach ($arr as $key => $val) {
+            $cleaned_text = str_replace($key, $val, $text);
+            $text = $cleaned_text;
+        }
+        return $text;
+
+    }
+
 
 
 }

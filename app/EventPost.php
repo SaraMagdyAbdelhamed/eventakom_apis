@@ -17,7 +17,7 @@ class EventPost extends Model
     protected $fillable = ['event_id', 'user_id','post'];
     protected $dates = ['created_at'];
 
-    public $timestamps = true;
+    public $timestamps = false;
 
     // relations
 

@@ -13,7 +13,7 @@ class Event extends Model
     protected $table = 'events';
     protected $dates = ['created_at', 'updated_at'];
     protected $hidden = ['pivot'];
-
+   // protected $appends= ['is_going'];
 
     protected $fillable = ['name', 'description',
         'website','mobile','email','code',
@@ -21,7 +21,7 @@ class Event extends Model
         'venue','start_datetime','end_datetime',
         'suggest_big_event','show_in_mobile'
         ,'gender_id','age_range_id','is_paid',
-        'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','is_backend'];
+        'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','tele_code','is_backend'];
 
     // relations
 
@@ -41,6 +41,9 @@ class Event extends Model
     public  function age_range(){
         return $this->belongsTo('App\AgeRange','age_range_id');
     }
+    public  function gender(){
+        return $this->belongsTo('App\Gender','gender_id');
+    }
 
     public  function status(){
         return $this->belongsTo('App\EventStatus','event_status_id');
@@ -57,6 +60,19 @@ class Event extends Model
         return $this->hasMany('App\EventPost','event_id');
     }
 
+    public function GoingUsers(){
+        return $this->belongsToMany('App\User', 'user_going','event_id','user_id');
+
+    }
+
+    public function CalenderUsers(){
+        return $this->belongsToMany('App\User', 'user_calendars','event_id','user_id')->withPivot('from_date','to_date');
+    }
+
+    public function EventOwner(){
+        return $this->belongsTo('App\User');
+
+    }
 
     //Localizations
 
@@ -76,6 +92,21 @@ class Event extends Model
         return ($result=='Error')? $value : $result;
     }
 
+//    public  function getIsGoingAttribute(){
+//        return $this->attributes['is_going'] = $this->CheckIfGoing();
+//    }
+
+
+
+    public  function UserGoingThisEvent($user){
+        return static::query()->join('user_going','events.id','=','user_going.event_id')
+               ->where('user_going.user_id',$user)
+                ->first();
+
+    }
+
+    // Static functions
+
     public static function BigEvents(){
     	return static::query()->join('big_events','events.id','=','big_events.event_id')
     		   ->select('events.*','big_events.sort_order');
@@ -94,15 +125,16 @@ class Event extends Model
 
     }
 
-    public static function NearByEvents($user_lng,$user_lat){
-
+    public static function event_entity_ar(){
+        return static::query()->join('entity_localizations','events.id','=','entity_localizations.item_id')
+            ->where('entity_id','=',4)
+            ->where('field','=','name')
+            ->select('events.*');
     }
 
-
-    //Mutators
-     function ScopeIsActive($query){
+    //Query Scopes
+    public function ScopeIsActive($query){
             return $query->where('is_active', '=', 1);
-
         }
 
     public function ScopeShowInMobile($query){
@@ -114,22 +146,17 @@ class Event extends Model
 
     }
 
-
     public function ScopeUpcomingEvents($query){
         return $query->where("end_datetime",'>=',Carbon::now());
 
     }
-
     public function ScopePastEvents($query){
         return $query->where("end_datetime",'<',Carbon::now());
 
     }
-
-
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
     }
-
     public function ScopeThisMonthEvents($query){
         return $query->whereBetween("end_datetime",[Carbon::now(),Carbon::now()->endOfMonth()]);
 
@@ -144,5 +171,32 @@ class Event extends Model
 
     }
 
-    
-}
+    /**
+     * Query builder scope to list neighboring locations
+     * within a given distance from a given location
+     *
+     * @param  Illuminate\Database\Query\Builder  $query  Query builder instance
+     * @param  mixed                              $lat    Lattitude of given location
+     * @param  mixed                              $lng    Longitude of given location
+     * @param  integer                            $radius Optional distance
+     * @param  string                             $unit   Optional unit
+     *
+     * @return Illuminate\Database\Query\Builder          Modified query builder
+     */
+    public function scopeDistance($query, $lat, $lng, $radius = 100, $unit = "km")
+    {
+        $unit = ($unit === "km") ? 6378.10 : 3963.17;
+        $lat = (float) $lat;
+        $lng = (float) $lng;
+        $radius = (double) $radius;
+        return $query->having('distance','<=',$radius)
+            ->select(DB::raw("*,
+                            ($unit * ACOS(COS(RADIANS($lat))
+                                * COS(RADIANS(latitude))
+                                * COS(RADIANS($lng) - RADIANS(longtuide))
+                                + SIN(RADIANS($lat))
+                                * SIN(RADIANS(latitude)))) AS distance")
+            )->orderBy('distance','asc');
+    }
+
+    }
