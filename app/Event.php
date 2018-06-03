@@ -13,7 +13,7 @@ class Event extends Model
     protected $table = 'events';
     protected $dates = ['created_at', 'updated_at'];
     protected $hidden = ['pivot'];
-    //protected $appends= ['is_going'];
+   // protected $appends= ['is_going'];
 
     protected $fillable = ['name', 'description',
         'website','mobile','email','code',
@@ -92,17 +92,18 @@ class Event extends Model
         return ($result=='Error')? $value : $result;
     }
 
+//    public  function getIsGoingAttribute(){
+//        return $this->attributes['is_going'] = $this->CheckIfGoing();
+//    }
 
 
 
-    public static function UserGoingThisEvent($user){
+    public  function UserGoingThisEvent($user){
         return static::query()->join('user_going','events.id','=','user_going.event_id')
-               ->where('user_going.user_id',$user->id)
+               ->where('user_going.user_id',$user)
                 ->first();
 
     }
-
-
 
     // Static functions
 
@@ -198,9 +199,4 @@ class Event extends Model
             )->orderBy('distance','asc');
     }
 
-
-
-
-
-    
-}
+    }

@@ -60,7 +60,7 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-
+        //$user = User::where('api_token',$request->header('access-token'))->first()->id;
         $event = Event::query()
             ->where('id',$request_data['event_id'])
             ->with('prices.currency','categories','hash_tags','media','posts.replies')
@@ -944,7 +944,7 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-        $keyword = $request_data['keyword'];
+        $keyword = Helpers::CleanText($request_data['keyword']);
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
