@@ -54,18 +54,19 @@ class EventsController extends Controller
         }
         $validator = Validator::make($request_data,
             [
-                'event_id' =>'required'
+                'event_id' => 'required'
 
             ]);
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-  
+
         $event = Event::query()
             ->where('id',$request_data['event_id'])
             ->with('prices.currency','categories','hash_tags','media','posts.replies')
             ->withCount('GoingUsers')
             ->get();
+
         // Get You May Also Like
         if($event->isEmpty()){
             return Helpers::Get_Response(403, 'error', 'not found', [], []);
@@ -355,7 +356,6 @@ class EventsController extends Controller
 
 
     }
-
 
 
     /**

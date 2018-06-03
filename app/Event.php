@@ -13,8 +13,7 @@ class Event extends Model
     protected $table = 'events';
     protected $dates = ['created_at', 'updated_at'];
     protected $hidden = ['pivot'];
-    protected $appends = ['is_going'];
-
+    //protected $appends= ['is_going'];
 
     protected $fillable = ['name', 'description',
         'website','mobile','email','code',
@@ -93,13 +92,6 @@ class Event extends Model
         return ($result=='Error')? $value : $result;
     }
 
-    public function getIsGoingAttribute(){
-       return $this->attributes['is_going'] = 1;
-
-    }
-    public function getIsFavouriteAttribute(){
-
-    }
 
 
 
