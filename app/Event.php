@@ -13,6 +13,7 @@ class Event extends Model
     protected $table = 'events';
     protected $dates = ['created_at', 'updated_at'];
     protected $hidden = ['pivot'];
+    protected $appends = ['is_going'];
 
 
     protected $fillable = ['name', 'description',
@@ -91,6 +92,24 @@ class Event extends Model
         $result = (app('translator')->getLocale()=='en') ? Helpers::localization('events','venue',$this->id,1) : Helpers::localization('events','venue',$this->id,2);
         return ($result=='Error')? $value : $result;
     }
+
+    public function getIsGoingAttribute(){
+       return $this->attributes['is_going'] = 1;
+
+    }
+    public function getIsFavouriteAttribute(){
+
+    }
+
+
+
+    public static function UserGoingThisEvent($user){
+        return static::query()->join('user_going','events.id','=','user_going.event_id')
+               ->where('user_going.user_id',$user->id)
+                ->first();
+
+    }
+
 
 
     // Static functions
@@ -186,6 +205,8 @@ class Event extends Model
                                 * SIN(RADIANS(latitude)))) AS distance")
             )->orderBy('distance','asc');
     }
+
+
 
 
 
