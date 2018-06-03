@@ -86,18 +86,18 @@ $router->post('change_password','UsersController@change_password');
 
 
 //Events Section
-$router->post("add_event","EventsController@add_event");
-$router->post("edit_event","EventsController@edit_event");
-$router->post("delete_event","EventsController@delete_event");
-$router->post('delete_event_post',"EventsController@delete_event_post");
-$router->post('delete_reply','EventsController@delete_reply');
-$router->post('add_user_going','EventsController@add_user_going');
-$router->post('add_user_favourites','EventsController@add_user_favourites');
-$router->post('add_user_calenders','EventsController@user_calenders');
-$router->post('calender_events',"EventsController@calender_events");
-$router->post('nearby_events',"EventsController@nearby_events");
-$router->post("my_events","EventsController@my_events");
-$router->post("add_post","EventsController@add_post");
+$router->post("add_event",              "EventsController@add_event");
+$router->post("edit_event",             "EventsController@edit_event");
+$router->post("delete_event",           "EventsController@delete_event");
+$router->post('delete_event_post',      "EventsController@delete_event_post");
+$router->post('delete_reply',           'EventsController@delete_reply');
+$router->post('add_user_going',         'EventsController@add_user_going');
+$router->post('add_user_favourites',    'EventsController@add_user_favourites');
+$router->post('add_user_calenders',     'EventsController@add_user_calenders');
+$router->post('calender_events',        "EventsController@calender_events");
+$router->post('nearby_events',          "EventsController@nearby_events");
+$router->post("my_events",              "EventsController@my_events");
+$router->post("add_post",               "EventsController@add_post");
 
 
 

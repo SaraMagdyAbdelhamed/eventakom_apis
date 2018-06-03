@@ -74,8 +74,6 @@ class Event extends Model
 
     }
 
-
-
     //Localizations
 
     public function getNameAttribute($value)
@@ -117,17 +115,14 @@ class Event extends Model
 
     public static function event_entity_ar(){
         return static::query()->join('entity_localizations','events.id','=','entity_localizations.item_id')
-            ->where('entity_id','=',4)->where('field','=','name')
+            ->where('entity_id','=',4)
+            ->where('field','=','name')
             ->select('events.*');
     }
-
-
-
 
     //Query Scopes
     public function ScopeIsActive($query){
             return $query->where('is_active', '=', 1);
-
         }
 
     public function ScopeShowInMobile($query){
@@ -139,21 +134,17 @@ class Event extends Model
 
     }
 
-
     public function ScopeUpcomingEvents($query){
         return $query->where("end_datetime",'>=',Carbon::now());
 
     }
-
     public function ScopePastEvents($query){
         return $query->where("end_datetime",'<',Carbon::now());
 
     }
-
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
     }
-
     public function ScopeThisMonthEvents($query){
         return $query->whereBetween("end_datetime",[Carbon::now(),Carbon::now()->endOfMonth()]);
 

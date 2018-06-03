@@ -35,6 +35,7 @@ class EventsController extends Controller
      *
      * @return void
      */
+
     public function __construct()
     {
         //
@@ -62,7 +63,7 @@ class EventsController extends Controller
 
         $event = Event::query()
             ->where('id',$request_data['event_id'])
-            ->with('prices.currency','categories','hash_tags','media','posts.replies')
+            ->with('prices.currency','categories','hash_tags','media','posts.replies','GoingUsers')
             ->get();
         // Get You May Also Like
         if($event->isEmpty()){
@@ -758,6 +759,10 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
         $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        if($user->GoingEvents()->where("event_id",$request_data['event_id'])->first()){
+            $user->GoingEvents()->detach($request_data['event_id']);
+            return Helpers::Get_Response(200,'deleted successfully','',[],[]);
+        }
         $user->GoingEvents()->sync([$request_data['event_id']]);
         return Helpers::Get_Response(200,'success','',[],[]);
 
@@ -788,7 +793,17 @@ class EventsController extends Controller
         // insert in user_favourite Table
         $user = User::where("api_token", "=", $request->header('access-token'))->first();
 
-
+        // check if its in user favouirte so remove it and return []
+        $check = DB::table('user_favorites')
+                ->where([
+                    ['user_id' , '=' , $user->id],
+                    ['entity_id' , '=',$request_data['entity_id']],
+                    ['item_id','=',$request_data['item_id']]
+                    ]);
+        if(!$check->get()->isEmpty()){
+            $check->delete();
+            return Helpers::Get_Response(200,'deleted','',[],[]);
+        }
         $insert = DB::table('user_favorites')->insert([
             'name'      =>$request_data['name'],
             'user_id'   => $user->id,
@@ -811,7 +826,7 @@ class EventsController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
-    public function user_calenders(Request $request){
+    public function add_user_calenders(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
@@ -1014,11 +1029,6 @@ class EventsController extends Controller
         ]);
 
         return Helpers::Get_Response(200,'success','',[],[$post]);
-
-
-
-
-
     }
 
 
