@@ -139,6 +139,17 @@ class Helpers
 
     }
 
+      public static function CleanStriptagText($text){
+                $text = html_entity_decode($text);
+                $text = strip_tags($text);
+                $text = str_replace('&nbsp;', '', $text);
+                $text = trim(preg_replace('/\s+/', ' ', $text));
+                $text = Helpers::CleanText($text);
+                return $text;
+      }
+
+
+
 
 
 }

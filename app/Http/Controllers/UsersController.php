@@ -57,7 +57,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('photo', $request)) {
+        if (array_key_exists('dd', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'mobile_users/');
         }
         $input = $request;
@@ -71,12 +71,14 @@ class UsersController extends Controller
         $input['email_verification_code'] = str_random(4);
         $input['is_email_verified'] = 0;
         $input['is_mobile_verified'] = 0;
+        if(isset($request['city_id'])){
         $city_id=$request['city_id'];
         $city = GeoCity::find($city_id);
         $input['country_id'] = $city->geo_country->id;
         $input['timezone'] = $city->geo_country->timezone;
         $input['longitude'] = $city->longitude;
         $input['latitude'] = $city->latitude;
+        }
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
  
@@ -456,17 +458,15 @@ class UsersController extends Controller
 
         if ($pages) {
                 foreach($pages as $page){
-         $page->body = strip_tags($page->body);
-
+        $page->body = strip_tags($page->body);
+        $page->body =Helpers::CleanStriptagText($page->body);
                     if( $lang_id == 1){
          $page->name =  $page->name;
          $page->body =  $page->body;
                   }elseif( $lang_id == 2){
                 $pagename =  Helpers::localization('fixed_pages', 'name', $page->id, $lang_id );
                 $pagebody =  Helpers::localization('fixed_pages', 'body', $page->id, $lang_id );
-                $pagebody = html_entity_decode($pagebody);
-                $pagebody = strip_tags($pagebody);
-                $pagebody = str_replace('&nbsp;', '', $pagebody);
+               $pagebody =Helpers::CleanStriptagText($pagebody);
                 if($pagename == "Error"){$page->name =  $page->name;
                 }else{
                     $page->name = $pagename;
