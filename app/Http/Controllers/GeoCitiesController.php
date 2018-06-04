@@ -71,11 +71,11 @@ $citycounty[$key]= $city->getNameAttribute($city->name).','.$city->geo_country->
     // $citycounty = GeoCity::where('name','like','%'.urldecode($keyword).'%')->get();
 
 
-    if (!empty($citycounty[0])) {
+    // if (!empty($citycounty[0])) {
         return Helpers::Get_Response(200,'success','','',$citycounty);
-    }else{
-        return Helpers::Get_Response(400,'error',trans('there is no result related to your input'),'',[]);
-    }
+    // }else{
+    //     return Helpers::Get_Response(400,'error',trans('there is no result related to your input'),'',[]);
+    // }
 
     }else{
 

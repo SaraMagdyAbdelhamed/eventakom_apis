@@ -41,7 +41,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     public static $rules = [ 'first_name' => 'between:1,12',
             'last_name' => 'between:1,12',
             'email' => 'email|unique:users|max:35',
-            'city_id' => 'required',
+            // 'city_id' => 'required',
             'mobile' => 'required|numeric|unique:users',
             'tele_code'=>'required',
             'password' => 'required|between:8,20',
