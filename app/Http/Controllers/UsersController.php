@@ -57,7 +57,7 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
 
-        if (array_key_exists('dd', $request)) {
+        if (array_key_exists('photo', $request)) {
             $request['photo'] = Base64ToImageService::convert($request['photo'], 'mobile_users/');
         }
         $input = $request;
@@ -437,7 +437,7 @@ class UsersController extends Controller
                 $user->update(['lang_id' => $request['lang_id']]);
                 $user->save();
                 $base_url = 'http://eventakom.com/eventakom_dev/public/';
-                // $user_array = User:: where("api_token", "=", $api_token)->first();
+                 $user_array = User:: where("api_token", "=", $api_token)->first();
                 // $user_array->photo = $base_url.$user_array->photo;
                 return Helpers::Get_Response(200, 'success', '', '', array($user_array));
             } else {
