@@ -464,6 +464,9 @@ class UsersController extends Controller
                   }elseif( $lang_id == 2){
                 $pagename =  Helpers::localization('fixed_pages', 'name', $page->id, $lang_id );
                 $pagebody =  Helpers::localization('fixed_pages', 'body', $page->id, $lang_id );
+                $pagebody = html_entity_decode($pagebody);
+                $pagebody = strip_tags($pagebody);
+                $pagebody = str_replace('&nbsp;', '', $pagebody);
                 if($pagename == "Error"){$page->name =  $page->name;
                 }else{
                     $page->name = $pagename;
