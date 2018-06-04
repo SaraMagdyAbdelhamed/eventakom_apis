@@ -136,7 +136,6 @@ class Helpers
             $text = $cleaned_text;
         }
         return $text;
-
     }
 
 

@@ -92,9 +92,6 @@ class Event extends Model
         return ($result=='Error')? $value : $result;
     }
 
-//    public  function getIsGoingAttribute(){
-//        return $this->attributes['is_going'] = $this->CheckIfGoing();
-//    }
 
 
 
@@ -102,7 +99,6 @@ class Event extends Model
         return static::query()->join('user_going','events.id','=','user_going.event_id')
                ->where('user_going.user_id',$user)
                 ->first();
-
     }
 
     // Static functions
@@ -165,6 +161,14 @@ class Event extends Model
         return $query->whereMonth("end_datetime",Carbon::now()->addMonth()->month);
 
     }
+    public function ScopeCreatedByUser($query,$user){
+        return $query->Where('created_by','=',$user->id);
+    }
+
+    public function ScopeNotCreatedByUser($query,$user){
+        return $query->Where('created_by','!=',$user->id)->IsActive();
+
+    }
 
     public function ScopeStartOfMothEvents($query){
         return $query->whereBetween("end_datetime",[Carbon::now()->startOfMonth(),Carbon::now()]);
@@ -198,5 +202,7 @@ class Event extends Model
                                 * SIN(RADIANS(latitude)))) AS distance")
             )->orderBy('distance','asc');
     }
+
+
 
     }

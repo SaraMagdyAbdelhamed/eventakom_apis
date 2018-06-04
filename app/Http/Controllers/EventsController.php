@@ -186,8 +186,6 @@ class EventsController extends Controller
             }
         }
 
-
-
         //Save Images and Check for Sizes
         if(array_key_exists('photos',$request_data)){
             foreach ($request_data['photos'] as $photo){
@@ -385,23 +383,57 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        $events = $interest->events()->with('prices.currency','categories','hash_tags','media')->IsActive()->ShowInMobile();
-        switch ($type) {
-            case 'upcoming':
-                $data = $events->UpcomingEvents();
-                break;
-            
-            default:
-                $data = $events->PastEvents();
-                break;
+        if($request->header('access-token')){
+            $user = User::where('api_token',$request->header('access-token'))->first();
+            // we want to get all events
+            // related to this category - created by the login user
+            $users_events = $interest->events()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->CreatedByUser($user)
+                ->ShowInMobile();
+            $non_users_events = $interest->events()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->NotCreatedByUser($user)
+                ->ShowInMobile();
+            switch ($type) {
+                case 'upcoming':
+                    $users_data = $users_events->UpcomingEvents();
+                    $not_user_data = $non_users_events->UpcomingEvents();
+                    break;
+                default:
+                    $users_data = $users_events->PastEvents();
+                    $not_user_data = $non_users_events->PastEvents();
+                    break;
+            }
+            $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+            $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+            $result = array_merge($users_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+
+        }else{
+            $events = $interest->events()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile();
+            switch ($type) {
+                case 'upcoming':
+                    $data = $events->UpcomingEvents();
+                    break;
+                default:
+                    $data = $events->PastEvents();
+                    break;
+            }
+
+            $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+            $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+
+            $result =$data->WithPaginate($page,$limit)->get();
+
         }
 
-        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
-        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
 
-        $result =$data->WithPaginate($page,$limit)->get();
-      
         
         return Helpers::Get_Response(200, 'success', '', '',$result);
 
@@ -421,10 +453,7 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-
         //Validate
-
-
         $events = Event::query()
             ->with('prices.currency','hash_tags','categories','media')
             ->IsActive()
@@ -448,11 +477,7 @@ class EventsController extends Controller
 
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-
-
         $result =$data->WithPaginate($page,$limit)->get();
-
-
 
         return Helpers::Get_Response(200, 'success', '', '',$result);
 
@@ -991,7 +1016,6 @@ class EventsController extends Controller
                   ->with('prices.currency','categories','hash_tags','media')
                   ->get();
         return Helpers::Get_Response(200,'success','',[],$events);
-
     }
 
 
