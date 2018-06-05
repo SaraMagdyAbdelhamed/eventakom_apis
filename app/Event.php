@@ -172,7 +172,6 @@ class Event extends Model
 
     public function ScopeStartOfMothEvents($query){
         return $query->whereBetween("end_datetime",[Carbon::now()->startOfMonth(),Carbon::now()]);
-
     }
 
     /**

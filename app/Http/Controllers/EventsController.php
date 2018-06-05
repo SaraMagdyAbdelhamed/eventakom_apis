@@ -368,7 +368,6 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-
         //Validate
         $validator = Validator::make($request_data,
             [
@@ -409,7 +408,6 @@ class EventsController extends Controller
             $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
             $result = array_merge($users_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
-
         }else{
             $events = $interest->events()
                 ->with('prices.currency','categories','hash_tags','media')
@@ -423,22 +421,13 @@ class EventsController extends Controller
                     $data = $events->PastEvents();
                     break;
             }
-
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
             $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-
-
             $result =$data->WithPaginate($page,$limit)->get();
-
         }
-
-
-
-        
         return Helpers::Get_Response(200, 'success', '', '',$result);
 
     }
-
 
     /**
      * list all past and upcoming big events
@@ -453,33 +442,74 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        //Validate
-        $events = Event::query()
-            ->with('prices.currency','hash_tags','categories','media')
-            ->IsActive()
-            ->ShowInMobile()
-            ->SuggestedAsBigEvent();
-        switch ($type) {
-            case 'upcoming':
-                $data = $events->UpcomingEvents();
-                break;
-            case 'slider':
-                $data = Event::BigEvents()->orderBy('sort_order','DESC')
-                    ->with('prices.currency','categories','hash_tags','media')
-                    ->IsActive()
-                    ->ShowInMobile();
-                break;
-
-            default:
-                $data = $events->PastEvents();
-                break;
-        }
-
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-        $result =$data->WithPaginate($page,$limit)->get();
 
-        return Helpers::Get_Response(200, 'success', '', '',$result);
+        //Check if user Login
+        if($request->header('access-token')){
+            $user = User::where('api_token',$request->header('access-token'))->first();
+            $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
+                          ->SuggestedAsBigEvent()
+                          ->CreatedByUser($user);
+            $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
+                ->SuggestedAsBigEvent()
+                ->CreatedByUser($user);
+            switch ($type) {
+                case 'upcoming':
+                    $user_data  = $user_events->UpcomingEvents();
+                    $not_user_data = $non_user_events->UpcomingEvents();
+                    $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    return Helpers::Get_Response(200, 'success', '', '',$result);
+
+                    break;
+                case 'slider':
+                    $data = Event::BigEvents()->orderBy('sort_order','DESC')
+                        ->with('prices.currency','categories','hash_tags','media')
+                        ->IsActive()
+                        ->ShowInMobile();
+                    $result =$data->WithPaginate($page,$limit)->get();
+                    return Helpers::Get_Response(200, 'success', '', '',$result);
+                    break;
+                default:
+                    $user_data = $user_events->PastEvents();
+                    $not_user_data = $non_user_events->UpcomingEvents();
+                    $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    return Helpers::Get_Response(200, 'success', '', '',$result);
+                    break;
+            }
+
+        }else{
+            $events = Event::query()
+                ->with('prices.currency','hash_tags','categories','media')
+                ->IsActive()
+                ->ShowInMobile()
+                ->SuggestedAsBigEvent();
+            switch ($type) {
+                case 'upcoming':
+                    $data = $events->UpcomingEvents();
+                    break;
+                case 'slider':
+                    $data = Event::BigEvents()->orderBy('sort_order','DESC')
+                        ->with('prices.currency','categories','hash_tags','media')
+                        ->IsActive()
+                        ->ShowInMobile();
+                    break;
+                default:
+                    $data = $events->PastEvents();
+                    break;
+            }
+
+
+            $result =$data->WithPaginate($page,$limit)->get();
+            return Helpers::Get_Response(200, 'success', '', '',$result);
+
+
+
+        }
+
+
+        //Validate
+
 
     }
 
@@ -500,7 +530,7 @@ class EventsController extends Controller
     }
 
     /**
-     * this will reutrn all events in this month
+     * this will return all events in this month
      * form today to the end of month and all events in the next month
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -1017,7 +1047,6 @@ class EventsController extends Controller
                   ->get();
         return Helpers::Get_Response(200,'success','',[],$events);
     }
-
 
     /**
      * Add post to event
