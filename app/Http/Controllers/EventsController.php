@@ -406,7 +406,6 @@ class EventsController extends Controller
             }
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
             $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-
             $result = array_merge($users_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
         }else{
             $events = $interest->events()
@@ -453,7 +452,7 @@ class EventsController extends Controller
                           ->CreatedByUser($user);
             $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
                 ->SuggestedAsBigEvent()
-                ->CreatedByUser($user);
+                ->NotCreatedByUser($user);
             switch ($type) {
                 case 'upcoming':
                     $user_data  = $user_events->UpcomingEvents();
@@ -472,7 +471,8 @@ class EventsController extends Controller
                     break;
                 default:
                     $user_data = $user_events->PastEvents();
-                    $not_user_data = $non_user_events->UpcomingEvents();
+                    $not_user_data = $non_user_events->PastEvents();
+                    //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
                     $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
@@ -544,38 +544,109 @@ class EventsController extends Controller
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
-        $this_month = Event::query()
-            ->with('prices.currency','categories','hash_tags','media')
-            ->IsActive()
-            ->ShowInMobile()
-            ->ThisMonthEvents()
-            ->WithPaginate($page,$limit)
-            ->orderBy('end_datetime','DESC')
-            ->get();
-        $next_month = Event::query()
-            ->with('prices.currency','categories','hash_tags','media')
-            ->IsActive()
-            ->ShowInMobile()
-            ->NextMonthEvents()
-            ->WithPaginate($page,$limit)
-            ->orderBy('end_datetime','DESC')
-            ->get();
-        $start_to_today = Event::query()
-            ->with('prices.currency','categories','hash_tags','media')
-            ->IsActive()
-            ->ShowInMobile()
-            ->StartOfMothEvents()
-            ->WithPaginate($page,$limit)
-            ->orderBy('end_datetime','DESC')
-            ->get();
+        if($request->header('access-token')){
+            $user = User::where("api_token",$request->header('access-token'))->first();
+            //this Month Events
+            $this_month_by_user = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->CreatedByUser($user)
+                ->ShowInMobile()
+                ->ThisMonthEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $this_month_not_by_user = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->NotCreatedByUser($user)
+                ->ShowInMobile()
+                ->ThisMonthEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $this_month = array_merge($this_month_by_user->toArray(),$this_month_not_by_user->toArray());
 
-        $result = [
-            'start_of_month_to_today'          => $start_to_today,
-            'start_of_today_to_end'            => $this_month,
-            'next_month'                       => $next_month
+            //Next Events
+            $next_month_by_user = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->CreatedByUser($user)
+                ->ShowInMobile()
+                ->NextMonthEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $next_month_not_by_user = Event::query()
+                    ->with('prices.currency','categories','hash_tags','media')
+                    ->NotCreatedByUser($user)
+                    ->ShowInMobile()
+                    ->NextMonthEvents()
+                    ->WithPaginate($page,$limit)
+                    ->orderBy('end_datetime','DESC')
+                    ->get();
+            $next_month = array_merge($next_month_by_user->toArray(),$next_month_not_by_user->toArray());
+            $start_to_today_by_user = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->CreatedByUser($user)
+                ->ShowInMobile()
+                ->StartOfMothEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $start_to_today_not_by_user = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->NotCreatedByUser($user)
+                ->ShowInMobile()
+                ->StartOfMothEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $start_to_today = array_merge($start_to_today_by_user->toArray(),$start_to_today_not_by_user->toArray());
 
-        ];
-        return Helpers::Get_Response(200,'success','',[],$result);
+            $result = [
+                'start_of_month_to_today'          => $start_to_today,
+                'start_of_today_to_end'            => $this_month,
+                'next_month'                       => $next_month
+
+            ];
+            return Helpers::Get_Response(200,'success','',[],$result);
+
+
+
+        }else{
+            $this_month = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile()
+                ->ThisMonthEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $next_month = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile()
+                ->NextMonthEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+            $start_to_today = Event::query()
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile()
+                ->StartOfMothEvents()
+                ->WithPaginate($page,$limit)
+                ->orderBy('end_datetime','DESC')
+                ->get();
+
+            $result = [
+                'start_of_month_to_today'          => $start_to_today,
+                'start_of_today_to_end'            => $this_month,
+                'next_month'                       => $next_month
+
+            ];
+            return Helpers::Get_Response(200,'success','',[],$result);
+
+        }
+
 
     }
 
@@ -969,14 +1040,32 @@ class EventsController extends Controller
         $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+        if($request->header('access-token')){
+            $user = User::where("api_token",$request->header("access-token"))->first();
+            $events_by_user = Event::query()->Distance($lat,$lng,$radius,"km")
+                ->with('prices.currency','categories','hash_tags','media')
+                ->CreatedByUser($user)
+                ->ShowInMobile()
+                ->WithPaginate($page,$limit)
+                ->get();
+            $events_not_by_user = Event::query()->Distance($lat,$lng,$radius,"km")
+                ->with('prices.currency','categories','hash_tags','media')
+                ->NotCreatedByUser($user)
+                ->ShowInMobile()
+                ->WithPaginate($page,$limit)
+                ->get();
+            $result = array_merge($events_by_user->toArray(),$events_not_by_user->toArray());
+            return Helpers::Get_Response(200,'success','',[],$result);
+        }else{
+            $events = Event::query()->Distance($lat,$lng,$radius,"km")
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile()
+                ->WithPaginate($page,$limit)
+                ->get();
+            return Helpers::Get_Response(200,'success','',[],$events);
+        }
 
-        $events = Event::query()->Distance($lat,$lng,$radius,"km")
-            ->with('prices.currency','categories','hash_tags','media')
-            ->IsActive()
-            ->ShowInMobile()
-            ->WithPaginate($page,$limit)
-            ->get();
-        return Helpers::Get_Response(200,'success','',[],$events);
 
     }
 
@@ -1003,30 +1092,75 @@ class EventsController extends Controller
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
-        //search in events table if english
+       //check if user logged in
+        if($request->header('access-token')){
+            $user = User::where('api_token',$request->header('access-token'))->first();
+            //search in entity_localizations if arabic
+            if(array_key_exists('lang_id',$request_data) && $request_data['lang_id'] == 2){
 
-        $events = Event::query()
-            ->where('name','like','%'.$keyword.'%')
-            ->with('prices.currency','categories','hash_tags','media')
-            ->IsActive()
-            ->ShowInMobile()
-            ->WithPaginate($page,$limit)
-            ->get();
-
-        //search in entity_localizations if arabic
-        if(array_key_exists('lang_id',$request_data)){
-            if($request_data['lang_id'] == 2){
-                $events = Event::event_entity_ar()
-                    ->where('entity_localizations.value','like','%'.$keyword.'%')
+                    $events_by_user = Event::event_entity_ar()
+                        ->where('entity_localizations.value','like','%'.$keyword.'%')
+                        ->with('prices.currency','categories','hash_tags','media')
+                        ->CreatedByUser($user)
+                        ->ShowInMobile()
+                        ->WithPaginate($page,$limit)
+                        ->get();
+                    $events_not_by_user = Event::event_entity_ar()
+                        ->where('entity_localizations.value','like','%'.$keyword.'%')
+                        ->with('prices.currency','categories','hash_tags','media')
+                        ->NotCreatedByUser($user)
+                        ->ShowInMobile()
+                        ->WithPaginate($page,$limit)
+                        ->get();
+                    $result = array_merge($events_by_user->toArray(),$events_not_by_user->toArray());
+            }else{
+                $events_by_user = Event::query()
+                    ->where('name','like','%'.$keyword.'%')
                     ->with('prices.currency','categories','hash_tags','media')
-                    ->IsActive()
+                    ->CreatedByUser($user)
                     ->ShowInMobile()
                     ->WithPaginate($page,$limit)
                     ->get();
+                $events_not_by_user = Event::query()
+                    ->where('name','like','%'.$keyword.'%')
+                    ->with('prices.currency','categories','hash_tags','media')
+                    ->NotCreatedByUser($user)
+                    ->ShowInMobile()
+                    ->WithPaginate($page,$limit)
+                    ->get();
+                $result = array_merge($events_by_user->toArray(), $events_not_by_user->toArray());
+
+
             }
+
+            //return result
+            return Helpers::Get_Response(200,'success','',[],$result);
+
+        }else{
+            $events = Event::query()
+                ->where('name','like','%'.$keyword.'%')
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile()
+                ->WithPaginate($page,$limit)
+                ->get();
+
+            //search in entity_localizations if arabic
+            if(array_key_exists('lang_id',$request_data)){
+                if($request_data['lang_id'] == 2){
+                    $events = Event::event_entity_ar()
+                        ->where('entity_localizations.value','like','%'.$keyword.'%')
+                        ->with('prices.currency','categories','hash_tags','media')
+                        ->IsActive()
+                        ->ShowInMobile()
+                        ->WithPaginate($page,$limit)
+                        ->get();
+                }
+            }
+            //return result
+            return Helpers::Get_Response(200,'success','',[],$events);
+
         }
-        //return result
-        return Helpers::Get_Response(200,'success','',[],$events);
 
     }
 
