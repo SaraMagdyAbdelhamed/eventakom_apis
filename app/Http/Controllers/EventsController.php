@@ -94,9 +94,7 @@ class EventsController extends Controller
     public function add_event(Request $request){
         //read the request
         $request_data = (array)json_decode($request->getContent(), true);
-        if (array_key_exists('lang_id', $request_data)) {
-            Helpers::Set_locale($request_data['lang_id']);
-        }
+
         $validator = Validator::make($request_data,
             [
                 "name"             => "required|between:2,100",
@@ -122,6 +120,9 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
+
+
+
 
         $event_data = [
             'name'              => $request_data['name'],
@@ -153,10 +154,14 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', 'not saved',[], []);
         }
 
+
+
+
         //read the hashtags and save it ;
         if(array_key_exists('hashtags',$request_data)){
             $hashtags = explode(',',$request_data['hashtags']);
             foreach ($hashtags as $hashtag){
+
                 $hash_tag = HashTag::firstOrCreate(['name'=>$hashtag]);
                 $event->hash_tags()->save($hash_tag);
 
@@ -204,6 +209,48 @@ class EventsController extends Controller
                     'type'  => 2
                 ];
                 $event->media()->create($video_data);
+            }
+
+        }
+
+        //Save Translation
+        //check if arabic
+        if(array_key_exists('lang_id',$request_data)){
+            Helpers::Set_locale($request_data['lang_id']);
+            if($request_data['lang_id'] == 2){ // Arabic data so i excpect data will be arabic in this case
+                //save data in entity localisation
+                // name - descirption -venue
+                $save_translattion = DB::table('entity_localizations')->insert([
+                    [
+                        'entity_id'     => 4,
+                        'field'         => 'name',
+                        'item_id'       => $event->id,
+                        'value'         => $request_data['name'],
+                        'lang_id'       => 2,
+                        'cleared_text'  => Helpers::CleanText($request_data['name'])
+
+                    ],
+                    [
+                        'entity_id'     => 4,
+                        'field'         => 'description',
+                        'item_id'       => $event->id,
+                        'value'         => $request_data['description'],
+                        'lang_id'       => 2,
+                        'cleared_text'  => Helpers::CleanText($request_data['description'])
+
+                    ],
+                    [
+                        'entity_id'     => 4,
+                        'field'         => 'venue',
+                        'item_id'       => $event->id,
+                        'value'         => $request_data['venue'],
+                        'lang_id'       => 2,
+                        'cleared_text'  => Helpers::CleanText($request_data['venue'])
+
+                    ]
+
+                ]);
+
             }
 
         }
@@ -997,7 +1044,6 @@ class EventsController extends Controller
 
     }
 
-
     /**
      * list Trending Keywords
      * @param Request $request
@@ -1065,7 +1111,6 @@ class EventsController extends Controller
                 ->get();
             return Helpers::Get_Response(200,'success','',[],$events);
         }
-
 
     }
 
@@ -1216,17 +1261,5 @@ class EventsController extends Controller
 
         return Helpers::Get_Response(200,'success','',[],[$post]);
     }
-
-
-
-
-
-
-
-
-
-
-
-
 
 }

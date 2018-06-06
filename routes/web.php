@@ -43,6 +43,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('trending_keywords',"EventsController@trending_keywords");
  $router->post('events_search',"EventsController@search");
 
+ //Shops and Dines
+ $router->post("shops","ShopController@list_shops");
+ $router->post("offers","ShopController@list_offers");
+
 
 
  $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);

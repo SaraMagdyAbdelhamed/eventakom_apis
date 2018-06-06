@@ -10,6 +10,7 @@ use Laravel\Lumen\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Illuminate\Database\QueryException ;
 use App\Libraries\Helpers;
 
 class Handler extends ExceptionHandler
@@ -31,8 +32,9 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param  \Exception  $e
+     * @param  \Exception $e
      * @return void
+     * @throws Exception
      */
     public function report(Exception $e)
     {
@@ -58,6 +60,11 @@ class Handler extends ExceptionHandler
             return Helpers::Get_Response(405, 'faild', 'URL not Found', [],[]);
 
         }
+//        if ($e instanceof QueryException)
+//        {
+//            return Helpers::Get_Response(405, 'faild', 'Query Error', [],[]);
+//
+//        }
         return parent::render($request, $e);
     }
 }

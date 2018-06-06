@@ -23,58 +23,48 @@ class Event extends Model
         ,'gender_id','age_range_id','is_paid',
         'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','tele_code','is_backend'];
 
-    // relations
+    /** Relations Section */
 
-
-    //Many to many realation with interests
     public  function categories()
     {
         return $this->belongsToMany('App\Interest', 'event_categories','event_id','interest_id');
     }
-
-    //Many to many realation with hashtags
     public  function hash_tags()
     {
         return $this->belongsToMany('App\HashTag', 'event_hash_tags','event_id','hash_tag_id');
     }
-
     public  function age_range(){
         return $this->belongsTo('App\AgeRange','age_range_id');
     }
     public  function gender(){
         return $this->belongsTo('App\Gender','gender_id');
     }
-
     public  function status(){
         return $this->belongsTo('App\EventStatus','event_status_id');
     }
-
     public  function prices(){
         return $this->hasMany('App\Price','event_id');
     }
-    public function media(){
+    public  function media(){
         return $this->hasMany('App\EventMedia' , 'event_id');
     }
-
-    public function posts(){
+    public  function posts(){
         return $this->hasMany('App\EventPost','event_id');
     }
-
-    public function GoingUsers(){
+    public  function GoingUsers(){
         return $this->belongsToMany('App\User', 'user_going','event_id','user_id');
 
     }
-
-    public function CalenderUsers(){
+    public  function CalenderUsers(){
         return $this->belongsToMany('App\User', 'user_calendars','event_id','user_id')->withPivot('from_date','to_date');
     }
-
-    public function EventOwner(){
+    public  function EventOwner(){
         return $this->belongsTo('App\User');
 
     }
+    /** End Relations Section */
 
-    //Localizations
+    /**  Localizations Through accessors */
 
     public function getNameAttribute($value)
     {
@@ -91,6 +81,7 @@ class Event extends Model
         $result = (app('translator')->getLocale()=='en') ? Helpers::localization('events','venue',$this->id,1) : Helpers::localization('events','venue',$this->id,2);
         return ($result=='Error')? $value : $result;
     }
+    /** End  Localizations Through accessors */
 
 
 
@@ -100,8 +91,6 @@ class Event extends Model
                ->where('user_going.user_id',$user)
                 ->first();
     }
-
-    // Static functions
 
     public static function BigEvents(){
     	return static::query()->join('big_events','events.id','=','big_events.event_id')
@@ -128,7 +117,8 @@ class Event extends Model
             ->select('events.*');
     }
 
-    //Query Scopes
+    /**  Query Scopes to make code readable */
+
     public function ScopeIsActive($query){
             return $query->where('is_active', '=', 1);
         }
@@ -202,6 +192,7 @@ class Event extends Model
             )->orderBy('distance','asc');
     }
 
+    /**  End Query Scopes  */
 
 
     }
