@@ -6,7 +6,8 @@
  * Time: 10:31 AM
  */
 namespace App;
-
+use App\Libraries\Helpers;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 class Offer extends Model
 {

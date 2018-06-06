@@ -6,7 +6,8 @@
  * Time: 5:07 PM
  */
 namespace App;
-
+use App\Libraries\Helpers;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Shop extends Model

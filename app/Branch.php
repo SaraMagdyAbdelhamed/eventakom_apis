@@ -6,6 +6,8 @@
  * Time: 9:34 AM
  */
 namespace App;
+use App\Libraries\Helpers;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Branch extends Model
