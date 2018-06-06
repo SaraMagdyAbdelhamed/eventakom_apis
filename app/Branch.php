@@ -8,6 +8,7 @@
 namespace App;
 use App\Libraries\Helpers;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Branch extends Model
