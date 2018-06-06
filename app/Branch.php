@@ -23,6 +23,13 @@ class Branch extends Model
         return $this->belongsToMany('App\Day','shop_branch_times','branch_id','day_id')
             ->withPivot('from','to');
     }
+
+    public function getNameAttribute($value)
+    {
+        $result = (app('translator')->getLocale()=='en') ? Helpers::localization('shop_branches','name',$this->id,1) : Helpers::localization('shop_branches','name',$this->id,2);
+        return ($result=='Error')? $value : $result;
+    }
+
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
     }
