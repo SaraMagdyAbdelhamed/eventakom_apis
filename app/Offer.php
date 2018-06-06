@@ -22,6 +22,12 @@ class Offer extends Model
     }
 
 
+    public function getNameAttribute($value)
+    {
+        $result = (app('translator')->getLocale()=='en') ? Helpers::localization('offers','name',$this->id,1) : Helpers::localization('offers','name',$this->id,2);
+        return ($result=='Error')? $value : $result;
+    }
+
 
 
 

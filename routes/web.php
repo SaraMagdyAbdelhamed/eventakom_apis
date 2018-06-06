@@ -46,7 +46,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  //Shops and Dines
  $router->post("shops","ShopController@list_shops");
  $router->post("offers","ShopController@list_offers");
-
+ $router->post("nearby_branches","ShopController@nearby_branches");
 
 
  $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
