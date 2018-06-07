@@ -95,6 +95,7 @@ $router->post("edit_event",             "EventsController@edit_event");
 $router->post("delete_event",           "EventsController@delete_event");
 $router->post('delete_event_post',      "EventsController@delete_event_post");
 $router->post('delete_reply',           'EventsController@delete_reply');
+$router->post('recommended_events[/{type}]','EventsController@recommended_events');
 $router->post('add_user_going',         'EventsController@add_user_going');
 $router->post('add_user_favourites',    'EventsController@add_user_favourites');
 $router->post('add_user_calenders',     'EventsController@add_user_calenders');
@@ -102,8 +103,6 @@ $router->post('calender_events',        "EventsController@calender_events");
 $router->post('nearby_events',          "EventsController@nearby_events");
 $router->post("my_events",              "EventsController@my_events");
 $router->post("add_post",               "EventsController@add_post");
-
-
-
+$router->post("add_post_reply",         "EventsController@add_post_reply");
 
 });

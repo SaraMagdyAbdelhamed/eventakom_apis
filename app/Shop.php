@@ -17,9 +17,6 @@ class Shop extends Model
     protected $fillable = ['name', 'photo','phone','website','info','is_active'];
     public $timestamps = false;
 
-
-
-
     /** Relations */
     public function branches(){
         return $this->hasMany('App\Branch','shop_id');

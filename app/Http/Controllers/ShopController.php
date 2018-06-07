@@ -86,7 +86,7 @@ class ShopController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
 
-        // PerFrom The Query
+        // Perform The Query
         $lat = $request_data['user_lat'];
         $lng = $request_data['user_lng'];
         $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;

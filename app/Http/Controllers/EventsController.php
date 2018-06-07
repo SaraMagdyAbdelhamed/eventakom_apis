@@ -81,7 +81,7 @@ class EventsController extends Controller
             $result = Event::EventsInCategories($category_ids)->get()->random($random);
 
         }
-        return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
+        return Helpers::Get_Response(200, 'success', '', [], [['event'=>$event,'you_may_also_like'=>$result]]);
 
     }
 
@@ -1101,7 +1101,7 @@ class EventsController extends Controller
                 ->WithPaginate($page,$limit)
                 ->get();
             $result = array_merge($events_by_user->toArray(),$events_not_by_user->toArray());
-            return Helpers::Get_Response(200,'success','',[],$result);
+            return Helpers::Get_Response(200,'success','',[],[$result]);
         }else{
             $events = Event::query()->Distance($lat,$lng,$radius,"km")
                 ->with('prices.currency','categories','hash_tags','media')
@@ -1109,7 +1109,7 @@ class EventsController extends Controller
                 ->ShowInMobile()
                 ->WithPaginate($page,$limit)
                 ->get();
-            return Helpers::Get_Response(200,'success','',[],$events);
+            return Helpers::Get_Response(200,'success','',[],[$events]);
         }
 
     }
@@ -1261,5 +1261,36 @@ class EventsController extends Controller
 
         return Helpers::Get_Response(200,'success','',[],[$post]);
     }
+
+
+    public function add_post_reply(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_post_id" => "required",
+                "reply"     => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        // add post reply
+        $event_post = EventPost::find($request_data['event_post_id']);
+        if(!$event_post){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $post_reply = $event_post->replies()->create([
+            'reply'      => $request_data['reply'],
+            'created_by' => $user->id
+
+        ]);
+        return Helpers::Get_Response(200,'success','',[],[$post_reply]);
+
+    }
+
 
 }
