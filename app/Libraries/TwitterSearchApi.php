@@ -26,34 +26,49 @@ class TwitterSearchApi
         $max_id = 0;
         $i = 0 ; 
         $tweets_found=0; 
-        $search_query=['q' =>'%23'.$query , 'result_type' =>$search_type,'count' => 10];   
+        $search_query=['q' =>'%23'.$query , 'result_type' =>$search_type,'count' => $limit];   
         $connection = $this->PrepareConnection(); 
-        //loop to call the api again to load more results         
-        while ($i < 2) {
-            sleep(1);
-            if ($max_id == 0) {
-              $this->TalkToTwitterSearchApi($connection,$search_query);
-            // Repeated API call
-            } else {
-                // Collect older tweets using max_id in the search query to get more tweets
-                --$max_id;
-                $search_query['max_id'] = $max_id;
-                 $this->TalkToTwitterSearchApi($connection,$search_query);
-            }           
-            // Exit on error
-          if ($connection->response['code'] != 200) {
+        $this->TalkToTwitterSearchApi($connection,$search_query);
+        if ($connection->response['code'] != 200) {
 
               print "Exited with error: " . $connection->response['code'] . "<br>";
-                break;            
             } 
             // Process each tweet returned
             $results = json_decode($connection->response['response']);
             $tweets = $results->statuses;
+
+
+
+        //loop to call the api again to load more results         
+        // while ($i < 2) {
+        //     sleep(1);
+        //     if ($max_id == 0) {
+        //       $this->TalkToTwitterSearchApi($connection,$search_query);
+        //     // Repeated API call
+        //     } else {
+        //         // Collect older tweets using max_id in the search query to get more tweets
+        //         --$max_id;
+        //         $search_query['max_id'] = $max_id;
+        //          $this->TalkToTwitterSearchApi($connection,$search_query);
+        //     }           
+        //     // Exit on error
+        //   if ($connection->response['code'] != 200) {
+
+        //       print "Exited with error: " . $connection->response['code'] . "<br>";
+        //         break;            
+        //     } 
+        //     // Process each tweet returned
+        //     $results = json_decode($connection->response['response']);
+        //     $tweets = $results->statuses;
+        //     foreach($tweets as $tweet) {
+        //      $max_id=$tweet->id;
+        //      //save tweets info
+        //     } 
          
          
-         $i++;
+        //  $i++;
          
-        }
+        // }
         return $results;
     }
     /**

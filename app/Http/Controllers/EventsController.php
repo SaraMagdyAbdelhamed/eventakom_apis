@@ -1262,6 +1262,11 @@ class EventsController extends Controller
         return Helpers::Get_Response(200,'success','',[],[$post]);
     }
 
+    /**
+    * Delete Post Reply
+    * @param Request $request
+    * @return \Illuminate\Http\JsonResponse
+    */
 
     public function add_post_reply(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -1286,13 +1291,16 @@ class EventsController extends Controller
         $post_reply = $event_post->replies()->create([
             'reply'      => $request_data['reply'],
             'created_by' => $user->id
-
         ]);
         return Helpers::Get_Response(200,'success','',[],[$post_reply]);
 
     }
 
-
+    /**
+     * list tweets related to hash tag 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function tweets_by_hashtags(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
