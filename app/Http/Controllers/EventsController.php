@@ -733,8 +733,8 @@ class EventsController extends Controller
         }
         $event_posts = $event->posts()->with('user')->orderBy("created_at","DECS")->get();
 
-        return Helpers::Get_Response(200,'success','',[],['count'=>$event_posts->count() ,'posts'=>
-            $event_posts]);
+        return Helpers::Get_Response(200,'success','',[],[['count'=>$event_posts->count() ,'posts'=>
+            $event_posts]]);
 
     }
 
