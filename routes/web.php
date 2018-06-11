@@ -42,6 +42,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('recommended_events[/{type}]','EventsController@recommended_events');
  $router->post('trending_keywords',"EventsController@trending_keywords");
  $router->post('events_search',"EventsController@search");
+ $router->post("get_post_replies","EventsController@get_post_replies");
  $router->post('tweets',"EventsController@tweets_by_hashtags");
 
  //Shops and Dines

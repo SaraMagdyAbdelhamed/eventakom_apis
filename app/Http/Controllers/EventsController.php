@@ -1313,6 +1313,34 @@ class EventsController extends Controller
     }
 
     /**
+    * Get post replies 
+    * @param Request $request
+    * @return \Illuminate\Http\JsonResponse
+    */
+
+    public function get_post_replies(Request $request){
+          $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_post_id" => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $post = EventPost::find($request_data['event_post_id']);
+        if(!$post){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        $replies = $post->replies()->with('user')->orderBy("created_at","DESC")->get();
+        return Helpers::Get_Response(200,'success','',[],[['count'=>$replies->count(),
+            'replies'=>$replies]]);
+    }
+
+    /**
      * list tweets related to hash tag 
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
