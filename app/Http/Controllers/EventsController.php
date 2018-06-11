@@ -710,15 +710,28 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
-        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+         $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
 
-        $event_posts = EventPost::query()
-            ->orderBy('id','DESC')
-            ->withCount('replies')
-            ->with('user:id,photo')
-            ->WithPaginate($page,$limit)
-            ->get();
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        // $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        // $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+
+        // $event_posts = Event::query()
+        //     ->orderBy('id','DESC')
+        //     ->withCount('replies')
+        //     ->with('user:id,photo')
+        //     ->WithPaginate($page,$limit)
+        //     ->get();
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        $event_posts = $event->posts()->orderBy("created_at","DECS")->get();
 
         return Helpers::Get_Response(200,'success','',[],$event_posts);
 
