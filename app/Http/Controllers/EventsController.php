@@ -1306,7 +1306,8 @@ class EventsController extends Controller
             'reply'      => $request_data['reply'],
             'created_by' => $user->id
         ]);
-        return Helpers::Get_Response(200,'success','',[],[$post_reply]);
+        $reply = PostReply::query()->where("id",$post_reply->id)->with('user')->get();
+        return Helpers::Get_Response(200,'success','',[],$reply);
 
     }
 

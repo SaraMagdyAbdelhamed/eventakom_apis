@@ -81,6 +81,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany('App\Event','created_by');
 
     }
+    public function  post_replies(){
+        return $this->hasMany('App\PostReply','created_by');
+
+    }
 
  
   public function getPhotoAttribute($value)
