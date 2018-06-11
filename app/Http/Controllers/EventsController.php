@@ -731,9 +731,10 @@ class EventsController extends Controller
         if(!$event){
             return Helpers::Get_Response(401,'faild','Not found',[],[]);
         }
-        $event_posts = $event->posts()->orderBy("created_at","DECS")->get();
+        $event_posts = $event->posts()->with('user')->orderBy("created_at","DECS")->get();
 
-        return Helpers::Get_Response(200,'success','',[],$event_posts);
+        return Helpers::Get_Response(200,'success','',[],['count'=>$event_posts->count() ,'posts'=>
+            $event_posts]);
 
     }
 
