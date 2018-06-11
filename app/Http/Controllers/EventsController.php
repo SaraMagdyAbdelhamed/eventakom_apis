@@ -17,6 +17,7 @@ use App\Price;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
+use App\Libraries\TwitterSearchApi;
 use App\Libraries\Base64ToImageService;
 use Illuminate\Support\Facades\Hash;
 use App\Libraries\TwilioSmsService;
@@ -144,7 +145,7 @@ class EventsController extends Controller
             'is_backend'        => 0,
             "tele_code"         => $request_data["tele_code"],
             "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
-            "use_ticketing_system" =>array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
+            "use_ticketing_system" => array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
 
         ];
 
@@ -954,8 +955,7 @@ class EventsController extends Controller
         }
         $validator = Validator::make($request_data,
             [
-                "entity_id" => "required",
-                "item_id"   => "required",
+                "event_id"   => "required",
                 "name"      => "required"
             ]);
         if ($validator->fails()) {
@@ -969,8 +969,8 @@ class EventsController extends Controller
         $check = DB::table('user_favorites')
                 ->where([
                     ['user_id' , '=' , $user->id],
-                    ['entity_id' , '=',$request_data['entity_id']],
-                    ['item_id','=',$request_data['item_id']]
+                    ['item_id' , '=',$request_data['event_id']],
+                    ['entity_id','=',4]
                     ]);
         if(!$check->get()->isEmpty()){
             $check->delete();
@@ -979,8 +979,8 @@ class EventsController extends Controller
         $insert = DB::table('user_favorites')->insert([
             'name'      =>$request_data['name'],
             'user_id'   => $user->id,
-            'entity_id' => $request_data['entity_id'],
-            'item_id'   => $request_data['item_id']
+            'item_id' => $request_data['event_id'],
+            'entity_id'   => 4
 
         ]);
         if(!$insert){
@@ -1290,6 +1290,27 @@ class EventsController extends Controller
         ]);
         return Helpers::Get_Response(200,'success','',[],[$post_reply]);
 
+    }
+
+
+    public function tweets_by_hashtags(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "hashtag" => "required"
+                
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit'] :10;
+        $twitterSearch = new TwitterSearchApi();
+       $tweets =  $twitterSearch->StartTwitterSearch($request_data['hashtag'],'mixed',$limit);
+      return Helpers::Get_Response(200,'success','',[],$tweets->statuses);
     }
 
 
