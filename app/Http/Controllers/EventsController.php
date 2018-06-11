@@ -1274,7 +1274,7 @@ class EventsController extends Controller
         ]);
         $post = EventPost::query()->where("id",$post->id)->with("user")->get();
 
-        return Helpers::Get_Response(200,'success','',[],[$post]);
+        return Helpers::Get_Response(200,'success','',[],$post);
     }
 
     /**
