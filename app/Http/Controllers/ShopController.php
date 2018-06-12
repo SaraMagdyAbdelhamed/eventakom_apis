@@ -87,9 +87,24 @@ class ShopController extends Controller
         }
 
         // Perform The Query
-        $lat = $request_data['user_lat'];
-        $lng = $request_data['user_lng'];
-        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
+        $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
+        $lng    = env('JEDDAH_LONGITUDE');
+
+        if(array_key_exists('user_lat',$request_data))
+        {
+            if($request_data['user_lat'] != ""){
+                $lat = $request_data["user_lat"];
+            }
+
+        }
+        if(array_key_exists('user_lng',$request_data))
+        {
+            if($request_data['user_lng'] != ""){
+                $lng = $request_data["user_lng"];
+            }
+
+        }
+        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:1000;
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
         $branches = Branch::query()->Distance($lat,$lng,$radius,"km")
@@ -97,7 +112,6 @@ class ShopController extends Controller
             ->WithPaginate($page,$limit)
             ->get();
         return Helpers::Get_Response(200,'success','',[],$branches);
-
     }
 
 

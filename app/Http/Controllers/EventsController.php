@@ -1084,19 +1084,26 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        //validation
-        $validator = Validator::make($request_data,
-            [
-                "user_lat" => "required",
-                "user_lng" => "required",
-            ]);
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
-        }
+        
 
         // PerFrom The Query
-        $lat = $request_data['user_lat'];
-        $lng = $request_data['user_lng'];
+        $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
+        $lng    = env('JEDDAH_LONGITUDE');
+
+        if(array_key_exists('user_lat',$request_data))
+        {
+            if($request_data['user_lat'] != ""){
+                $lat = $request_data["user_lat"];
+            }
+
+        }
+        if(array_key_exists('user_lng',$request_data))
+        {
+            if($request_data['user_lng'] != ""){
+                $lng = $request_data["user_lng"];
+            }
+
+        }
         $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;

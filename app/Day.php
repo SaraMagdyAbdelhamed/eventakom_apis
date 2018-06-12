@@ -25,6 +25,10 @@ class Day extends Model
         return $this->belongsToMany('App\Branch','shop_branch_times','branch_id','shop_id')
             ->withPivot('from','to');
     }
+    public function famous_attraction(){
+         return $this->belongsToMany('App\Day','famous_attraction_days','famous_attraction_id','day_id')
+            ->withPivot('from','to');
+    }
 
 
 
