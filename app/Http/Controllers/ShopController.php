@@ -57,6 +57,7 @@ class ShopController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
         $offers = Offer::query()
+            ->IsActive()
             ->orderBy('name','ASC')
             ->WithPaginate($page,$limit)
             ->get();

@@ -17,6 +17,12 @@ class Shop extends Model
     protected $fillable = ['name', 'photo','phone','website','info','is_active'];
     public $timestamps = false;
 
+      public function getPhotoAttribute($value){
+            $base_url = 'http://eventakom.com/eventakom_dev/public/';
+            $photo = ($value =='' || is_null($value)) ? '':$base_url.$value;
+            return $photo;
+    }
+
     /** Relations */
     public function branches(){
         return $this->hasMany('App\Branch','shop_id');

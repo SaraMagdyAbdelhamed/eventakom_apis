@@ -36,6 +36,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('events[/{type}]',"EventsController@list_events");
  $router->post("big_events[/{type}]","EventsController@big_events");
  $router->post('current_month_events',"EventsController@current_month_events");
+ $router->post('nearby_events',          "EventsController@nearby_events");
  $router->post("age_ranges","EventsController@age_ranges");
  $router->post('event_details',"EventsController@event_details");
  $router->post("event_posts","EventsController@event_posts");
@@ -106,7 +107,6 @@ $router->post('add_user_going',         'EventsController@add_user_going');
 $router->post('add_user_favourites',    'EventsController@add_user_favourites');
 $router->post('add_user_calenders',     'EventsController@add_user_calenders');
 $router->post('calender_events',        "EventsController@calender_events");
-$router->post('nearby_events',          "EventsController@nearby_events");
 $router->post("my_events",              "EventsController@my_events");
 $router->post("add_post",               "EventsController@add_post");
 $router->post("add_post_reply",         "EventsController@add_post_reply");

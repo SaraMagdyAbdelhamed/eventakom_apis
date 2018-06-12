@@ -13,11 +13,13 @@ class Offer extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'offers';
-    protected $fillable = ['name', 'image','discount_percent','products_number','max_purchase_number','description','show_in_homepage','price','original_price','
-    active'];
+    protected $fillable = ['name','description','image','is_active','created_by','updated_by'];
     public $dates = ['created_at','updated_at'];
 
 
+    public function scopeIsActive($query){
+        return $query->where("is_active",'1');
+    }
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
     }

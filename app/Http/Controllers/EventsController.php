@@ -950,7 +950,7 @@ class EventsController extends Controller
             $user->GoingEvents()->detach($request_data['event_id']);
             return Helpers::Get_Response(200,'deleted successfully','',[],[]);
         }
-        $user->GoingEvents()->sync([$request_data['event_id']]);
+        $user->GoingEvents()->attach([$request_data['event_id']]);
         return Helpers::Get_Response(200,'success','',[],[]);
 
     }
@@ -1027,7 +1027,14 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
         $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        if($user->CalenderEvents()->where("event_id",$request_data['event_id'])->first()){
+            $user->CalenderEvents()->detach($request_data['event_id']);
+            return Helpers::Get_Response(200,'deleted successfully','',[],[]);
+        }
         $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'failed','Error in saving',[],[]);
+        }
         $user->CalenderEvents()->attach($request_data['event_id'],
             [
                 'from_date' => $event->start_datetime ,
