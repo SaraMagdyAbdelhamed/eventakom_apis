@@ -1373,9 +1373,13 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
+        $a = explode(",", $request_data['hashtag']);
+        // dd($a);
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit'] :10;
         $twitterSearch = new TwitterSearchApi();
-       $tweets =  $twitterSearch->StartTwitterSearch($request_data['hashtag'],'mixed',$limit);
+        $replace_or='+OR+#';
+        $search_query = '#'.str_replace(',',$replace_or, $request_data['hashtag']);
+       $tweets =  $twitterSearch->StartTwitterSearch($search_query,'mixed',$limit);
       return Helpers::Get_Response(200,'success','',[],$tweets->statuses);
     }
 

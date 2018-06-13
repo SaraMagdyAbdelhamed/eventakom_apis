@@ -26,7 +26,7 @@ class TwitterSearchApi
         $max_id = 0;
         $i = 0 ; 
         $tweets_found=0; 
-        $search_query=['q' =>'%23'.$query , 'result_type' =>$search_type,'count' => $limit];   
+        $search_query=['q' =>urlencode($query) , 'result_type' =>$search_type,'count' => $limit];   
         $connection = $this->PrepareConnection(); 
         $this->TalkToTwitterSearchApi($connection,$search_query);
         if ($connection->response['code'] != 200) {
