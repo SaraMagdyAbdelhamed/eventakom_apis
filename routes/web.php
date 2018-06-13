@@ -50,6 +50,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post("shops","ShopController@list_shops");
  $router->post("offers","ShopController@list_offers");
  $router->post("nearby_branches","ShopController@nearby_branches");
+ $router->post("shop_details","ShopController@shop_details");
 
  //famous attractions
 $router->post("famous_attractions","FamousAttractionsController@list_famous_attractions");

@@ -65,7 +65,6 @@ class ShopController extends Controller
 
     }
 
-
     /**
      * list nearby shop branches according to user location within specific readius
      * @param Request $request
@@ -77,15 +76,7 @@ class ShopController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        //validation
-        $validator = Validator::make($request_data,
-            [
-                "user_lat" => "required",
-                "user_lng" => "required",
-            ]);
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
-        }
+       
 
         // Perform The Query
         $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
@@ -113,6 +104,28 @@ class ShopController extends Controller
             ->WithPaginate($page,$limit)
             ->get();
         return Helpers::Get_Response(200,'success','',[],$branches);
+    }
+
+
+
+    public function shop_details(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        $validator = Validator::make($request_data,
+            [
+                'shop_id' => 'required'
+
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $shop_detail = Shop::query()
+            ->where("id",$request_data["shop_id"])
+            ->with('branches.days','days')
+            ->get();
+        return Helpers::Get_Response(200, 'success', '', [], $shop_detail);
     }
 
 
