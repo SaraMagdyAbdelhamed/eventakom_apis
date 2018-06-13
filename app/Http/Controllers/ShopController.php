@@ -77,8 +77,6 @@ class ShopController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-       
-
         // Perform The Query
         $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
         $lng    = env('JEDDAH_LONGITUDE');
@@ -107,7 +105,11 @@ class ShopController extends Controller
         return Helpers::Get_Response(200,'success','',[],$branches);
     }
 
-
+    /**
+    * list shop details 
+    * @param Request $request
+    * @return \Illuminate\Http\JsonResponse
+    */
 
     public function shop_details(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
@@ -129,6 +131,11 @@ class ShopController extends Controller
         return Helpers::Get_Response(200, 'success', '', [], $shop_detail);
     }
 
+    /**
+     * add shop to favourite
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+    */
 
     public function add_shop_favourite(Request $request){
         $request_data = (array)json_decode($request->getContent(), true);
