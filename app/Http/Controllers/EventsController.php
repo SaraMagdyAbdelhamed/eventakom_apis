@@ -17,6 +17,7 @@ use App\Price;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
+use App\Libraries\TwitterSearchApi;
 use App\Libraries\Base64ToImageService;
 use Illuminate\Support\Facades\Hash;
 use App\Libraries\TwilioSmsService;
@@ -81,7 +82,7 @@ class EventsController extends Controller
             $result = Event::EventsInCategories($category_ids)->get()->random($random);
 
         }
-        return Helpers::Get_Response(200, 'success', '', [], ['event'=>$event,'you_may_also_like'=>$result]);
+        return Helpers::Get_Response(200, 'success', '', [], [['event'=>$event,'you_may_also_like'=>$result]]);
 
     }
 
@@ -144,7 +145,7 @@ class EventsController extends Controller
             'is_backend'        => 0,
             "tele_code"         => $request_data["tele_code"],
             "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
-            "use_ticketing_system" =>array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
+            "use_ticketing_system" => array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
 
         ];
 
@@ -709,17 +710,31 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
-        $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
+         $validator = Validator::make($request_data,
+            [
+                "event_id" => "required"
 
-        $event_posts = EventPost::query()
-            ->orderBy('id','DESC')
-            ->withCount('replies')
-            ->with('user:id,photo')
-            ->WithPaginate($page,$limit)
-            ->get();
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        // $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
+        // $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
-        return Helpers::Get_Response(200,'success','',[],$event_posts);
+        // $event_posts = Event::query()
+        //     ->orderBy('id','DESC')
+        //     ->withCount('replies')
+        //     ->with('user:id,photo')
+        //     ->WithPaginate($page,$limit)
+        //     ->get();
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        $event_posts = $event->posts()->with('user')->withCount('replies')->orderBy("created_at","DECS")->get();
+
+        return Helpers::Get_Response(200,'success','',[],[['count'=>$event_posts->count() ,'posts'=>
+            $event_posts]]);
 
     }
 
@@ -935,7 +950,7 @@ class EventsController extends Controller
             $user->GoingEvents()->detach($request_data['event_id']);
             return Helpers::Get_Response(200,'deleted successfully','',[],[]);
         }
-        $user->GoingEvents()->sync([$request_data['event_id']]);
+        $user->GoingEvents()->attach([$request_data['event_id']]);
         return Helpers::Get_Response(200,'success','',[],[]);
 
     }
@@ -954,8 +969,7 @@ class EventsController extends Controller
         }
         $validator = Validator::make($request_data,
             [
-                "entity_id" => "required",
-                "item_id"   => "required",
+                "event_id"   => "required",
                 "name"      => "required"
             ]);
         if ($validator->fails()) {
@@ -969,8 +983,8 @@ class EventsController extends Controller
         $check = DB::table('user_favorites')
                 ->where([
                     ['user_id' , '=' , $user->id],
-                    ['entity_id' , '=',$request_data['entity_id']],
-                    ['item_id','=',$request_data['item_id']]
+                    ['item_id' , '=',$request_data['event_id']],
+                    ['entity_id','=',4]
                     ]);
         if(!$check->get()->isEmpty()){
             $check->delete();
@@ -979,8 +993,8 @@ class EventsController extends Controller
         $insert = DB::table('user_favorites')->insert([
             'name'      =>$request_data['name'],
             'user_id'   => $user->id,
-            'entity_id' => $request_data['entity_id'],
-            'item_id'   => $request_data['item_id']
+            'item_id' => $request_data['event_id'],
+            'entity_id'   => 4
 
         ]);
         if(!$insert){
@@ -1013,7 +1027,14 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
         $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        if($user->CalenderEvents()->where("event_id",$request_data['event_id'])->first()){
+            $user->CalenderEvents()->detach($request_data['event_id']);
+            return Helpers::Get_Response(200,'deleted successfully','',[],[]);
+        }
         $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'failed','Error in saving',[],[]);
+        }
         $user->CalenderEvents()->attach($request_data['event_id'],
             [
                 'from_date' => $event->start_datetime ,
@@ -1070,19 +1091,26 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        //validation
-        $validator = Validator::make($request_data,
-            [
-                "user_lat" => "required",
-                "user_lng" => "required",
-            ]);
-        if ($validator->fails()) {
-            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
-        }
+        
 
         // PerFrom The Query
-        $lat = $request_data['user_lat'];
-        $lng = $request_data['user_lng'];
+        $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
+        $lng    = env('JEDDAH_LONGITUDE');
+
+        if(array_key_exists('user_lat',$request_data))
+        {
+            if($request_data['user_lat'] != ""){
+                $lat = $request_data["user_lat"];
+            }
+
+        }
+        if(array_key_exists('user_lng',$request_data))
+        {
+            if($request_data['user_lng'] != ""){
+                $lng = $request_data["user_lng"];
+            }
+
+        }
         $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
@@ -1101,7 +1129,7 @@ class EventsController extends Controller
                 ->WithPaginate($page,$limit)
                 ->get();
             $result = array_merge($events_by_user->toArray(),$events_not_by_user->toArray());
-            return Helpers::Get_Response(200,'success','',[],$result);
+            return Helpers::Get_Response(200,'success','',[],[$result]);
         }else{
             $events = Event::query()->Distance($lat,$lng,$radius,"km")
                 ->with('prices.currency','categories','hash_tags','media')
@@ -1109,7 +1137,7 @@ class EventsController extends Controller
                 ->ShowInMobile()
                 ->WithPaginate($page,$limit)
                 ->get();
-            return Helpers::Get_Response(200,'success','',[],$events);
+            return Helpers::Get_Response(200,'success','',[],[$events]);
         }
 
     }
@@ -1258,8 +1286,102 @@ class EventsController extends Controller
             "user_id" => $user->id,
             "post"    => $request_data['post']
         ]);
+        $post = EventPost::query()->where("id",$post->id)->with("user")->get();
 
-        return Helpers::Get_Response(200,'success','',[],[$post]);
+        return Helpers::Get_Response(200,'success','',[],$post);
     }
+
+    /**
+    * Delete Post Reply
+    * @param Request $request
+    * @return \Illuminate\Http\JsonResponse
+    */
+
+    public function add_post_reply(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_post_id" => "required",
+                "reply"     => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        // add post reply
+        $event_post = EventPost::find($request_data['event_post_id']);
+        if(!$event_post){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $post_reply = $event_post->replies()->create([
+            'reply'      => $request_data['reply'],
+            'created_by' => $user->id
+        ]);
+        $reply = PostReply::query()->where("id",$post_reply->id)->with('user')->get();
+        return Helpers::Get_Response(200,'success','',[],$reply);
+
+    }
+
+    /**
+    * Get post replies 
+    * @param Request $request
+    * @return \Illuminate\Http\JsonResponse
+    */
+
+    public function get_post_replies(Request $request){
+          $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "event_post_id" => "required"
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $post = EventPost::find($request_data['event_post_id']);
+        if(!$post){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        $replies = $post->replies()->with('user')->orderBy("created_at","DESC")->get();
+        return Helpers::Get_Response(200,'success','',[],[['count'=>$replies->count(),
+            'replies'=>$replies]]);
+    }
+
+    /**
+     * list tweets related to hash tag 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function tweets_by_hashtags(Request $request){
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //validation
+        $validator = Validator::make($request_data,
+            [
+                "hashtag" => "required"
+                
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+        $a = explode(",", $request_data['hashtag']);
+        // dd($a);
+        $limit = array_key_exists('limit',$request_data) ? $request_data['limit'] :10;
+        $twitterSearch = new TwitterSearchApi();
+        $replace_or='+OR+#';
+        $search_query = '#'.str_replace(',',$replace_or, $request_data['hashtag']);
+       $tweets =  $twitterSearch->StartTwitterSearch($search_query,'mixed',$limit);
+      return Helpers::Get_Response(200,'success','',[],$tweets->statuses);
+    }
+
 
 }

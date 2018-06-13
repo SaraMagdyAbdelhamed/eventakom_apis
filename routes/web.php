@@ -36,17 +36,26 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post('events[/{type}]',"EventsController@list_events");
  $router->post("big_events[/{type}]","EventsController@big_events");
  $router->post('current_month_events',"EventsController@current_month_events");
+ $router->post('nearby_events',          "EventsController@nearby_events");
  $router->post("age_ranges","EventsController@age_ranges");
  $router->post('event_details',"EventsController@event_details");
  $router->post("event_posts","EventsController@event_posts");
  $router->post('recommended_events[/{type}]','EventsController@recommended_events');
  $router->post('trending_keywords',"EventsController@trending_keywords");
  $router->post('events_search',"EventsController@search");
+ $router->post("get_post_replies","EventsController@get_post_replies");
+ $router->post('tweets',"EventsController@tweets_by_hashtags");
 
  //Shops and Dines
  $router->post("shops","ShopController@list_shops");
  $router->post("offers","ShopController@list_offers");
+ $router->post("nearby_branches","ShopController@nearby_branches");
+ $router->post("shop_details","ShopController@shop_details");
 
+ //famous attractions
+$router->post("famous_attractions","FamousAttractionsController@list_famous_attractions");
+$router->post("nearby_famous_attractions","FamousAttractionsController@nearby_famous_attractions");
+$router->post("famous_attractions_categories","FamousAttractionsController@famous_attractions_categories");
 
 
  $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
@@ -95,15 +104,16 @@ $router->post("edit_event",             "EventsController@edit_event");
 $router->post("delete_event",           "EventsController@delete_event");
 $router->post('delete_event_post',      "EventsController@delete_event_post");
 $router->post('delete_reply',           'EventsController@delete_reply');
+$router->post('recommended_events[/{type}]','EventsController@recommended_events');
 $router->post('add_user_going',         'EventsController@add_user_going');
 $router->post('add_user_favourites',    'EventsController@add_user_favourites');
 $router->post('add_user_calenders',     'EventsController@add_user_calenders');
 $router->post('calender_events',        "EventsController@calender_events");
-$router->post('nearby_events',          "EventsController@nearby_events");
 $router->post("my_events",              "EventsController@my_events");
 $router->post("add_post",               "EventsController@add_post");
+$router->post("add_post_reply",         "EventsController@add_post_reply");
 
-
-
+//realted to shops and dine 
+$router->post('add_shop_favourite',      "ShopController@add_shop_favourite");
 
 });
