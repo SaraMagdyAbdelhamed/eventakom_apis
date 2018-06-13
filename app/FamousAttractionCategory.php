@@ -28,6 +28,11 @@ class FamousAttractionCategory extends Model
     {
         return $this->belongsToMany('App\FamousAttraction','famous_attraction_categories');
     }
+
+
+    public function ScopeWithPaginate($query,$page,$limit){
+        return $query->skip(($page-1)*$limit)->take($limit);
+    }
     
  
 

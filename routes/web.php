@@ -54,6 +54,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  //famous attractions
 $router->post("famous_attractions","FamousAttractionsController@list_famous_attractions");
 $router->post("nearby_famous_attractions","FamousAttractionsController@nearby_famous_attractions");
+$router->post("famous_attractions_categories","FamousAttractionsController@famous_attractions_categories");
 
 
  $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
