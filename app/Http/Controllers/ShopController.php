@@ -150,10 +150,8 @@ class ShopController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-
         // insert in user_favourite Table
         $user = User::where("api_token", "=", $request->header('access-token'))->first();
-
         // check if its in user favouirte so remove it and return []
         $check = DB::table('user_favorites')
                 ->where([
@@ -166,9 +164,9 @@ class ShopController extends Controller
             return Helpers::Get_Response(200,'deleted','',[],[]);
         }
         $insert = DB::table('user_favorites')->insert([
-            'name'      =>$request_data['name'],
-            'user_id'   => $user->id,
-            'item_id' => $request_data['shop_id'],
+            'name'        => $request_data['name'],
+            'user_id'     => $user->id,
+            'item_id'     => $request_data['shop_id'],
             'entity_id'   => 10
 
         ]);
@@ -176,9 +174,7 @@ class ShopController extends Controller
             return Helpers::Get_Response(401,'failed','Error in saving',[],[]);
 
         }
-
         return Helpers::Get_Response(200,'success','',[],[]);
-
     }
 
 
