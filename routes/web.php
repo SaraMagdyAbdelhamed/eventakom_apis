@@ -113,4 +113,7 @@ $router->post("my_events",              "EventsController@my_events");
 $router->post("add_post",               "EventsController@add_post");
 $router->post("add_post_reply",         "EventsController@add_post_reply");
 
+//realted to shops and dine 
+$router->post('add_shop_favourite',      "ShopController@add_shop_favourite");
+
 });
