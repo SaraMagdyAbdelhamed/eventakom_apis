@@ -14,6 +14,8 @@ use App\user_rule;
 use App\AgeRange;
 use App\EventPost;
 use App\Price;
+use App\EventTicket;
+use App\EventBooking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -1093,7 +1095,7 @@ class EventsController extends Controller
         }
         
 
-        // PerFrom The Query
+        // Perform The Query
         $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
         $lng    = env('JEDDAH_LONGITUDE');
 
@@ -1377,6 +1379,67 @@ class EventsController extends Controller
         $twitterSearch = new TwitterSearchApi();
        $tweets =  $twitterSearch->StartTwitterSearch($request_data['hashtag'],'mixed',$limit);
       return Helpers::Get_Response(200,'success','',[],$tweets->statuses);
+    }
+
+
+    public function book_event(Request $request){
+        //read request
+        $request_data = (array)json_decode($request->getContent(), true);
+        //check language
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //form validations 
+        $validator = Validator::make($request_data,
+            [
+                "event_id"           => "required",
+                'event_ticket_id'    => "required" ,
+                "number_of_tickets"  => "required|numeric"               
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+      //apply logic  
+        // find event 
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        //check event status 
+        if($event->use_ticketing_system != 1){
+            return Helpers::Get_Response(401,'faild',trans('messages.use_ticketing_system'),[],[]);
+
+        }
+
+        if($event->is_paid != 1){
+            return Helpers::Get_Response(401,'faild',trans('messages.is_paid'),[],[]);
+
+        }
+
+        // wait to see event tickets status
+        $event_ticket = EventTicket::find($request_data['event_ticket_id']);
+
+        if(!$event_ticket){
+            return Helpers::Get_Response(401,'faild','Event ticket Not found',[],[]);
+        }
+
+        if($event_ticket->current_available_tickets == 0) {
+            return Helpers::Get_Response(401,'faild',trans('messages.current_available_tickets'),[],[]);
+        }
+
+        //check for number of booked by user
+        $user = User::where('api_token',$request->header('access-token'))->first()->id;
+
+        $event_booking = EventBooking::query()
+                        ->where([
+                            ['event_id' , '=',$request_data['event_id']],
+                            ['event_ticket_id','=',$request_data['event_ticket_id']],
+                            ['user_id','=',$user->id]
+
+                        ])->get();
+
+
+        
     }
 
 

@@ -14,7 +14,7 @@ class Shop extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'shops';
-    protected $fillable = ['name', 'photo','phone','website','info','is_active'];
+    protected $fillable = ['name', 'photo','phone','website','info','is_active','longitude','latitude'];
     public $timestamps = false;
 
       public function getPhotoAttribute($value){
@@ -30,6 +30,10 @@ class Shop extends Model
 
     public function days(){
         return $this->belongsToMany('App\Day','shop_days','shop_id','day_id');
+    }
+
+    public  function media(){
+        return $this->hasMany('App\ShopMedia' , 'shop_id');
     }
 
     public function getNameAttribute($value)

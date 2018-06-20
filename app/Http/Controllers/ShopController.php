@@ -33,7 +33,7 @@ class ShopController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
         $shops = Shop::query()
-            ->with('branches.days','days')
+            ->with('branches.days','days','media')
             ->IsActive()
             ->orderBy('name','ASC')
             ->WithPaginate($page,$limit)
@@ -52,10 +52,8 @@ class ShopController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-
         $offers = Offer::query()
             ->IsActive()
             ->orderBy('name','ASC')

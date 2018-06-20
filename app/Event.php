@@ -61,6 +61,9 @@ class Event extends Model
         return $this->belongsTo('App\User');
 
     }
+    public function tickets(){
+        return $this->hasMany('App\EventTicket','event_id');
+    }
     /** End Relations Section */
 
     /**  Localizations Through accessors */

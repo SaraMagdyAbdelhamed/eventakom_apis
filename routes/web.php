@@ -17,8 +17,6 @@ $router->get('/', function () use ($router) {
     return $router->app->version();
 });
 
-
-
 $router->group(['prefix' => 'api'], function () use ($router) {
   //user routes
  $router->get('all_users',  ['uses' => 'UsersController@getAllUsers']);
@@ -110,5 +108,8 @@ $router->post('calender_events',        "EventsController@calender_events");
 $router->post("my_events",              "EventsController@my_events");
 $router->post("add_post",               "EventsController@add_post");
 $router->post("add_post_reply",         "EventsController@add_post_reply");
+
+//booking section
+$router->post("book_events",            "EventsController@book_event");
 
 });

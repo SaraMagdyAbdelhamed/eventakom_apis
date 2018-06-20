@@ -38,7 +38,10 @@ return [
     'delete_post'=>'You have no access to delete this post',
 	'invalid_mobile_number'=>'Invalid mobile number, re-enter it',
     'edit_event'=>'You have no access to edit this event',
-    'delete_event'=>'You have no access to delete this event'
+    'delete_event'=>'You have no access to delete this event',
+    'use_ticketing_system' => 'Event doesn\'t use ticketing system',
+    'is_paid' =>'This event is not paid',
+    'current_available_tickets' => 'No tickets availabe to be booked'
 
 
 ];

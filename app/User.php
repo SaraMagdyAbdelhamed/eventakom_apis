@@ -87,7 +87,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
      public function  fa_categories(){
         return $this->hasMany('App\FamousAttractionCategory','created_by');
-
+    }
+    
+    public function  event_booking(){
+        return $this->hasMany('App\EventBooking','created_by');
     }
 
 
