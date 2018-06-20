@@ -56,7 +56,7 @@ $router->post("nearby_famous_attractions","FamousAttractionsController@nearby_fa
 $router->post("famous_attractions_categories","FamousAttractionsController@famous_attractions_categories");
 
 
- $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
+ $router->get('verify_email',  ['uses' => 'UsersController@verify_email','as'=>'verify']);
 
 
    //countries

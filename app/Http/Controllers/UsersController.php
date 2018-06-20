@@ -962,6 +962,7 @@ class UsersController extends Controller
    }
 
    public function test_email(Request $request){
+    //echo url("/verify_email?email=ahmed@aa.com");die;
     $request_data = (array)json_decode($request->getContent(), true);
     $mail_mobile_code=Helpers::mail($request_data['email'],'medo','2525');
     $mail=Helpers::mail_verify_withview('emails.verification',$request_data['email'],'aaa');
