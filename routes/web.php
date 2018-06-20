@@ -48,10 +48,12 @@ $router->group(['prefix' => 'api'], function () use ($router) {
  $router->post("shops","ShopController@list_shops");
  $router->post("offers","ShopController@list_offers");
  $router->post("nearby_branches","ShopController@nearby_branches");
+ $router->post("shop_details","ShopController@shop_details");
 
  //famous attractions
 $router->post("famous_attractions","FamousAttractionsController@list_famous_attractions");
 $router->post("nearby_famous_attractions","FamousAttractionsController@nearby_famous_attractions");
+$router->post("famous_attractions_categories","FamousAttractionsController@famous_attractions_categories");
 
 
  $router->get('verify_email',  ['uses' => 'UsersController@verify_email']);
@@ -109,7 +111,10 @@ $router->post("my_events",              "EventsController@my_events");
 $router->post("add_post",               "EventsController@add_post");
 $router->post("add_post_reply",         "EventsController@add_post_reply");
 
+
 //booking section
 $router->post("book_events",            "EventsController@book_event");
+//realted to shops and dine 
+$router->post('add_shop_favourite',      "ShopController@add_shop_favourite");
 
 });
