@@ -72,6 +72,9 @@ $router->get('fixed_pages', ['uses' =>'UsersController@fixed_pages']);
 $router->post('mail_existence', ['uses' =>'UsersController@mail_existence']);
 $router->post('mobile_existence', ['uses' =>'UsersController@mobile_existence']);
 
+
+//test emails
+$router->post("test_email",'UsersController@test_email');
   });
 
 

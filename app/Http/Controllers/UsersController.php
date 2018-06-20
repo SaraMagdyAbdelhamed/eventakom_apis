@@ -39,9 +39,9 @@ class UsersController extends Controller
     {
 
         $twilio_config = [
-            'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
-            'token' => '2021c86af33bd8f3b69394a5059c34f0',
-            'from' => '+13238701693'
+            'app_id' => 'AC3adf7af798b1515700c517b58bdfc56b',
+            'token' => '7f31eeed993ba1f5d62fd7ef2a3b1354',
+            'from' => '+16039452091'
         ];
 
         $twilio = new TwilioSmsService($twilio_config);
@@ -959,7 +959,14 @@ class UsersController extends Controller
         $status = $twilio->send($sms_mobile, $sms_body);
         dd($status);
 
-    }
+   }
+
+   public function test_email(Request $request){
+    $request_data = (array)json_decode($request->getContent(), true);
+    $mail_mobile_code=Helpers::mail($request_data['email'],'medo','2525');
+    $mail=Helpers::mail_verify_withview('emails.verification',$request_data['email'],'aaa');
+
+   }
 
 
 }
