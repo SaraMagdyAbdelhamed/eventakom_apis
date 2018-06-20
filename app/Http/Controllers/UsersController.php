@@ -969,5 +969,27 @@ class UsersController extends Controller
 
    }
 
+   public function delete_user(Request $request){
+    $request_data = (array)json_decode($request->getContent(), true);
+    $validator = Validator::make($request_data,
+            [
+                "mobile" => "required",
+            ]);
+        if ($validator->fails()) {
+
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+        }
+    $mobile = $request_data['mobile'] ;
+    $user = User::where('mobile','=',$mobile)->first();
+    if($user){
+        $user->delete();
+     return Helpers::Get_Response(200, 'success', 'User has been deleted', $validator->errors(),[]);
+
+    }else{
+    return Helpers::Get_Response(401, 'faild', 'User Not Found', 'user not found',[]);
+
+    }
+   }
+
 
 }

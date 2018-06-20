@@ -75,6 +75,7 @@ $router->post('mobile_existence', ['uses' =>'UsersController@mobile_existence'])
 
 //test emails
 $router->post("test_email",'UsersController@test_email');
+$router->post("delete_user","UsersController@delete_user");
   });
 
 
