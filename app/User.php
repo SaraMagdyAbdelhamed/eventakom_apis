@@ -93,6 +93,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany('App\EventBooking','created_by');
     }
 
+    public function notifications(){
+        return $this->hasMany('App\Notification','user_id');
+    }
+
 
  
   public function getPhotoAttribute($value)
