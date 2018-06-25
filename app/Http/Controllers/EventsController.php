@@ -14,6 +14,8 @@ use App\user_rule;
 use App\AgeRange;
 use App\EventPost;
 use App\Price;
+use App\EventTicket;
+use App\EventBooking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -25,6 +27,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\DB;
+use App\Notification;
+use App\NotificationPush;
 /**
  * Class EventsController
  * @package App\Http\Controllers
@@ -255,6 +259,22 @@ class EventsController extends Controller
             }
 
         }
+
+
+           //Notify Admin Users About Event addding
+           $message['en'] = 'New event added from mobile application';
+           $message['ar'] = 'تم اضافة حدث جديد عن طريق التطبيق';
+            //save in Notification 
+            $notification = new Notification();
+            $notification->msg = $message['en'];
+            $notification->msg_ar = $message['ar'];
+            $notification->entity_id = 4;
+            $notification->item_id = $event->id;
+            $notification->notification_type_id = 8;
+            $notification->is_read = 0;
+            $notification->user_id = NULL;
+            $notification->save();
+        
         return Helpers::Get_Response(200, 'success', 'saved', [], [Event::latest()->with(['prices.currency','hash_tags','categories'])->first()]);
     }
 
@@ -442,14 +462,23 @@ class EventsController extends Controller
                 ->with('prices.currency','categories','hash_tags','media')
                 ->NotCreatedByUser($user)
                 ->ShowInMobile();
+            // $data = $interest->events()
+            //                 ->with('prices.currency','categories','hash_tags','media')
+            //                  ->where('created_by', '=', $user->id)
+            //                 ->orWhere(function ($query) use ($user) {
+            //                     $query->where('created_by', '!=', $user->id)
+            //                           ->where('is_active', '=', 1);
+            //                 })->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents();
                     $not_user_data = $non_users_events->UpcomingEvents();
+                    $data = $data->UpcomingEvents();
                     break;
                 default:
                     $users_data = $users_events->PastEvents();
                     $not_user_data = $non_users_events->PastEvents();
+                    // $data = $data->PastEvents();
                     break;
             }
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
@@ -495,17 +524,27 @@ class EventsController extends Controller
         //Check if user Login
         if($request->header('access-token')){
             $user = User::where('api_token',$request->header('access-token'))->first();
-            $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
-                          ->SuggestedAsBigEvent()
-                          ->CreatedByUser($user);
-            $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
-                ->SuggestedAsBigEvent()
-                ->NotCreatedByUser($user);
+            // $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
+            //               ->SuggestedAsBigEvent()
+            //               ->CreatedByUser($user);
+            // $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
+            //     ->SuggestedAsBigEvent()
+            //     ->NotCreatedByUser($user);
+            $data = Event::query()
+                            ->with('prices.currency','categories','hash_tags','media')
+                            ->SuggestedAsBigEvent()
+                             ->where('created_by', '=', $user->id)
+                            ->orWhere(function ($query) use ($user) {
+                                $query->where('created_by', '!=', $user->id)
+                                      ->where('is_active', '=', 1);
+                            });
+                            
             switch ($type) {
                 case 'upcoming':
-                    $user_data  = $user_events->UpcomingEvents();
-                    $not_user_data = $non_user_events->UpcomingEvents();
-                    $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    // $user_data     = $user_events->UpcomingEvents();
+                    // $not_user_data = $non_user_events->UpcomingEvents();
+                    // $result        = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    $result = $data->UpcomingEvents()->WithPaginate($page,$limit)->get();
                     return Helpers::Get_Response(200, 'success', '', '',$result);
 
                     break;
@@ -518,10 +557,12 @@ class EventsController extends Controller
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
-                    $user_data = $user_events->PastEvents();
-                    $not_user_data = $non_user_events->PastEvents();
-                    //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
-                    $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    // $user_data = $user_events->PastEvents();
+                    // $not_user_data = $non_user_events->PastEvents();
+                    // //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
+                    // $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    $result = $data->PastEvents()->WithPaginate($page,$limit)->get();
+
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
             }
@@ -1093,7 +1134,7 @@ class EventsController extends Controller
         }
         
 
-        // PerFrom The Query
+        // Perform The Query
         $lat    = env('JEDDAH_LATITUDE');//get Default locaion of JEDDAH if GPS of user is off
         $lng    = env('JEDDAH_LONGITUDE');
 
@@ -1381,6 +1422,67 @@ class EventsController extends Controller
         $search_query = '#'.str_replace(',',$replace_or, $request_data['hashtag']);
        $tweets =  $twitterSearch->StartTwitterSearch($search_query,'mixed',$limit);
       return Helpers::Get_Response(200,'success','',[],$tweets->statuses);
+    }
+
+
+    public function book_event(Request $request){
+        //read request
+        $request_data = (array)json_decode($request->getContent(), true);
+        //check language
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request_data['lang_id']);
+        }
+        //form validations 
+        $validator = Validator::make($request_data,
+            [
+                "event_id"           => "required",
+                'event_ticket_id'    => "required" ,
+                "number_of_tickets"  => "required|numeric"               
+            ]);
+        if ($validator->fails()) {
+            return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
+        }
+      //apply logic  
+        // find event 
+        $event = Event::find($request_data['event_id']);
+        if(!$event){
+            return Helpers::Get_Response(401,'faild','Not found',[],[]);
+        }
+        //check event status 
+        if($event->use_ticketing_system != 1){
+            return Helpers::Get_Response(401,'faild',trans('messages.use_ticketing_system'),[],[]);
+
+        }
+
+        if($event->is_paid != 1){
+            return Helpers::Get_Response(401,'faild',trans('messages.is_paid'),[],[]);
+
+        }
+
+        // wait to see event tickets status
+        $event_ticket = EventTicket::find($request_data['event_ticket_id']);
+
+        if(!$event_ticket){
+            return Helpers::Get_Response(401,'faild','Event ticket Not found',[],[]);
+        }
+
+        if($event_ticket->current_available_tickets == 0) {
+            return Helpers::Get_Response(401,'faild',trans('messages.current_available_tickets'),[],[]);
+        }
+
+        //check for number of booked by user
+        $user = User::where('api_token',$request->header('access-token'))->first()->id;
+
+        $event_booking = EventBooking::query()
+                        ->where([
+                            ['event_id' , '=',$request_data['event_id']],
+                            ['event_ticket_id','=',$request_data['event_ticket_id']],
+                            ['user_id','=',$user->id]
+
+                        ])->get();
+
+
+        
     }
 
 

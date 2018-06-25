@@ -87,7 +87,14 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
     }
      public function  fa_categories(){
         return $this->hasMany('App\FamousAttractionCategory','created_by');
+    }
+    
+    public function  event_booking(){
+        return $this->hasMany('App\EventBooking','created_by');
+    }
 
+    public function notifications(){
+        return $this->hasMany('App\Notification','user_id');
     }
 
 
@@ -109,6 +116,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
           return Helpers::Get_Response(403, 'error', trans('Invalid date format'), [], []);   
         }
+    }
+
+    public static function AdminUsers(){
+       return  static::whereHas('rules', function ($q) {
+            $q->inWhere('rule_id', [1,3,4,5]);
+        })->get();
     }
 
 }

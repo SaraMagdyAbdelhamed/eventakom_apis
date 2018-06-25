@@ -39,9 +39,9 @@ class UsersController extends Controller
     {
 
         $twilio_config = [
-            'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
-            'token' => '2021c86af33bd8f3b69394a5059c34f0',
-            'from' => '+13238701693'
+            'app_id' => 'AC3adf7af798b1515700c517b58bdfc56b',
+            'token' => '7f31eeed993ba1f5d62fd7ef2a3b1354',
+            'from' => '+16039452091'
         ];
 
         $twilio = new TwilioSmsService($twilio_config);
@@ -78,6 +78,7 @@ class UsersController extends Controller
         $input['timezone'] = $city->geo_country->timezone;
         $input['longitude'] = $city->longitude;
         $input['latitude'] = $city->latitude;
+        
         }
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
@@ -91,6 +92,7 @@ class UsersController extends Controller
             $mail_mobile_code=Helpers::mail($request['email'],$input['username'],$input['mobile_verification_code']);
             $mail=Helpers::mail_verify_withview('emails.verification',$request['email'],$input['email_verification_code']);
             //dd($mail);
+
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array) );
     }
@@ -341,6 +343,11 @@ class UsersController extends Controller
                         $user->created_at = Carbon::now()->format('Y-m-d H:i:s');
                         $user->updated_at = Carbon::now()->format('Y-m-d H:i:s');
                         $user->last_login = Carbon::now()->format('Y-m-d H:i:s');
+                        if(array_key_exists('device_token',$request)){
+                            if($request['device_token'] != ''){
+                                $user->device_token = $request['device_token'];
+                            }
+                        }
                         $user->save();
 
                         // $user_array = $user->toArray();
@@ -698,8 +705,6 @@ class UsersController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
         $interests = Interest::skip(($page-1)*$limit)->take($limit)->get();
         return Helpers::Get_Response(200, 'success', '', [], $interests);
-
-
     }
 
 
@@ -959,7 +964,37 @@ class UsersController extends Controller
         $status = $twilio->send($sms_mobile, $sms_body);
         dd($status);
 
+   }
+
+   public function test_email(Request $request){
+    //echo url("/verify_email?email=ahmed@aa.com");die;
+    $request_data = (array)json_decode($request->getContent(), true);
+    $mail_mobile_code=Helpers::mail($request_data['email'],'medo','2525');
+    $mail=Helpers::mail_verify_withview('emails.verification',$request_data['email'],'aaa');
+
+   }
+
+   public function delete_user(Request $request){
+    $request_data = (array)json_decode($request->getContent(), true);
+    $validator = Validator::make($request_data,
+            [
+                "mobile" => "required",
+            ]);
+        if ($validator->fails()) {
+
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+        }
+    $mobile = $request_data['mobile'] ;
+    $user = User::where('mobile','=',$mobile)->first();
+    if($user){
+        $user->delete();
+     return Helpers::Get_Response(200, 'success', 'User has been deleted', $validator->errors(),[]);
+
+    }else{
+    return Helpers::Get_Response(401, 'faild', 'User Not Found', 'user not found',[]);
+
     }
+   }
 
 
 }

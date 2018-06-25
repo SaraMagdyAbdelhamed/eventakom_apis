@@ -42,6 +42,13 @@ class Offer extends Model
         return ($result=='Error')? $value : $result;
     }
 
+        public function getImageAttribute($value){
+        
+            $base_url = 'http://eventakom.com/eventakom_dev/public/';
+            $photo = $base_url.$value;
+            return $photo;
+    }
+
 
 
 

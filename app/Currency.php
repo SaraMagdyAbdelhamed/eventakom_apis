@@ -33,6 +33,10 @@ class Currency extends Model
         return ($result=='Error')? $value : $result;
     }
 
+    public function ticket(){
+        return $this->hasOne('App\EventTicket');   
+    }
+
 
 
 
