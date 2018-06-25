@@ -27,6 +27,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\DB;
+use App\Notification;
+use App\NotificationPush;
 /**
  * Class EventsController
  * @package App\Http\Controllers
@@ -257,6 +259,22 @@ class EventsController extends Controller
             }
 
         }
+
+
+           //Notify Admin Users About Event addding
+           $message['en'] = 'New event added from mobile application';
+           $message['ar'] = 'تم اضافة حدث جديد عن طريق التطبيق';
+            //save in Notification 
+            $notification = new Notification();
+            $notification->msg = $message['en'];
+            $notification->msg_ar = $message['ar'];
+            $notification->entity_id = 4;
+            $notification->item_id = $event->id;
+            $notification->notification_type_id = 8;
+            $notification->is_read = 0;
+            $notification->user_id = NULL;
+            $notification->save();
+        
         return Helpers::Get_Response(200, 'success', 'saved', [], [Event::latest()->with(['prices.currency','hash_tags','categories'])->first()]);
     }
 

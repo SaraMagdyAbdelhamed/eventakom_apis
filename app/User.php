@@ -118,4 +118,10 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         }
     }
 
+    public static function AdminUsers(){
+       return  static::whereHas('rules', function ($q) {
+            $q->inWhere('rule_id', [1,3,4,5]);
+        })->get();
+    }
+
 }
