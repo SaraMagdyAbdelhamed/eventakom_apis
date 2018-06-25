@@ -4,7 +4,7 @@ return [
 
 	'wrong_membership_code'=> 'This is wrong code ',
 	'wrong_writable_code' => 'Please fillcode with numbers only ',
-	'wrong_password' => 'wrong password ',
+	'wrong_password' => 'Nah, it’s not the right password  ',
 	'wrong_mobile' => 'wrong mobile number ',
 	'wrong_code'=>'wrong code ',
 	'mobile' => 'Please enter valid number ',

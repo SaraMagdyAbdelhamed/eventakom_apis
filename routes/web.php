@@ -122,6 +122,6 @@ $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function (
 
 	//notifications
 	$router->get("user_notifications",       "NotificationController@user_notifications");
-	$router->get("mark_read/{id}",                 "NotificationController@mark_read");
+	$router->get("mark_read/{id}",            "NotificationController@mark_read");
 
 });

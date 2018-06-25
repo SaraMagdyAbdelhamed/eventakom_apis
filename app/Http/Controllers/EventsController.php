@@ -444,14 +444,23 @@ class EventsController extends Controller
                 ->with('prices.currency','categories','hash_tags','media')
                 ->NotCreatedByUser($user)
                 ->ShowInMobile();
+            // $data = $interest->events()
+            //                 ->with('prices.currency','categories','hash_tags','media')
+            //                  ->where('created_by', '=', $user->id)
+            //                 ->orWhere(function ($query) use ($user) {
+            //                     $query->where('created_by', '!=', $user->id)
+            //                           ->where('is_active', '=', 1);
+            //                 })->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents();
                     $not_user_data = $non_users_events->UpcomingEvents();
+                    $data = $data->UpcomingEvents();
                     break;
                 default:
                     $users_data = $users_events->PastEvents();
                     $not_user_data = $non_users_events->PastEvents();
+                    // $data = $data->PastEvents();
                     break;
             }
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
@@ -497,17 +506,27 @@ class EventsController extends Controller
         //Check if user Login
         if($request->header('access-token')){
             $user = User::where('api_token',$request->header('access-token'))->first();
-            $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
-                          ->SuggestedAsBigEvent()
-                          ->CreatedByUser($user);
-            $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
-                ->SuggestedAsBigEvent()
-                ->NotCreatedByUser($user);
+            // $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
+            //               ->SuggestedAsBigEvent()
+            //               ->CreatedByUser($user);
+            // $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
+            //     ->SuggestedAsBigEvent()
+            //     ->NotCreatedByUser($user);
+            $data = Event::query()
+                            ->with('prices.currency','categories','hash_tags','media')
+                            ->SuggestedAsBigEvent()
+                             ->where('created_by', '=', $user->id)
+                            ->orWhere(function ($query) use ($user) {
+                                $query->where('created_by', '!=', $user->id)
+                                      ->where('is_active', '=', 1);
+                            });
+                            
             switch ($type) {
                 case 'upcoming':
-                    $user_data  = $user_events->UpcomingEvents();
-                    $not_user_data = $non_user_events->UpcomingEvents();
-                    $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    // $user_data     = $user_events->UpcomingEvents();
+                    // $not_user_data = $non_user_events->UpcomingEvents();
+                    // $result        = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    $result = $data->UpcomingEvents()->WithPaginate($page,$limit)->get();
                     return Helpers::Get_Response(200, 'success', '', '',$result);
 
                     break;
@@ -520,10 +539,12 @@ class EventsController extends Controller
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
-                    $user_data = $user_events->PastEvents();
-                    $not_user_data = $non_user_events->PastEvents();
-                    //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
-                    $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    // $user_data = $user_events->PastEvents();
+                    // $not_user_data = $non_user_events->PastEvents();
+                    // //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
+                    // $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
+                    $result = $data->PastEvents()->WithPaginate($page,$limit)->get();
+
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
             }

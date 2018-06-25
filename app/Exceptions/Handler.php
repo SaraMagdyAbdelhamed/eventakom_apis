@@ -57,7 +57,7 @@ class Handler extends ExceptionHandler
         }
         if ($e instanceof NotFoundHttpException) 
         {
-            return Helpers::Get_Response(405, 'faild', 'URL not Found', [],[]);
+            return Helpers::Get_Response(405, 'faild', 'URL not Found',[],[]);
 
         }
 //        if ($e instanceof QueryException)

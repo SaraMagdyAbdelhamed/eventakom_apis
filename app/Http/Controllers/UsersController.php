@@ -78,6 +78,7 @@ class UsersController extends Controller
         $input['timezone'] = $city->geo_country->timezone;
         $input['longitude'] = $city->longitude;
         $input['latitude'] = $city->latitude;
+        
         }
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
@@ -91,6 +92,7 @@ class UsersController extends Controller
             $mail_mobile_code=Helpers::mail($request['email'],$input['username'],$input['mobile_verification_code']);
             $mail=Helpers::mail_verify_withview('emails.verification',$request['email'],$input['email_verification_code']);
             //dd($mail);
+
         }
         return Helpers::Get_Response(200, 'success', '', $validator->errors(),array($user_array) );
     }
@@ -341,6 +343,11 @@ class UsersController extends Controller
                         $user->created_at = Carbon::now()->format('Y-m-d H:i:s');
                         $user->updated_at = Carbon::now()->format('Y-m-d H:i:s');
                         $user->last_login = Carbon::now()->format('Y-m-d H:i:s');
+                        if(array_key_exists('device_token',$request)){
+                            if($request['device_token'] != ''){
+                                $user->device_token = $request['device_token'];
+                            }
+                        }
                         $user->save();
 
                         // $user_array = $user->toArray();
@@ -698,8 +705,6 @@ class UsersController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
         $interests = Interest::skip(($page-1)*$limit)->take($limit)->get();
         return Helpers::Get_Response(200, 'success', '', [], $interests);
-
-
     }
 
 
