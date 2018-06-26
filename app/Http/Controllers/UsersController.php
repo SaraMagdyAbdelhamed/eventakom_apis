@@ -7,6 +7,7 @@ use App\Interest;
 use App\FixedPage;
 use App\GeoCity;
 use App\user_rule;
+use App\ContactUs;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Libraries\Helpers;
@@ -725,7 +726,7 @@ class UsersController extends Controller
         }
 
         $user = User:: where("api_token", "=", $api_token)->first();
-// dd($request);
+    // dd($request);
         if ($user->email == $request['email']) {
             $email_valid = 'required|email|max:35';
         } else {
@@ -994,6 +995,57 @@ class UsersController extends Controller
     return Helpers::Get_Response(401, 'faild', 'User Not Found', 'user not found',[]);
 
     }
+   }
+
+
+   public function contact_us(Request $request){
+    $request_data = (array)json_decode($request->getContent(), true);
+    //check if user logged in
+    if($request->header('access-token')){
+        $validator = Validator::make($request_data,
+            [
+                "subject" => "required",
+                "message" => "required"
+            ]);
+        if ($validator->fails()) {
+
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+        }
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+        $contact_us = new ContactUs;
+        $contact_us->user_id = $user->id;
+        $contact_us->name = $user->username;
+        $contact_us->email = $user->email;
+        $contact_us->subject = $request_data['subject'];
+        $contact_us->message = $request_data['message'];
+        $contact_us->save();
+
+    }else{
+        // a visitor is here
+        $validator = Validator::make($request_data,
+            [
+                "subject" => "required",
+                "message" => "required",
+                "name"    => "required",
+                "email"   => "required|email|max:35"
+            ]);
+        if ($validator->fails()) {
+
+            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+        }
+        $contact_us = new ContactUs;
+        $contact_us->user_id = NULL;
+        $contact_us->name    = $request_data['name'];
+        $contact_us->email   = $request_data['email'];
+        $contact_us->subject = $request_data['subject'];
+        $contact_us->message = $request_data['message'];
+        $contact_us->save();
+    }
+
+
+   return Helpers::Get_Response(200, 'success', 'Contact us has beed added',[],[]);
+
+
    }
 
 

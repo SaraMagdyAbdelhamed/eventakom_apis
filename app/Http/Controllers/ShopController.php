@@ -93,7 +93,7 @@ class ShopController extends Controller
             }
 
         }
-        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:1000;
+        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:50;
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
         $branches = Branch::query()->Distance($lat,$lng,$radius,"km")
