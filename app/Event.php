@@ -45,6 +45,9 @@ class Event extends Model
     public  function prices(){
         return $this->hasMany('App\Price','event_id');
     }
+    public  function notifcations(){
+        return $this->hasMany('App\Notification','item_id');
+    }
     public  function media(){
         return $this->hasMany('App\EventMedia' , 'event_id');
     }

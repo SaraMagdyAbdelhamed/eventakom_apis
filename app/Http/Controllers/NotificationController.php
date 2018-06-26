@@ -18,7 +18,8 @@ class NotificationController extends Controller
 	public function user_notifications(Request $request){
 		//retrive the user Data
 		$user = User::where('api_token','=',$request->header('access-token'))->first();
-		return Helpers::Get_Response(200, 'success', '', [],$user->notifications()->orderby('created_at','DESC')->get());
+		$notifications = $user->notifications()->orderby('created_at','DESC')->get();
+		return Helpers::Get_Response(200, 'success', '', [],$notifications);
 
 	}
 
