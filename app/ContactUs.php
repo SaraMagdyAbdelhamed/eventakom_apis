@@ -15,7 +15,7 @@ class ContactUs extends Model
 {
     protected $primaryKey = 'id';
     protected $table = 'contact_us';
-    protected $fillable = ['user_id','name','email','subject','message'];
+    protected $fillable = ['user_id','email','subject','message'];
     protected $dates = ['created_at'];
     public function setUpdatedAt($value){ ; }
 

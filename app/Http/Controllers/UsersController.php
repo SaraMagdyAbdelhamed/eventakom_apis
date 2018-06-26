@@ -1014,7 +1014,6 @@ class UsersController extends Controller
         $user = User::where('api_token','=',$request->header('access-token'))->first();
         $contact_us = new ContactUs;
         $contact_us->user_id = $user->id;
-        $contact_us->name = $user->username;
         $contact_us->email = $user->email;
         $contact_us->subject = $request_data['subject'];
         $contact_us->message = $request_data['message'];
@@ -1026,7 +1025,6 @@ class UsersController extends Controller
             [
                 "subject" => "required",
                 "message" => "required",
-                "name"    => "required",
                 "email"   => "required|email|max:35"
             ]);
         if ($validator->fails()) {
@@ -1035,7 +1033,6 @@ class UsersController extends Controller
         }
         $contact_us = new ContactUs;
         $contact_us->user_id = NULL;
-        $contact_us->name    = $request_data['name'];
         $contact_us->email   = $request_data['email'];
         $contact_us->subject = $request_data['subject'];
         $contact_us->message = $request_data['message'];
