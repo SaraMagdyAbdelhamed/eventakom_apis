@@ -489,7 +489,6 @@ class EventsController extends Controller
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents();
                     $not_user_data = $non_users_events->UpcomingEvents();
-                    $data = $data->UpcomingEvents();
                     break;
                 default:
                     $users_data = $users_events->PastEvents();
