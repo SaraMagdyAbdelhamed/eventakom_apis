@@ -75,6 +75,9 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	//list  notifications types
 	$router->get("notification_types","NotificationController@notification_types");
 
+	//contat us
+	$router->post("contact_us","UsersController@contact_us");
+
   });
 
 

@@ -1,6 +1,7 @@
 <?php
 
 namespace App;
+use App\EventMedia;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,6 +19,8 @@ class Notification extends Model
     ];
   	  protected $dates = ['created_at', 'updated_at','schedule'];
       public $timestamps = true;
+      protected $appends = ['item_photo'];
+
 
 
       /*Relations*/
@@ -25,6 +28,11 @@ class Notification extends Model
       {
       	return $this->belongsTo('App\NotificationType','notification_type_id');
       }
+
+      // public function event()
+      // {
+      //   return $this->belongsTo('App\Event','item_id');
+      // }
 
       // public function queue()
       // {
@@ -45,6 +53,29 @@ class Notification extends Model
         public function user()
     {
         return $this->belongsTo('App\Users','user_id');
+    }
+
+    public function GetNotifcationMedia(){
+      if(is_null($this->item_id) || ($this->item_id == '')){
+        $result = '';
+
+      }else{
+        $media = EventMedia::where('event_id',$this->item_id)->where('type',1)->first();
+        if($media)
+        {
+          $result = $media->link;
+        }else{
+          $result = '';
+        }
+
+      }
+        
+        return $result;
+    }
+
+
+    public function getItemPhotoAttribute(){
+      return $this->GetNotifcationMedia();
     }
 
 }

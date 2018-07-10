@@ -125,8 +125,12 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
 
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
 
+        }
 
 
         $event_data = [
@@ -138,7 +142,7 @@ class EventsController extends Controller
             'end_datetime'      => date('Y-m-d H:i:s',$request_data['end_datetime']),
             'is_active'         => 0,
             'show_in_mobile'    => 1,
-            'created_by'        => User::where('api_token','=',$request->header('access-token'))->first()->id,
+            'created_by'        => $user->id,
             'age_range_id'      => $request_data['age_range_id'],
             'longtuide'         => $request_data['longtuide'],
             'latitude'          => $request_data['latitude'],
@@ -291,6 +295,10 @@ class EventsController extends Controller
         }
         $user = User::where('api_token','=',$request->header('access-token'))->first();
 
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         // validation
         $validator = Validator::make($request_data,
             [
@@ -310,7 +318,6 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-        $user_id = User::where('api_token','=',$request->header('access-token'))->first()->id;
 
         // update main events info
         $event = Event::find($request_data['event_id']);
@@ -318,7 +325,7 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', 'not found', [], []);
         }
 
-        if($event->created_by == $user_id){
+        if($event->created_by == $user->id){
             $event_data = [
                 'name'              => array_key_exists('name',$request_data)? $request_data['name']: $event->name,
                 'description'       => array_key_exists('description',$request_data)? $request_data['description']: $event->description,
@@ -326,7 +333,7 @@ class EventsController extends Controller
                 'gender_id'         => array_key_exists('gender_id',$request_data)? $request_data['gender_id']: $event->gender_id,
                 'start_datetime'    => array_key_exists('start_datetime',$request_data)? date('Y-m-d H:i:s',$request_data['start_datetime']): $event->start_datetime,
                 'end_datetime'      => array_key_exists('end_datetime',$request_data)? date('Y-m-d H:i:s',$request_data['end_datetime']): $event->end_datetime,
-                'updated_by'        => $user_id,
+                'updated_by'        => $user->id,
                 'age_range_id'      => array_key_exists('age_gender_id',$request_data) ?$request_data['age_gender_id']:$event->age_range_id,
                 'longtuide'         => array_key_exists('longtuide',$request_data) ?$request_data['longtuide']:$event->longtuide,
                 'latitude'          => array_key_exists('latitude',$request_data) ?$request_data['latitude']:$event->latitude,
@@ -388,8 +395,12 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-        $user_id = User::where('api_token','=',$request->header('access-token'))->first()->id;
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
 
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         // update main events info
         $event = Event::find($request_data['event_id']);
         if(!$event){
@@ -397,7 +408,7 @@ class EventsController extends Controller
         }
 
         // Check for Event Ownership
-        if($event->created_by == $user_id){
+        if($event->created_by == $user->id){
             //delete relationships
             //detach categories
             $event->categories()->detach();
@@ -451,7 +462,12 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
         if($request->header('access-token')){
-            $user = User::where('api_token',$request->header('access-token'))->first();
+            $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+            if(!$user){
+                return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+            }
             // we want to get all events
             // related to this category - created by the login user
             $users_events = $interest->events()
@@ -473,7 +489,6 @@ class EventsController extends Controller
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents();
                     $not_user_data = $non_users_events->UpcomingEvents();
-                    $data = $data->UpcomingEvents();
                     break;
                 default:
                     $users_data = $users_events->PastEvents();
@@ -523,7 +538,11 @@ class EventsController extends Controller
 
         //Check if user Login
         if($request->header('access-token')){
-            $user = User::where('api_token',$request->header('access-token'))->first();
+            $user = User::where('api_token','=',$request->header('access-token'))->first();
+            if(!$user){
+                return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+            }
             // $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
             //               ->SuggestedAsBigEvent()
             //               ->CreatedByUser($user);
@@ -634,7 +653,12 @@ class EventsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
         if($request->header('access-token')){
-            $user = User::where("api_token",$request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
             //this Month Events
             $this_month_by_user = Event::query()
                 ->with('prices.currency','categories','hash_tags','media')
@@ -789,14 +813,18 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        $user_id = User:: where("api_token", "=", $request->header('access-token'))->first()->id;
-        $event_post = EventPost::find($request_data['event_post_id']);
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }        $event_post = EventPost::find($request_data['event_post_id']);
         if(!$event_post){
             return Helpers::Get_Response(401,'faild','Not found',[],[]);
 
         }
         // check if the logged user is the owner of this post
-        if($event_post->user_id == $user_id || $event_post->event->created_by == $user_id){
+        if($event_post->user_id == $user->id || $event_post->event->created_by == $user->id){
             //perform delete and delete the replies
             $event_post->replies()->delete();
             $event_post->delete();
@@ -832,13 +860,18 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-        $user_id = User:: where("api_token", "=", $request->header('access-token'))->first()->id;
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         $reply = PostReply::find($request_data['reply_id']);
         if(!$reply){
             return Helpers::Get_Response(401,'faild','Not found',[],[]);
         }
         // check if the logged user is the owner of this post
-        if($reply->created_by == $user_id || $reply->post->user_id == $user_id || $reply->post->event->created_by == $user_id){
+        if($reply->created_by == $user->id || $reply->post->user_id == $user->id || $reply->post->event->created_by == $user->id){
             //perform delete and delete the replies
             $reply->delete();
             //return success of delete
@@ -893,7 +926,12 @@ class EventsController extends Controller
 
             default:
                 $data =  Event::query()->whereHas('categories',function ($query){
-                    $user = User::where("api_token", "=", Request::capture()->header('access-token'))->first();
+                    $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+                    if(!$user){
+                        return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+                    }
                     $user_interests = $user->interests->pluck('pivot.interest_id');
                     $query->whereIn("interest_id",$user_interests);
                 })->with(['prices.currency','hash_tags','categories'])
@@ -986,7 +1024,12 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         if($user->GoingEvents()->where("event_id",$request_data['event_id'])->first()){
             $user->GoingEvents()->detach($request_data['event_id']);
             return Helpers::Get_Response(200,'deleted successfully','',[],[]);
@@ -1018,7 +1061,12 @@ class EventsController extends Controller
         }
 
         // insert in user_favourite Table
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
 
         // check if its in user favouirte so remove it and return []
         $check = DB::table('user_favorites')
@@ -1067,7 +1115,12 @@ class EventsController extends Controller
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         if($user->CalenderEvents()->where("event_id",$request_data['event_id'])->first()){
             $user->CalenderEvents()->detach($request_data['event_id']);
             return Helpers::Get_Response(200,'deleted successfully','',[],[]);
@@ -1097,7 +1150,12 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         $events = $user->CalenderEvents()
                   ->with('prices.currency','categories','hash_tags','media')
                   ->orderBy('end_datetime','DESC')
@@ -1152,11 +1210,16 @@ class EventsController extends Controller
             }
 
         }
-        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:100;
+        $radius = array_key_exists('radius',$request_data) ? $request_data['radius']:50;
         $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
         if($request->header('access-token')){
-            $user = User::where("api_token",$request->header("access-token"))->first();
+            $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+            if(!$user){
+                return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+            }
             $events_by_user = Event::query()->Distance($lat,$lng,$radius,"km")
                 ->with('prices.currency','categories','hash_tags','media')
                 ->CreatedByUser($user)
@@ -1208,7 +1271,12 @@ class EventsController extends Controller
 
        //check if user logged in
         if($request->header('access-token')){
-            $user = User::where('api_token',$request->header('access-token'))->first();
+              $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+            if(!$user){
+                return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+            }
             //search in entity_localizations if arabic
             if(array_key_exists('lang_id',$request_data) && $request_data['lang_id'] == 2){
 
@@ -1289,7 +1357,12 @@ class EventsController extends Controller
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
         }
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         $events = $user->events()
                   ->with('prices.currency','categories','hash_tags','media')
                   ->get();
@@ -1322,7 +1395,12 @@ class EventsController extends Controller
             return Helpers::Get_Response(401,'faild','Not found',[],[]);
 
         }
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         $post = $event->posts()->create([
             "user_id" => $user->id,
             "post"    => $request_data['post']
@@ -1357,7 +1435,12 @@ class EventsController extends Controller
         if(!$event_post){
             return Helpers::Get_Response(401,'faild','Not found',[],[]);
         }
-        $user = User::where("api_token", "=", $request->header('access-token'))->first();
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+
+        if(!$user){
+            return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
+
+        }
         $post_reply = $event_post->replies()->create([
             'reply'      => $request_data['reply'],
             'created_by' => $user->id
