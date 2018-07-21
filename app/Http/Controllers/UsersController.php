@@ -1040,6 +1040,9 @@ class UsersController extends Controller
     }
 
 
+    //Send Email to the email of the adminstrator
+
+
    return Helpers::Get_Response(200, 'success', 'Contact us has beed added',[],[]);
 
 

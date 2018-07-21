@@ -925,13 +925,9 @@ class EventsController extends Controller
                 break;
 
             default:
+
                 $data =  Event::query()->whereHas('categories',function ($query){
-                    $user = User::where('api_token','=',$request->header('access-token'))->first();
-
-                    if(!$user){
-                        return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
-
-                    }
+                 $user = User::where('api_token','=',Request::capture()->header('access-token'))->first();
                     $user_interests = $user->interests->pluck('pivot.interest_id');
                     $query->whereIn("interest_id",$user_interests);
                 })->with(['prices.currency','hash_tags','categories'])
