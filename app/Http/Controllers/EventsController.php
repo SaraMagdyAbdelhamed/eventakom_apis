@@ -112,7 +112,7 @@ class EventsController extends Controller
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
-                'longtuide'        => 'required',
+                'longitude'        => 'required',
                 'latitude'         => 'required',
                 'email'            => 'email|max:35',
                 'website'          => 'between:10,50',
