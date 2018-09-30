@@ -144,7 +144,7 @@ class EventsController extends Controller
             'show_in_mobile'    => 1,
             'created_by'        => $user->id,
             'age_range_id'      => $request_data['age_range_id'],
-            'longtuide'         => $request_data['longtuide'],
+            'longtuide'         => $request_data['longitude'],
             'latitude'          => $request_data['latitude'],
             'email'             => array_key_exists('email',$request_data) ? $request_data['email']: NULL,
             'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
