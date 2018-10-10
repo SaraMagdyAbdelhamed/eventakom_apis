@@ -65,7 +65,7 @@ class UsersController extends Controller
         /*id	username	password	first_name	last_name	email	tele_code	mobile	country_id	city_id	gender_id	photo	birthdate	is_active	created_by	updated_by	created_at	updated_at	device_token	mobile_os	is_social	access_token	social_token	lang_id	mobile_verification_code	is_mobile_verification_code_expired	last_login	api_token	longtuide	latitude*/
         $input['password'] = Hash::make($input['password']);
         $input['is_active'] = 0;
-        $input['username'] = $request['first_name'] . '' . $request['last_name'];
+        $input['username'] = $request['first_name'];
         $input['code'] = mt_rand(100000, 999999);
         //$input['mobile_verification_code'] = str_random(4);
         $input['mobile_verification_code'] = '1234';
@@ -73,15 +73,19 @@ class UsersController extends Controller
         $input['email_verification_code'] = str_random(4);
         $input['is_email_verified'] = 0;
         $input['is_mobile_verified'] = 0;
-        if(isset($request['city_id'])){
-        $city_id=$request['city_id'];
-        $city = GeoCity::find($city_id);
-        $input['country_id'] = $city->geo_country->id;
-        $input['timezone'] = $city->geo_country->timezone;
-        $input['longitude'] = $city->longitude;
-        $input['latitude'] = $city->latitude;
-        
-        }
+        $input['gender_id'] = array_key_exists('gender_id', $request) ? $request['gender'] : NULL;
+        $input['longitude'] = array_key_exists('longitude', $request) ? $request['longitude'] : NULL;
+        $input['latitude'] = array_key_exists('latitude', $request) ? $request['latitude'] : NULL;
+
+        // if(isset($request['city_id'])){
+        //     $city_id=$request['city_id'];
+        //     $city = GeoCity::find($city_id);
+        //     $input['country_id'] = $city->geo_country->id;
+        //     $input['timezone'] = $city->geo_country->timezone;
+        //     $input['longitude'] = $city->longitude;
+        //     $input['latitude'] = $city->latitude;
+        // }
+
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
  
