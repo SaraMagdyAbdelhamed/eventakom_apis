@@ -11,9 +11,14 @@ use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Support\Facades\Hash;
 use carbon\carbon;
 use App\Libraries\Helpers;
+use App\GeoCity;
+use App\GeoCountry;
+
 class User extends Model implements AuthenticatableContract, AuthorizableContract
 {
     use HasApiTokens, Authenticatable, Authorizable;
+
+    public $appends =['country_name','city_name'];
 
     /**
      * The attributes that are mass assignable.
@@ -35,7 +40,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
      * @var array
      */
     protected $hidden = [
-        'password','verification_code ','access_token','pivot'
+        'password','verification_code ','access_token','pivot','city_id','country_id'
     ];
 
     public static $rules = [ 'first_name' => 'between:1,12',
@@ -98,13 +103,47 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
 
 
  
-  public function getPhotoAttribute($value)
+    public function getPhotoAttribute($value)
     {
         $base_url = 'http://eventakom.com/eventakom_dev/public/';
         $photo = $base_url.$value;
         return $photo;
     }
 
+
+    public function getCountryNameAttribute()
+    {
+        if(!is_null($this->country_id))
+        {
+            $country = GeoCountry::find($this->country_id);
+            if($country)
+            {
+                return $country->name;
+            }else{
+                return 'Not Added';
+            }
+        }
+
+        return 'Not Added';
+
+    }
+    public function getCityNameAttribute()
+    {
+         if(!is_null($this->city_id))
+        {
+            $city = GeoCity::find($this->city_id);
+            if($city)
+            {
+                return $city->name;
+            }else{
+                return 'Not Added';
+            }
+        }
+
+        return 'Not Added';
+       
+
+    }
 
      public function setBirthDateAttribute($value)
     {
