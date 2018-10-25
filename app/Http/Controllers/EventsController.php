@@ -112,7 +112,7 @@ class EventsController extends Controller
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
-                'longtuide'        => 'required',
+                'longitude'        => 'required',
                 'latitude'         => 'required',
                 'email'            => 'email|max:35',
                 'website'          => 'between:10,50',
@@ -144,7 +144,7 @@ class EventsController extends Controller
             'show_in_mobile'    => 1,
             'created_by'        => $user->id,
             'age_range_id'      => $request_data['age_range_id'],
-            'longtuide'         => $request_data['longtuide'],
+            'longtuide'         => $request_data['longitude'],
             'latitude'          => $request_data['latitude'],
             'email'             => array_key_exists('email',$request_data) ? $request_data['email']: NULL,
             'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
@@ -1559,9 +1559,19 @@ class EventsController extends Controller
                             ['user_id','=',$user->id]
 
                         ])->get();
+    }
 
+    public function favorite_events(Request $request)
+    {
 
-        
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+        $events = $user->favorite_events()
+                         ->with('prices.currency','categories','hash_tags','media')
+                         ->IsActive()
+                         ->ShowInMobile()
+                         ->get();
+      return Helpers::Get_Response(200,'success','',[],$events);
+
     }
 
 
