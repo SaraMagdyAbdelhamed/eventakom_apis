@@ -1559,9 +1559,19 @@ class EventsController extends Controller
                             ['user_id','=',$user->id]
 
                         ])->get();
+    }
 
+    public function favorite_events(Request $request)
+    {
 
-        
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+        $events = $user->favorite_events()
+                         ->with('prices.currency','categories','hash_tags','media')
+                         ->IsActive()
+                         ->ShowInMobile()
+                         ->get();
+      return Helpers::Get_Response(200,'success','',[],$events);
+
     }
 
 

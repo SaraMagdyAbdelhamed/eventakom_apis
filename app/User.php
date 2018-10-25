@@ -85,6 +85,12 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         return $this->hasMany('App\Event','created_by');
 
     }
+
+    public function favorite_events()
+    {
+        return $this->belongsToMany('App\Event', 'user_favorites','user_id','item_id')->where('entity_id',4);
+
+    }
     public function  post_replies(){
         return $this->hasMany('App\PostReply','created_by');
 
