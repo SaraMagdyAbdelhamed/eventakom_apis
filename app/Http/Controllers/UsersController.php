@@ -67,12 +67,9 @@ class UsersController extends Controller
         $input['is_active'] = 0;
         $input['username'] = $request['first_name'];
         $input['code'] = mt_rand(100000, 999999);
-<<<<<<< HEAD
-        // $input['mobile_verification_code'] = str_random(4);
-=======
-        //$input['mobile_verification_code'] = str_random(4);
->>>>>>> d519e835fbaf45e6bb80b075063af9641234cc82
-        $input['mobile_verification_code'] = '1234';
+
+        $input['mobile_verification_code'] = str_random(4);
+
         $input['is_mobile_verification_code_expired'] = 0;
         $input['email_verification_code'] = str_random(4);
         $input['is_email_verified'] = 0;
@@ -137,12 +134,10 @@ class UsersController extends Controller
              return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
             }else{
             // dd($user);
-<<<<<<< HEAD
-           // $mobile_verification_code = str_random(4);
-=======
-            //$mobile_verification_code = str_random(4);
->>>>>>> d519e835fbaf45e6bb80b075063af9641234cc82
-            $mobile_verification_code = '1234';
+
+            $mobile_verification_code = str_random(4);
+
+            
             $sms_mobile = $user->tele_code. '' .$user->mobile;
             $sms_body = trans('messages.your_verification_code_is') . $mobile_verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
