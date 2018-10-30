@@ -1010,29 +1010,47 @@ class UsersController extends Controller
    public function contact_us(Request $request){
     $request_data = (array)json_decode($request->getContent(), true);
     //check if user logged in
-    if($request->header('access-token')){
-        $validator = Validator::make($request_data,
-            [
-                "subject" => "required",
-                "message" => "required"
-            ]);
-        if ($validator->fails()) {
+    // if($request->header('access-token')){
+    //     $validator = Validator::make($request_data,
+    //         [
+    //             "message" => "required",
+    //         ]);
+    //     if ($validator->fails()) {
 
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
-        }
-        $user = User::where('api_token','=',$request->header('access-token'))->first();
-        $contact_us = new ContactUs;
-        $contact_us->user_id = $user->id;
-        $contact_us->email = $user->email;
-        $contact_us->subject = $request_data['subject'];
-        $contact_us->message = $request_data['message'];
-        $contact_us->save();
+    //         return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+    //     }
+    //     $user = User::where('api_token','=',$request->header('access-token'))->first();
+    //     $contact_us = new ContactUs;
+    //     $contact_us->user_id = $user->id;
+    //     $contact_us->email = $user->email;
+    //     $contact_us->name = $user->first_name . '' . $user->last_name;
+    //     // $contact_us->subject = $request_data['subject'];
+    //     $contact_us->message = $request_data['message'];
+    //     $contact_us->save();
 
-    }else{
-        // a visitor is here
-        $validator = Validator::make($request_data,
+    // }else{
+    //     // a visitor is here
+    //     $validator = Validator::make($request_data,
+    //         [
+    //             "subject" => "required",
+    //             "message" => "required",
+    //             "email"   => "required|email|max:35"
+    //         ]);
+    //     if ($validator->fails()) {
+
+    //         return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+    //     }
+    //     $contact_us = new ContactUs;
+    //     $contact_us->user_id = NULL;
+    //     $contact_us->email   = $request_data['email'];
+    //     $contact_us->subject = $request_data['subject'];
+    //     $contact_us->message = $request_data['message'];
+    //     $contact_us->save();
+    // }
+
+       $validator = Validator::make($request_data,
             [
-                "subject" => "required",
+                "name" => "required",
                 "message" => "required",
                 "email"   => "required|email|max:35"
             ]);
@@ -1041,12 +1059,12 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
         $contact_us = new ContactUs;
-        $contact_us->user_id = NULL;
         $contact_us->email   = $request_data['email'];
-        $contact_us->subject = $request_data['subject'];
+        $contact_us->name = $request_data['name'];
         $contact_us->message = $request_data['message'];
+        $contact_us->created_by = ($request->header('access-token')) ? User::where('api_token','=',$request->header('access-token'))->first()->id : 0;
         $contact_us->save();
-    }
+
 
 
     //Send Email to the email of the adminstrator

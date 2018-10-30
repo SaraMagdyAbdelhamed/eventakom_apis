@@ -81,6 +81,7 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	//get last added sponsers
 	$router->get('/sponsors','SponsorsController@list_sponsors');
 
+
   });
 
 
