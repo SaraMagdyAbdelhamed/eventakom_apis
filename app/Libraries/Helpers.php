@@ -85,12 +85,18 @@ class Helpers
     }
 
     
-    public static function mail_contact($body){
-        Mail::raw('Welcome To avocatoapp   New Feedback'.$body, function($msg){
-            $msg->to(['info@avocatoapp.net'])->subject('SecureBridge');
-            $msg->from(['pentavalue.securebridge@gmail.com']);
+     public static function mail_contact($content){
+     // dd($content['email']);
+        // Mail::raw('Welcome To Eventakom .. your message has been received: '.$content['message'], function($msg) use($content){
+        //     $msg->to([$content['email']])->subject('Eventakom');
+        //     $msg->from(['pentavalue.securebridge@gmail.com']);
 
-          });
+        //   });
+     Mail::send($content['view'],['email' =>$content['email'],'body'=>$content['message'] ], function($msg) use($content){
+            $msg->to([$content['email']])->subject('Eventakom');
+            $msg->from(['pentavalue.eventakom@gmail.com']);
+        });
+
     }
 
   
