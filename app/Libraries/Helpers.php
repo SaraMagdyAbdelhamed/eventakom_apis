@@ -5,7 +5,7 @@
 namespace App\Libraries;
 use App\Entity;
 use Illuminate\Support\Facades\Mail;
-
+use DB;
 class Helpers
 {
 
@@ -85,16 +85,18 @@ class Helpers
     }
 
     
-     public static function mail_contact($content){
-     // dd($content['email']);
-        // Mail::raw('Welcome To Eventakom .. your message has been received: '.$content['message'], function($msg) use($content){
-        //     $msg->to([$content['email']])->subject('Eventakom');
-        //     $msg->from(['pentavalue.securebridge@gmail.com']);
-
-        //   });
-     Mail::send($content['view'],['email' =>$content['email'],'body'=>$content['message'] ], function($msg) use($content){
-            $msg->to([$content['email']])->subject('Eventakom');
+     public static function mail_contact($content , $received_to = null){
+  $setting_email =  DB::table('system_settings')->select('value')->where('name','contact_us')->first();
+  $setting_email = $setting_email->value;
+//  dd($setting_email);
+     Mail::send($content['view'],[ 'name' =>$content['name'],'email' =>$content['email'],'subject'=>$content['subject'],'body'=>$content['message'] , 'to'=>$setting_email ], function($msg) use($content,$received_to,$setting_email){
+      if($received_to == 'admin'){
+            $msg->to([$setting_email])->subject('Eventakom (Contact Us)');
+          }elseif($received_to == 'user'){
+            $msg->to([$content['email']])->subject('Eventakom (Contact Us)');
+          }
             $msg->from(['pentavalue.eventakom@gmail.com']);
+         
         });
 
     }

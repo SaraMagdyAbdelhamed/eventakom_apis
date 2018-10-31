@@ -1061,12 +1061,14 @@ class UsersController extends Controller
         $contact_us = new ContactUs;
         $contact_us->email   = $request_data['email'];
         $contact_us->name = $request_data['name'];
+        //$contact_us->subject = $request_data['subject'];
         $contact_us->message = $request_data['message'];
         $contact_us->created_by = ($request->header('access-token')) ? User::where('api_token','=',$request->header('access-token'))->first()->id : 0;
        if($contact_us->save()){
 
          $request_data['view'] = 'emails.contact_us';
-         $mail=Helpers::mail_contact($request_data);
+         $admin_mail= Helpers::mail_contact($request_data , 'admin');
+          $user_mail= Helpers::mail_contact($request_data , 'user');
           
        }
 
