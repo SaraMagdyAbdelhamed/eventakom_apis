@@ -1068,7 +1068,7 @@ class UsersController extends Controller
 
          $request_data['view'] = 'emails.contact_us';
          $admin_mail= Helpers::mail_contact($request_data , 'admin');
-          $user_mail= Helpers::mail_contact($request_data , 'user');
+         // $user_mail= Helpers::mail_contact($request_data , 'user');
           
        }
 
