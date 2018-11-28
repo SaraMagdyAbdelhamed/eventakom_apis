@@ -74,7 +74,7 @@ class UsersController extends Controller
         $input['email_verification_code'] = str_random(4);
         $input['is_email_verified'] = 0;
         $input['is_mobile_verified'] = 0;
-        $input['gender_id'] = array_key_exists('gender_id', $request) ? $request['gender'] : NULL;
+        $input['gender_id'] = array_key_exists('gender_id', $request) ? $request['gender_id'] : NULL;
         $input['longitude'] = array_key_exists('longitude', $request) ? $request['longitude'] : NULL;
         $input['latitude'] = array_key_exists('latitude', $request) ? $request['latitude'] : NULL;
 
