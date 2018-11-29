@@ -27,7 +27,7 @@ class EventMedia extends Model
 
     public function getLinkAttribute($value){
         if($this->type == 1){
-            $base_url = 'http://eventakom.com/eventakom_dev/public/';
+             $base_url = env('PHOTO_PATH');
             $photo = $base_url.$value;
             return $photo;
 

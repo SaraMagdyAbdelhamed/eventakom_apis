@@ -111,7 +111,7 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
  
     public function getPhotoAttribute($value)
     {
-        $base_url = 'http://eventakom.com/eventakom_test/public/';
+        $base_url = env('PHOTO_PATH');
         $photo = $base_url.$value;
         return $photo;
     }
