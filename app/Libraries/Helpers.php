@@ -173,7 +173,7 @@ class Helpers
                $iso_code = $data->results[0]->address_components[0]->short_name;
                $country_name = $data->results[0]->address_components[0]->long_name;
               //check country
-              $country = GeoCountry::where('iso_code',$iso_code)->first();
+               $country = GeoCountry::where('iso_code',$iso_code)->first();
 
               if(is_null($country))
               {
@@ -182,9 +182,7 @@ class Helpers
                   $country->iso_code = $iso_code;
                   $country->save();
               }
-
               return $country->id;
-
           }
 
     }
