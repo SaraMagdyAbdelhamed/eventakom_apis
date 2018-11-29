@@ -168,4 +168,42 @@ class User extends Model implements AuthenticatableContract, AuthorizableContrac
         })->get();
     }
 
+
+
+    public function AssginCityAndCountry($lat,$long)
+    {
+
+          $url  = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyCknR0jhKTIB33f2CLFhBzgp0mj2Tn2q5k&latlng=".$lat.",".$long."&sensor=false";
+          $json = @file_get_contents($url);
+          header('Content-Type: application/json;charset=utf-8');
+
+          // echo $json;die;
+          $data = json_decode($json);
+          $status = $data->status;
+          $address = '';
+          if($status == "OK")
+          {
+
+
+
+             $address = $data->results[0]->formatted_address;
+            // echo "<br>";
+             $iso_code =$data->results[0]->address_components[1]->short_name;
+             $country_name = $data->results[0]->address_components[1]->long_name;
+            //check country
+            $country = GeoCountry::where('iso_code','%LIKE%',$country)->first();
+            if(is_null($country))
+            {
+                $country  = new GeoCountry;
+                $country->name = $country_name;
+                $country->iso_code = $iso_code;
+                $country->save();
+            }
+
+            return $country->id;
+
+          }
+
+    }
+
 }

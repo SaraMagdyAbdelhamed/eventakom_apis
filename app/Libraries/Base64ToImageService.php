@@ -12,7 +12,7 @@ class Base64ToImageService
 {
 
    
-    protected $base_path = "/home/eventakom/public_html/eventakom_dev/public/";
+    protected $base_path = "/home/eventakom/public_html/eventakom_test/public/";
 
     private function __construct(){}
 
