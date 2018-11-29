@@ -156,7 +156,7 @@ class Helpers
                 return $text;
       }
 
-    public function static AssginCityAndCountry($lat,$long)
+    public  static function AssginCityAndCountry($lat,$long)
     {
 
           $url  = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyCknR0jhKTIB33f2CLFhBzgp0mj2Tn2q5k&latlng=".$lat.",".$long."&sensor=false";
