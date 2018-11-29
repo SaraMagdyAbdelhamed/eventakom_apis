@@ -7,6 +7,7 @@ use App\Libraries\Helpers;
 
 class GeoCountry extends Model
 {
+    protected $table = 'geo_countries';
 
     /**
      * The attributes that are mass assignable.
@@ -23,6 +24,7 @@ class GeoCountry extends Model
 
     //Localizations
 
+    public $timestamps = false;
 
     public function getNameAttribute($value)
     {

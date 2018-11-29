@@ -87,7 +87,7 @@ class UsersController extends Controller
         //     $input['latitude'] = $city->latitude;
         // }
 
-        //$input['country_id'] = Helpers::AssginCityAndCountry($input['latitude'] , $input['longitude']);
+        $input['country_id'] = Helpers::AssginCityAndCountry($input['latitude'] , $input['longitude']);
 
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();

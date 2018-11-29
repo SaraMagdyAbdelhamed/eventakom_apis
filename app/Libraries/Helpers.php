@@ -170,12 +170,11 @@ class Helpers
           if($status == "OK")
           {
 
-               $address = $data->results[0]->formatted_address;
-              // echo "<br>";
-               $iso_code =$data->results[0]->address_components[1]->short_name;
-               $country_name = $data->results[0]->address_components[1]->long_name;
+               $iso_code = $data->results[0]->address_components[0]->short_name;
+               $country_name = $data->results[0]->address_components[0]->long_name;
               //check country
-              $country = GeoCountry::where('iso_code','%LIKE%',$country)->first();
+              $country = GeoCountry::where('iso_code',$iso_code)->first();
+
               if(is_null($country))
               {
                   $country  = new GeoCountry;
