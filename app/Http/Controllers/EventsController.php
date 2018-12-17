@@ -53,6 +53,7 @@ class EventsController extends Controller
      */
 
     public  function event_details(Request $request){
+
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
@@ -71,7 +72,7 @@ class EventsController extends Controller
             ->with('prices.currency','categories','hash_tags','media','posts.replies')
             ->withCount('GoingUsers')
             ->get();
-
+         
         // Get You May Also Like
         if($event->isEmpty()){
             return Helpers::Get_Response(403, 'error', 'not found', [], []);
@@ -86,6 +87,7 @@ class EventsController extends Controller
             $result = Event::EventsInCategories($category_ids)->get()->random($random);
 
         }
+        
         return Helpers::Get_Response(200, 'success', '', [], [['event'=>$event,'you_may_also_like'=>$result]]);
 
     }
@@ -153,8 +155,8 @@ class EventsController extends Controller
             'is_backend'        => 0,
             "tele_code"         => $request_data["tele_code"],
             "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
-            "use_ticketing_system" => array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
-
+            "use_ticketing_system" => array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0,
+             
         ];
 
         //save the event
@@ -162,6 +164,28 @@ class EventsController extends Controller
         if(!$event){
             return Helpers::Get_Response(403, 'error', 'not saved',[], []);
         }
+        else{
+        
+            $event->subscription_link='subscribe/'.$event->id;   
+           $event->save();
+        
+            $twilio_config = [
+                'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
+                'token' => '2021c86af33bd8f3b69394a5059c34f0',
+                'from' => '+13238701693'
+            ];
+    
+        $twilio = new TwilioSmsService($twilio_config);
+         if($event->telecode != null && $event->mobile != null){    
+         $twilio->send($event->tele_code.substr($event->mobile,1), 'Event '.$event->name.' subscribers link '.$subscribers_link);
+         }
+        
+        if($user->tel_code != null  && $user->mobile != null ){            
+         $twilio->send($user->tel_code.substr($user->mobile,1),'Event '.$event->name.' subscribers link '.$subscription_link);
+        }
+
+        }
+        
 
 
 

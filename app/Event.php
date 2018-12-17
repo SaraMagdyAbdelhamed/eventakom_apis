@@ -202,6 +202,16 @@ class Event extends Model
     }
 
     /**  End Query Scopes  */
+    public function getSubscriptionLinkAttribute($value){
+        
+            $base_url = env('APP_URL');
+            $link = $base_url.$value;
+            return $link;
 
+        
+
+    }
+
+    
 
     }
