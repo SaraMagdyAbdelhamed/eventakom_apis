@@ -168,7 +168,7 @@ class EventsController extends Controller
         
             $event->subscription_link=getenv('APP_URL').'subscribe/'.$event->id;   
            $event->save();
-        
+           $subscribers_link = getenv('APP_URL').'subscribers/'.$event->id;
             $twilio_config = [
                 'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
                 'token' => '2021c86af33bd8f3b69394a5059c34f0',
@@ -181,7 +181,7 @@ class EventsController extends Controller
          }
         
         if($user->tel_code != null  && $user->mobile != null ){            
-         $twilio->send($user->tel_code.substr($user->mobile,1),'Event '.$event->name.' subscribers link '.$subscription_link);
+         $twilio->send($user->tel_code.substr($user->mobile,1),'Event '.$event->name.' subscribers link '.$subscribers_link);
         }
 
         }
