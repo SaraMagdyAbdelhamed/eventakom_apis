@@ -181,7 +181,7 @@ class EventsController extends Controller
          }
         
         if($user->tel_code != null  && $user->mobile != null ){            
-         $twilio->send($user->tel_code.substr($user->mobile,1),'Event '.$event->name.' subscribers link '.$subscribers_link);
+         $twilio->send($user->tele_code.substr($user->mobile,1),'Event '.$event->name.' subscribers link '.$subscribers_link);
         }
 
         }
