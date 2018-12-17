@@ -166,7 +166,7 @@ class EventsController extends Controller
         }
         else{
         
-            $event->subscription_link='subscribe/'.$event->id;   
+            $event->subscription_link=getenv('APP_URL').'subscribe/'.$event->id;   
            $event->save();
         
             $twilio_config = [
