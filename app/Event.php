@@ -66,7 +66,7 @@ class Event extends Model
         return $this->belongsToMany('App\User', 'user_calendars','event_id','user_id')->withPivot('from_date','to_date');
     }
     public  function EventOwner(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\User','created_by');
 
     }
     public function tickets(){

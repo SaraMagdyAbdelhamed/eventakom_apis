@@ -29,10 +29,10 @@ class Notification extends Model
       	return $this->belongsTo('App\NotificationType','notification_type_id');
       }
 
-      // public function event()
-      // {
-      //   return $this->belongsTo('App\Event','item_id');
-      // }
+      public function notificationEvent()
+      {
+        return $this->belongsTo('App\Event','item_id');
+      }
 
       // public function queue()
       // {

@@ -5,6 +5,7 @@
  * Date: 5/27/2018
  * Time: 9:34 AM
  */
+namespace App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
 use App\Libraries\Helpers;

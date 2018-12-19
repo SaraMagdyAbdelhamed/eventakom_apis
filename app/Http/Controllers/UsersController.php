@@ -17,6 +17,8 @@ use App\Libraries\TwilioSmsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Lang;
+use App\Event;
+use App\EventBooking;
 
 
 class UsersController extends Controller
@@ -383,11 +385,29 @@ class UsersController extends Controller
 //                            "mobile_os"=>$request['mobile_os'],
 //                        ]);
                       $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+                      $events=Event::where('created_by',$user_array->id)->get();
+                      if(count($events) != 0)
+                      {
+                          $user_array['has_events']=1;
+                      }
+                      else
+                      {
+                        $user_array['has_events']=0;
+                      }
+                      $tickets=EventBooking::where('user_id',$user_array->id)->get();
+                      if(count($tickets) != 0)
+                      {
+                          $user_array['has_tickets']=1;
+                      }
+                      else
+                      {
+                        $user_array['has_tickets']=0;
+                      }
                       // $base_url = 'http://eventakom.com/eventakom_dev/public/';
                       // $user_array->photo = $base_url.$user_array->photo;
                         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
                     } else {
-                        return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
+                        return Helpers::Get_Response(402, 'error', trans('messages.active'), $validator->errors(), []);
                     }
                 }
                 return Helpers::Get_Response(400, 'error', trans('messages.wrong_password'), $validator->errors(), []);
