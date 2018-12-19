@@ -67,7 +67,7 @@ class CheckEventsAndNotifications extends Command
             }catch(\Exception $e){
 
             }
-            $queue->delete();
+            // $queue->delete();
     }
    }
 }
