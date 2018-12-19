@@ -13,6 +13,7 @@ use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
 use App\EventPost;
+use App\EventStatus;
 use App\Price;
 use App\EventTicket;
 use App\EventBooking;
@@ -69,7 +70,7 @@ class EventsController extends Controller
         //$user = User::where('api_token',$request->header('access-token'))->first()->id;
         $event = Event::query()
             ->where('id',$request_data['event_id'])
-            ->with('prices.currency','categories','hash_tags','media','posts.replies')
+            ->with('prices.currency','categories','hash_tags','media','posts.replies','status')
             ->withCount('GoingUsers')
             ->get();
          
