@@ -592,11 +592,10 @@ class EventsController extends Controller
 
                     break;
                 case 'slider':
-                    $data = Event::
-                        IsNotPast()->BigEvents()->orderBy('sort_order','DESC')
+                    $data = Event::BigEvents()->orderBy('sort_order','DESC')
                         ->with('prices.currency','categories','hash_tags','media')
                         ->IsActive()
-                        
+                        ->IsNotPast()
                         ->ShowInMobile();
                     $result =$data->WithPaginate($page,$limit)->get();
                     
@@ -628,6 +627,7 @@ class EventsController extends Controller
                     $data = Event::BigEvents()->orderBy('sort_order','DESC')
                         ->with('prices.currency','categories','hash_tags','media')
                         ->IsActive()
+                        ->IsNotPast()
                         ->ShowInMobile();
                     break;
                 default:
