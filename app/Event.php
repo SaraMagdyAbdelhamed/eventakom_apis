@@ -185,6 +185,11 @@ class Event extends Model
         return $query->whereBetween("end_datetime",[Carbon::now()->startOfMonth(),Carbon::now()]);
     }
 
+    public function ScopeNonExpiredEvents($query){
+        return $query->where("is_expired",'!=',1);
+    }
+   
+
     /**
      * Query builder scope to list neighboring locations
      * within a given distance from a given location
