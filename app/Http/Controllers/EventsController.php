@@ -595,6 +595,7 @@ class EventsController extends Controller
                     $data = Event::BigEvents()->orderBy('sort_order','DESC')
                         ->with('prices.currency','categories','hash_tags','media')
                         ->IsActive()
+                        ->IsNotPast()
                         ->ShowInMobile();
                     $result =$data->WithPaginate($page,$limit)->get();
                     return Helpers::Get_Response(200, 'success', '', '',$result);

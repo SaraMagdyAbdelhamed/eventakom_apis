@@ -131,6 +131,9 @@ class Event extends Model
     public function ScopeIsActive($query){
             return $query->where('is_active', '=', 1);
         }
+    public function ScopeIsNotPast($query){
+        return $query->where('is_past', '!=', 1);
+    }
 
     public function ScopeShowInMobile($query){
         return $query->where('show_in_mobile', '=', 1);
