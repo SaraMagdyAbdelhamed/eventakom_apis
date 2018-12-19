@@ -387,7 +387,7 @@ class UsersController extends Controller
                       // $user_array->photo = $base_url.$user_array->photo;
                         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
                     } else {
-                        return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
+                        return Helpers::Get_Response(402, 'error', trans('messages.active'), $validator->errors(), []);
                     }
                 }
                 return Helpers::Get_Response(400, 'error', trans('messages.wrong_password'), $validator->errors(), []);
