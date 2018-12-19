@@ -54,6 +54,10 @@ class Event extends Model
     public  function posts(){
         return $this->hasMany('App\EventPost','event_id');
     }
+    public function users()
+    {
+        return $this->belongsToMany('App\Event', 'user_favorites','item_id','user_id')->where('entity_id',4);
+    }
     public  function GoingUsers(){
         return $this->belongsToMany('App\User', 'user_going','event_id','user_id');
     }
@@ -198,6 +202,16 @@ class Event extends Model
     }
 
     /**  End Query Scopes  */
+    public function getSubscriptionLinkAttribute($value){
+        
+            $base_url = env('APP_URL');
+            $link = $base_url.$value;
+            return $link;
 
+        
+
+    }
+
+    
 
     }

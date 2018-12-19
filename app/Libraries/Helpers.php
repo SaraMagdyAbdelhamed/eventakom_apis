@@ -5,7 +5,8 @@
 namespace App\Libraries;
 use App\Entity;
 use Illuminate\Support\Facades\Mail;
-
+use DB;
+use App\GeoCountry;
 class Helpers
 {
 
@@ -85,12 +86,20 @@ class Helpers
     }
 
     
-    public static function mail_contact($body){
-        Mail::raw('Welcome To avocatoapp   New Feedback'.$body, function($msg){
-            $msg->to(['info@avocatoapp.net'])->subject('SecureBridge');
-            $msg->from(['pentavalue.securebridge@gmail.com']);
+     public static function mail_contact($content , $received_to = null){
+  $setting_email =  DB::table('system_settings')->select('value')->where('name','contact_us')->first();
+  $setting_email = $setting_email->value;
+//  dd($setting_email);
+     Mail::send($content['view'],[ 'name' =>$content['name'],'email' =>$content['email'],'subject'=>$content['subject'],'body'=>$content['message'] , 'to'=>$setting_email ], function($msg) use($content,$received_to,$setting_email){
+      if($received_to == 'admin'){
+            $msg->to([$setting_email])->subject('Eventakom (Contact Us)');
+          }elseif($received_to == 'user'){
+            $msg->to([$content['email']])->subject('Eventakom (Contact Us)');
+          }
+            $msg->from(['pentavalue.eventakom@gmail.com']);
+         
+        });
 
-          });
     }
 
   
@@ -147,7 +156,36 @@ class Helpers
                 return $text;
       }
 
+    public  static function AssginCityAndCountry($lat,$long)
+    {
 
+          $url  = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyCknR0jhKTIB33f2CLFhBzgp0mj2Tn2q5k&latlng=".$lat.",".$long."&sensor=false";
+          $json = @file_get_contents($url);
+          header('Content-Type: application/json;charset=utf-8');
+
+          // echo $json;die;
+          $data = json_decode($json);
+          $status = $data->status;
+          $address = '';
+          if($status == "OK")
+          {
+
+               $iso_code = $data->results[0]->address_components[0]->short_name;
+               $country_name = $data->results[0]->address_components[0]->long_name;
+              //check country
+               $country = GeoCountry::where('iso_code',$iso_code)->first();
+
+              if(is_null($country))
+              {
+                  $country  = new GeoCountry;
+                  $country->name = $country_name;
+                  $country->iso_code = $iso_code;
+                  $country->save();
+              }
+              return $country->id;
+          }
+
+    }
 
 
 

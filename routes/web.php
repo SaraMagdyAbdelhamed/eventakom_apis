@@ -78,6 +78,10 @@ $router->group(['prefix' => 'api'], function () use ($router) {
 	//contat us
 	$router->post("contact_us","UsersController@contact_us");
 
+	//get last added sponsers
+	$router->get('/sponsors','SponsorsController@list_sponsors');
+
+
   });
 
 
@@ -126,5 +130,8 @@ $router->group(['prefix' => 'api',  'middleware' => 'EventakomAuth'], function (
 	//notifications
 	$router->get("user_notifications",       "NotificationController@user_notifications");
 	$router->get("mark_read/{id}",            "NotificationController@mark_read");
+
+	//get favorite events
+	$router->get("favorite_events","EventsController@favorite_events");
 
 });
