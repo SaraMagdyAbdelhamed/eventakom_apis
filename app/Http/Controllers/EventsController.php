@@ -556,21 +556,15 @@ class EventsController extends Controller
             if(!$user){
                 return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
             }
-            // $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
-            //               ->SuggestedAsBigEvent()
-            //               ->CreatedByUser($user);
-            // $non_user_events = Event::query()->with('prices.currency','hash_tags','categories','media')
-            //     ->SuggestedAsBigEvent()
-            //     ->NotCreatedByUser($user);
             $data = Event::query()
-                            ->with('prices.currency','categories','hash_tags','media')
-                            ->SuggestedAsBigEvent()
-                            ->NonExpiredEvents()
-                             ->where('created_by', '=', $user->id)
-                            ->orWhere(function ($query) use ($user) {
-                                $query->where('created_by', '!=', $user->id)
-                                      ->where('is_active', '=', 1);
-                            });
+                ->with('prices.currency','categories','hash_tags','media')
+                ->SuggestedAsBigEvent()
+                ->NonExpiredEvents()
+                 ->where('created_by', '=', $user->id)
+                ->orWhere(function ($query) use ($user) {
+                    $query->where('created_by', '!=', $user->id)
+                          ->where('is_active', '=', 1);
+                });
                             
             switch ($type) {
                 case 'upcoming':
