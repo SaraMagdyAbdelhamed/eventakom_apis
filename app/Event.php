@@ -130,8 +130,8 @@ class Event extends Model
     /**  Query Scopes to make code readable */
 
     public function ScopeIsActive($query){
-            return $query->where('is_active', '=', 1);
-        }
+        return $query->where('is_active', '=', 1);
+    }
     public function ScopeIsNotPast($query){
         return $query->where('is_past','=',0);
     }
@@ -142,7 +142,6 @@ class Event extends Model
 
     public  function ScopeSuggestedAsBigEvent($query){
         return $query->where('suggest_big_event', '=', 1);
-
     }
 
     public function ScopeUpcomingEvents($query){

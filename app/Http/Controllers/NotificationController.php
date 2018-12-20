@@ -8,7 +8,7 @@ use App\Libraries\Base64ToImageService;
 use App\User;
 use App\Notification;
 use App\NotificationType;
-use Carbon\carbon;
+use Carbon\Carbon;
 
 
 class NotificationController extends Controller
