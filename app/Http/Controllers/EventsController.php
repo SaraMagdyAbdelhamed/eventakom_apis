@@ -555,7 +555,6 @@ class EventsController extends Controller
             $user = User::where('api_token','=',$request->header('access-token'))->first();
             if(!$user){
                 return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
-
             }
             // $user_events =Event::query()->with('prices.currency','hash_tags','categories','media')
             //               ->SuggestedAsBigEvent()
@@ -590,7 +589,13 @@ class EventsController extends Controller
                         ->ShowInMobile()
                         ->NonExpiredEvents();
                     $result =$data->WithPaginate($page,$limit)->get();
-                    
+                    if(empty($result)) {
+                        $result = $data->PastEvents()->WithPaginate($page,$limit)->get();
+                        if(!empty($result))
+                            return Helpers::Get_Response(200, 'success', '', '',$result);
+                        else 
+                            return Helpers::Get_Response(202, 'success', '', '',$result);
+                    }
                    
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
