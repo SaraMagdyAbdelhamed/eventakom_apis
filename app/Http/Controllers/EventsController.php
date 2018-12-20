@@ -596,8 +596,9 @@ class EventsController extends Controller
                             ->IsPast()
                             ->ShowInMobile()
                             ->NonExpiredEvents();
-                        if(empty($data)) {
-                            return Helpers::Get_Response(202, 'success', '', '',$result);
+                        $pastresult = $data->WithPaginate($page,$limit)->get();
+                        if(empty($pastresult)) {
+                            return Helpers::Get_Response(202, 'success', '', '',$pastresult);
                         } 
 
                     }
