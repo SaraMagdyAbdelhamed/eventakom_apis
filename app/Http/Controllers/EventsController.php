@@ -589,6 +589,7 @@ class EventsController extends Controller
                         ->ShowInMobile()
                         ->NonExpiredEvents();
                     $result =$data->WithPaginate($page,$limit)->get();
+                    dd($result);
                     if(empty($result)) {
                         $data = Event::BigEvents()->orderBy('sort_order','DESC')
                             ->with('prices.currency','categories','hash_tags','media')
