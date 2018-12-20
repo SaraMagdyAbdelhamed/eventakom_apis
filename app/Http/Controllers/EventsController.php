@@ -481,7 +481,7 @@ class EventsController extends Controller
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
-        if($request->header('access-token')){
+        if($request->header('access-token')) {
             $user = User::where('api_token','=',$request->header('access-token'))->first();
             if(!$user){
                 return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
@@ -507,7 +507,6 @@ class EventsController extends Controller
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents()->NonExpiredEvents();
                     $not_user_data = $non_users_events->UpcomingEvents()->NonExpiredEvents();
-                    dd($not_user_data);
                     break;
                 default:
                     $users_data = $users_events->PastEvents()->NonExpiredEvents();
@@ -518,7 +517,8 @@ class EventsController extends Controller
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
             $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
             $result = array_merge($users_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
-        }else{
+        }
+        else {
             $events = $interest->events()
                 ->with('prices.currency','categories','hash_tags','media')
                 ->IsActive()
@@ -533,10 +533,10 @@ class EventsController extends Controller
             }
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
             $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
-            $result =$data->WithPaginate($page,$limit)->get();
+            $result = $data->WithPaginate($page,$limit)->get();
+            
         }
         return Helpers::Get_Response(200, 'success', '', '',$result);
-
     }
 
     /**
@@ -1543,7 +1543,6 @@ class EventsController extends Controller
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
         $a = explode(",", $request_data['hashtag']);
-        // dd($a);
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit'] :10;
         $twitterSearch = new TwitterSearchApi();
         $replace_or='+OR+#';
