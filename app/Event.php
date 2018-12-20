@@ -146,7 +146,7 @@ class Event extends Model
     }
 
     public function ScopeUpcomingEvents($query){
-        return $query->where("end_datetime",'>=',Carbon::now());
+        return $query->where("end_datetime",'>=',Carbon::now())->where('is_past', '!=', '1');
 
     }
     public function ScopePastEvents($query){

@@ -498,13 +498,6 @@ class EventsController extends Controller
                 ->isActive()
                 ->NotCreatedByUser($user)
                 ->ShowInMobile();
-            // $data = $interest->events()
-            //                 ->with('prices.currency','categories','hash_tags','media')
-            //                  ->where('created_by', '=', $user->id)
-            //                 ->orWhere(function ($query) use ($user) {
-            //                     $query->where('created_by', '!=', $user->id)
-            //                           ->where('is_active', '=', 1);
-            //                 })->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents()->NonExpiredEvents();
