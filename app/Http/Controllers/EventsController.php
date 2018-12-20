@@ -590,13 +590,17 @@ class EventsController extends Controller
                         ->NonExpiredEvents();
                     $result =$data->WithPaginate($page,$limit)->get();
                     if(empty($result)) {
-                        $result = $data->PastEvents()->WithPaginate($page,$limit)->get();
-                        if(!empty($result))
-                            return Helpers::Get_Response(200, 'success', '', '',$result);
-                        else 
+                        $data = Event::BigEvents()->orderBy('sort_order','DESC')
+                            ->with('prices.currency','categories','hash_tags','media')
+                            ->IsActive()
+                            ->IsPast()
+                            ->ShowInMobile()
+                            ->NonExpiredEvents();
+                        if(empty($data)) {
                             return Helpers::Get_Response(202, 'success', '', '',$result);
+                        } 
+
                     }
-                   
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
