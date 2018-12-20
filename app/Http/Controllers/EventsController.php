@@ -519,13 +519,14 @@ class EventsController extends Controller
             $result = array_merge($users_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
         }
         else {
-            $events = $interest->events()
-                ->with('prices.currency','categories','hash_tags','media')
-                ->IsActive()
-                ->ShowInMobile();
+            $events = $interest->events();
+//                ->with('prices.currency','categories','hash_tags','media');
+//                ->IsActive()
+//                ->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
-                    $data = $events->UpcomingEvents()->NonExpiredEvents();
+                    $data = $events;
+//                    $data = $events->UpcomingEvents()->NonExpiredEvents();
                     break;
                 default:
                     $data = $events->PastEvents()->NonExpiredEvents();
