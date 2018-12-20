@@ -13,7 +13,7 @@ class CheckEventsAndNotifications extends Command
      *
      * @var string
      */
-    protected $signature = 'notifications:delete';
+    protected $signature = 'cronDailyCheck';
 
     /**
      * The console command description.
