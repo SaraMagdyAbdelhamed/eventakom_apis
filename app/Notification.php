@@ -29,28 +29,28 @@ class Notification extends Model
       	return $this->belongsTo('App\NotificationType','notification_type_id');
       }
 
-      // public function event()
-      // {
-      //   return $this->belongsTo('App\Event','item_id');
-      // }
+      public function notificationEvent()
+      {
+        return $this->belongsTo('App\Event','item_id');
+      }
 
       // public function queue()
       // {
       // 	return $this->hasOne('App\NotificationPush');
       // }
 
-    	public function items()
+    public function items()
     {
         return $this->hasMany('App\NotificationItem','notification_id');
     }
 
-        public function push()
+    public function push()
     {
         return $this->hasMany('App\NotificationPush','notification_id');
     }
 
 
-        public function user()
+    public function user()
     {
         return $this->belongsTo('App\Users','user_id');
     }
@@ -58,7 +58,6 @@ class Notification extends Model
     public function GetNotifcationMedia(){
       if(is_null($this->item_id) || ($this->item_id == '')){
         $result = '';
-
       }else{
         $media = EventMedia::where('event_id',$this->item_id)->where('type',1)->first();
         if($media)
@@ -67,12 +66,9 @@ class Notification extends Model
         }else{
           $result = '';
         }
-
       }
-        
         return $result;
     }
-
 
     public function getItemPhotoAttribute(){
       return $this->GetNotifcationMedia();

@@ -13,6 +13,7 @@ use App\GeoCity;
 use App\user_rule;
 use App\AgeRange;
 use App\EventPost;
+use App\EventStatus;
 use App\Price;
 use App\EventTicket;
 use App\EventBooking;
@@ -53,6 +54,7 @@ class EventsController extends Controller
      */
 
     public  function event_details(Request $request){
+
         $request_data = (array)json_decode($request->getContent(), true);
         if (array_key_exists('lang_id', $request_data)) {
             Helpers::Set_locale($request_data['lang_id']);
@@ -68,10 +70,10 @@ class EventsController extends Controller
         //$user = User::where('api_token',$request->header('access-token'))->first()->id;
         $event = Event::query()
             ->where('id',$request_data['event_id'])
-            ->with('prices.currency','categories','hash_tags','media','posts.replies')
+            ->with('prices.currency','categories','hash_tags','media','posts.replies','status')
             ->withCount('GoingUsers')
             ->get();
-
+         
         // Get You May Also Like
         if($event->isEmpty()){
             return Helpers::Get_Response(403, 'error', 'not found', [], []);
@@ -86,6 +88,7 @@ class EventsController extends Controller
             $result = Event::EventsInCategories($category_ids)->get()->random($random);
 
         }
+        
         return Helpers::Get_Response(200, 'success', '', [], [['event'=>$event,'you_may_also_like'=>$result]]);
 
     }
@@ -112,7 +115,7 @@ class EventsController extends Controller
                 "gender_id"        => "required",
                 'start_datetime'   => 'required',
                 'end_datetime'     => 'required',
-                'longtuide'        => 'required',
+                'longitude'        => 'required',
                 'latitude'         => 'required',
                 'email'            => 'email|max:35',
                 'website'          => 'between:10,50',
@@ -144,7 +147,7 @@ class EventsController extends Controller
             'show_in_mobile'    => 1,
             'created_by'        => $user->id,
             'age_range_id'      => $request_data['age_range_id'],
-            'longtuide'         => $request_data['longtuide'],
+            'longtuide'         => $request_data['longitude'],
             'latitude'          => $request_data['latitude'],
             'email'             => array_key_exists('email',$request_data) ? $request_data['email']: NULL,
             'website'           => array_key_exists('website',$request_data) ? $request_data['website']: NULL,
@@ -153,8 +156,8 @@ class EventsController extends Controller
             'is_backend'        => 0,
             "tele_code"         => $request_data["tele_code"],
             "is_paid"           => array_key_exists('is_paid',$request_data) ? $request_data['is_paid']: 0,
-            "use_ticketing_system" => array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0
-
+            "use_ticketing_system" => array_key_exists('use_ticketing_system',$request_data) ? $request_data['use_ticketing_system']: 0,
+             
         ];
 
         //save the event
@@ -162,6 +165,28 @@ class EventsController extends Controller
         if(!$event){
             return Helpers::Get_Response(403, 'error', 'not saved',[], []);
         }
+        else{
+        
+            $event->subscription_link=getenv('APP_URL').'subscribe/'.$event->id;   
+           $event->save();
+           $subscribers_link = getenv('APP_URL').'subscribers/'.$event->id;
+            $twilio_config = [
+                'app_id' => 'AC2305889581179ad67b9d34540be8ecc1',
+                'token' => '2021c86af33bd8f3b69394a5059c34f0',
+                'from' => '+13238701693'
+            ];
+    
+        $twilio = new TwilioSmsService($twilio_config);
+         if($event->tele_code != null && $event->mobile != null){    
+         $twilio->send($event->tele_code.$event->mobile,$event->name.'  '.$subscribers_link);
+         }
+        
+        if($user->tel_code != null  && $user->mobile != null ){            
+         $twilio->send($user->tele_code.$user->mobile,$event->name.'  '.$subscribers_link);
+        }
+
+        }
+        
 
 
 
@@ -487,12 +512,12 @@ class EventsController extends Controller
             //                 })->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
-                    $users_data = $users_events->UpcomingEvents();
-                    $not_user_data = $non_users_events->UpcomingEvents();
+                    $users_data = $users_events->UpcomingEvents()->NonExpiredEvents();
+                    $not_user_data = $non_users_events->UpcomingEvents()->NonExpiredEvents();
                     break;
                 default:
-                    $users_data = $users_events->PastEvents();
-                    $not_user_data = $non_users_events->PastEvents();
+                    $users_data = $users_events->PastEvents()->NonExpiredEvents();
+                    $not_user_data = $non_users_events->PastEvents()->NonExpiredEvents();
                     // $data = $data->PastEvents();
                     break;
             }
@@ -506,10 +531,10 @@ class EventsController extends Controller
                 ->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
-                    $data = $events->UpcomingEvents();
+                    $data = $events->UpcomingEvents()->NonExpiredEvents();
                     break;
                 default:
-                    $data = $events->PastEvents();
+                    $data = $events->PastEvents()->NonExpiredEvents();
                     break;
             }
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
@@ -552,6 +577,7 @@ class EventsController extends Controller
             $data = Event::query()
                             ->with('prices.currency','categories','hash_tags','media')
                             ->SuggestedAsBigEvent()
+                            ->NonExpiredEvents()
                              ->where('created_by', '=', $user->id)
                             ->orWhere(function ($query) use ($user) {
                                 $query->where('created_by', '!=', $user->id)
@@ -571,8 +597,12 @@ class EventsController extends Controller
                     $data = Event::BigEvents()->orderBy('sort_order','DESC')
                         ->with('prices.currency','categories','hash_tags','media')
                         ->IsActive()
-                        ->ShowInMobile();
+                        ->IsNotPast()
+                        ->ShowInMobile()
+                        ->NonExpiredEvents();
                     $result =$data->WithPaginate($page,$limit)->get();
+                    
+                   
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
@@ -591,7 +621,8 @@ class EventsController extends Controller
                 ->with('prices.currency','hash_tags','categories','media')
                 ->IsActive()
                 ->ShowInMobile()
-                ->SuggestedAsBigEvent();
+                ->SuggestedAsBigEvent()
+                ->NonExpiredEvents();
             switch ($type) {
                 case 'upcoming':
                     $data = $events->UpcomingEvents();
@@ -600,7 +631,9 @@ class EventsController extends Controller
                     $data = Event::BigEvents()->orderBy('sort_order','DESC')
                         ->with('prices.currency','categories','hash_tags','media')
                         ->IsActive()
-                        ->ShowInMobile();
+                        ->IsNotPast()
+                        ->ShowInMobile()
+                        ->NonExpiredEvents();
                     break;
                 default:
                     $data = $events->PastEvents();
@@ -665,6 +698,7 @@ class EventsController extends Controller
                 ->CreatedByUser($user)
                 ->ShowInMobile()
                 ->ThisMonthEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -673,6 +707,7 @@ class EventsController extends Controller
                 ->NotCreatedByUser($user)
                 ->ShowInMobile()
                 ->ThisMonthEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -684,6 +719,7 @@ class EventsController extends Controller
                 ->CreatedByUser($user)
                 ->ShowInMobile()
                 ->NextMonthEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -692,6 +728,7 @@ class EventsController extends Controller
                     ->NotCreatedByUser($user)
                     ->ShowInMobile()
                     ->NextMonthEvents()
+                    ->NonExpiredEvents()
                     ->WithPaginate($page,$limit)
                     ->orderBy('end_datetime','DESC')
                     ->get();
@@ -701,6 +738,7 @@ class EventsController extends Controller
                 ->CreatedByUser($user)
                 ->ShowInMobile()
                 ->StartOfMothEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -709,6 +747,7 @@ class EventsController extends Controller
                 ->NotCreatedByUser($user)
                 ->ShowInMobile()
                 ->StartOfMothEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -730,6 +769,7 @@ class EventsController extends Controller
                 ->IsActive()
                 ->ShowInMobile()
                 ->ThisMonthEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -738,6 +778,7 @@ class EventsController extends Controller
                 ->IsActive()
                 ->ShowInMobile()
                 ->NextMonthEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -746,6 +787,7 @@ class EventsController extends Controller
                 ->IsActive()
                 ->ShowInMobile()
                 ->StartOfMothEvents()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->orderBy('end_datetime','DESC')
                 ->get();
@@ -908,6 +950,7 @@ class EventsController extends Controller
                     ->IsActive()
                     ->ShowInMobile()
                     ->UpcomingEvents()
+                    ->NonExpiredEvents()
                     ->withPaginate($page,$limit)
                     ->get();
 
@@ -918,6 +961,7 @@ class EventsController extends Controller
                         ->IsActive()
                         ->ShowInMobile()
                         ->UpcomingEvents()
+                        ->NonExpiredEvents()
                         ->withPaginate($page,$limit)
                         ->get();
                 }
@@ -925,19 +969,16 @@ class EventsController extends Controller
                 break;
 
             default:
+
                 $data =  Event::query()->whereHas('categories',function ($query){
-                    $user = User::where('api_token','=',$request->header('access-token'))->first();
-
-                    if(!$user){
-                        return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
-
-                    }
+                 $user = User::where('api_token','=',Request::capture()->header('access-token'))->first();
                     $user_interests = $user->interests->pluck('pivot.interest_id');
                     $query->whereIn("interest_id",$user_interests);
                 })->with(['prices.currency','hash_tags','categories'])
                     ->IsActive()
                     ->ShowInMobile()
                     ->pastEvents()
+                    ->NonExpiredEvents()
                     ->withPaginate($page,$limit)
                     ->get();
 
@@ -948,6 +989,7 @@ class EventsController extends Controller
                         ->IsActive()
                         ->ShowInMobile()
                         ->PastEvents()
+                        ->NonExpiredEvents()
                         ->withPaginate($page,$limit)
                         ->get();
                 }
@@ -1224,12 +1266,14 @@ class EventsController extends Controller
                 ->with('prices.currency','categories','hash_tags','media')
                 ->CreatedByUser($user)
                 ->ShowInMobile()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->get();
             $events_not_by_user = Event::query()->Distance($lat,$lng,$radius,"km")
                 ->with('prices.currency','categories','hash_tags','media')
                 ->NotCreatedByUser($user)
                 ->ShowInMobile()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->get();
             $result = array_merge($events_by_user->toArray(),$events_not_by_user->toArray());
@@ -1239,6 +1283,7 @@ class EventsController extends Controller
                 ->with('prices.currency','categories','hash_tags','media')
                 ->IsActive()
                 ->ShowInMobile()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->get();
             return Helpers::Get_Response(200,'success','',[],[$events]);
@@ -1285,6 +1330,7 @@ class EventsController extends Controller
                         ->with('prices.currency','categories','hash_tags','media')
                         ->CreatedByUser($user)
                         ->ShowInMobile()
+                        ->NonExpiredEvents()
                         ->WithPaginate($page,$limit)
                         ->get();
                     $events_not_by_user = Event::event_entity_ar()
@@ -1292,6 +1338,7 @@ class EventsController extends Controller
                         ->with('prices.currency','categories','hash_tags','media')
                         ->NotCreatedByUser($user)
                         ->ShowInMobile()
+                        ->NonExpiredEvents()
                         ->WithPaginate($page,$limit)
                         ->get();
                     $result = array_merge($events_by_user->toArray(),$events_not_by_user->toArray());
@@ -1301,6 +1348,7 @@ class EventsController extends Controller
                     ->with('prices.currency','categories','hash_tags','media')
                     ->CreatedByUser($user)
                     ->ShowInMobile()
+                    ->NonExpiredEvents()
                     ->WithPaginate($page,$limit)
                     ->get();
                 $events_not_by_user = Event::query()
@@ -1308,6 +1356,7 @@ class EventsController extends Controller
                     ->with('prices.currency','categories','hash_tags','media')
                     ->NotCreatedByUser($user)
                     ->ShowInMobile()
+                    ->NonExpiredEvents()
                     ->WithPaginate($page,$limit)
                     ->get();
                 $result = array_merge($events_by_user->toArray(), $events_not_by_user->toArray());
@@ -1324,6 +1373,7 @@ class EventsController extends Controller
                 ->with('prices.currency','categories','hash_tags','media')
                 ->IsActive()
                 ->ShowInMobile()
+                ->NonExpiredEvents()
                 ->WithPaginate($page,$limit)
                 ->get();
 
@@ -1335,6 +1385,7 @@ class EventsController extends Controller
                         ->with('prices.currency','categories','hash_tags','media')
                         ->IsActive()
                         ->ShowInMobile()
+                        ->NonExpiredEvents()
                         ->WithPaginate($page,$limit)
                         ->get();
                 }
@@ -1563,9 +1614,19 @@ class EventsController extends Controller
                             ['user_id','=',$user->id]
 
                         ])->get();
+    }
 
+    public function favorite_events(Request $request)
+    {
 
-        
+        $user = User::where('api_token','=',$request->header('access-token'))->first();
+        $events = $user->favorite_events()
+                         ->with('prices.currency','categories','hash_tags','media')
+                         ->IsActive()
+                         ->ShowInMobile()
+                         ->get();
+      return Helpers::Get_Response(200,'success','',[],$events);
+
     }
 
 

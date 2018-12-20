@@ -21,7 +21,8 @@ class Event extends Model
         'venue','start_datetime','end_datetime',
         'suggest_big_event','show_in_mobile'
         ,'gender_id','age_range_id','is_paid',
-        'use_ticketing_system','is_active','event_status_id','rejection_reason','created_by','updated_by','tele_code','is_backend'];
+        'use_ticketing_system','is_active',
+        'event_status_id','rejection_reason','created_by','updated_by','tele_code','is_backend','is_past'];
 
     /** Relations Section */
 
@@ -54,6 +55,10 @@ class Event extends Model
     public  function posts(){
         return $this->hasMany('App\EventPost','event_id');
     }
+    public function users()
+    {
+        return $this->belongsToMany('App\Event', 'user_favorites','item_id','user_id')->where('entity_id',4);
+    }
     public  function GoingUsers(){
         return $this->belongsToMany('App\User', 'user_going','event_id','user_id');
     }
@@ -61,7 +66,7 @@ class Event extends Model
         return $this->belongsToMany('App\User', 'user_calendars','event_id','user_id')->withPivot('from_date','to_date');
     }
     public  function EventOwner(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\User','created_by');
 
     }
     public function tickets(){
@@ -127,6 +132,9 @@ class Event extends Model
     public function ScopeIsActive($query){
             return $query->where('is_active', '=', 1);
         }
+    public function ScopeIsNotPast($query){
+        return $query->whereNull('is_past');
+    }
 
     public function ScopeShowInMobile($query){
         return $query->where('show_in_mobile', '=', 1);
@@ -153,7 +161,15 @@ class Event extends Model
 
     }
     public function ScopeNextMonthEvents($query){
-        return $query->whereMonth("end_datetime",Carbon::now()->addMonth()->month);
+        if(Carbon::now()->addMonth()->month == 1)
+        {
+            $year = Carbon::now()->addYear()->year;
+        }
+        else
+        {
+            $year=Carbon::now()->year();
+        }
+        return $query->whereMonth("end_datetime",Carbon::now()->addMonth()->month)->whereYear("end_datetime",$year);
 
     }
     public function ScopeCreatedByUser($query,$user){
@@ -168,6 +184,11 @@ class Event extends Model
     public function ScopeStartOfMothEvents($query){
         return $query->whereBetween("end_datetime",[Carbon::now()->startOfMonth(),Carbon::now()]);
     }
+
+    public function ScopeNonExpiredEvents($query){
+        return $query->where("is_expired",'!=',1);
+    }
+   
 
     /**
      * Query builder scope to list neighboring locations
@@ -198,6 +219,16 @@ class Event extends Model
     }
 
     /**  End Query Scopes  */
+    public function getSubscriptionLinkAttribute($value){
+        
+            $base_url = env('APP_URL');
+            $link = $base_url.$value;
+            return $link;
 
+        
+
+    }
+
+    
 
     }

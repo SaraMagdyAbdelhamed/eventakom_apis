@@ -17,6 +17,8 @@ use App\Libraries\TwilioSmsService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use \Illuminate\Support\Facades\Lang;
+use App\Event;
+use App\EventBooking;
 
 
 class UsersController extends Controller
@@ -65,22 +67,30 @@ class UsersController extends Controller
         /*id	username	password	first_name	last_name	email	tele_code	mobile	country_id	city_id	gender_id	photo	birthdate	is_active	created_by	updated_by	created_at	updated_at	device_token	mobile_os	is_social	access_token	social_token	lang_id	mobile_verification_code	is_mobile_verification_code_expired	last_login	api_token	longtuide	latitude*/
         $input['password'] = Hash::make($input['password']);
         $input['is_active'] = 0;
-        $input['username'] = $request['first_name'] . '' . $request['last_name'];
+        $input['username'] = $request['first_name'];
         $input['code'] = mt_rand(100000, 999999);
+
         $input['mobile_verification_code'] = str_random(4);
+
         $input['is_mobile_verification_code_expired'] = 0;
         $input['email_verification_code'] = str_random(4);
         $input['is_email_verified'] = 0;
         $input['is_mobile_verified'] = 0;
-        if(isset($request['city_id'])){
-        $city_id=$request['city_id'];
-        $city = GeoCity::find($city_id);
-        $input['country_id'] = $city->geo_country->id;
-        $input['timezone'] = $city->geo_country->timezone;
-        $input['longitude'] = $city->longitude;
-        $input['latitude'] = $city->latitude;
-        
-        }
+        $input['gender_id'] = array_key_exists('gender_id', $request) ? $request['gender_id'] : NULL;
+        $input['longitude'] = array_key_exists('longitude', $request) ? $request['longitude'] : NULL;
+        $input['latitude'] = array_key_exists('latitude', $request) ? $request['latitude'] : NULL;
+
+        // if(isset($request['city_id'])){
+        //     $city_id=$request['city_id'];
+        //     $city = GeoCity::find($city_id);
+        //     $input['country_id'] = $city->geo_country->id;
+        //     $input['timezone'] = $city->geo_country->timezone;
+        //     $input['longitude'] = $city->longitude;
+        //     $input['latitude'] = $city->latitude;
+        // }
+
+       /// $input['country_id'] = Helpers::AssginCityAndCountry($input['latitude'] , $input['longitude']);
+
         $user = User::create($input);
         $user_array = User::where('mobile','=',$request['mobile'])->first();
  
@@ -128,7 +138,10 @@ class UsersController extends Controller
              return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
             }else{
             // dd($user);
+
             $mobile_verification_code = str_random(4);
+
+            
             $sms_mobile = $user->tele_code. '' .$user->mobile;
             $sms_body = trans('messages.your_verification_code_is') . $mobile_verification_code;
             $user_date = date('Y-m-d', strtotime($user->verification_date));
@@ -372,11 +385,29 @@ class UsersController extends Controller
 //                            "mobile_os"=>$request['mobile_os'],
 //                        ]);
                       $user_array = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
+                      $events=Event::where('created_by',$user_array->id)->get();
+                      if(count($events) != 0)
+                      {
+                          $user_array['has_events']=1;
+                      }
+                      else
+                      {
+                        $user_array['has_events']=0;
+                      }
+                      $tickets=EventBooking::where('user_id',$user_array->id)->get();
+                      if(count($tickets) != 0)
+                      {
+                          $user_array['has_tickets']=1;
+                      }
+                      else
+                      {
+                        $user_array['has_tickets']=0;
+                      }
                       // $base_url = 'http://eventakom.com/eventakom_dev/public/';
                       // $user_array->photo = $base_url.$user_array->photo;
                         return Helpers::Get_Response(200, 'success', '', $validator->errors(), array($user_array));
                     } else {
-                        return Helpers::Get_Response(400, 'error', trans('messages.active'), $validator->errors(), []);
+                        return Helpers::Get_Response(402, 'error', trans('messages.active'), $validator->errors(), []);
                     }
                 }
                 return Helpers::Get_Response(400, 'error', trans('messages.wrong_password'), $validator->errors(), []);
@@ -1001,29 +1032,47 @@ class UsersController extends Controller
    public function contact_us(Request $request){
     $request_data = (array)json_decode($request->getContent(), true);
     //check if user logged in
-    if($request->header('access-token')){
-        $validator = Validator::make($request_data,
-            [
-                "subject" => "required",
-                "message" => "required"
-            ]);
-        if ($validator->fails()) {
+    // if($request->header('access-token')){
+    //     $validator = Validator::make($request_data,
+    //         [
+    //             "message" => "required",
+    //         ]);
+    //     if ($validator->fails()) {
 
-            return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
-        }
-        $user = User::where('api_token','=',$request->header('access-token'))->first();
-        $contact_us = new ContactUs;
-        $contact_us->user_id = $user->id;
-        $contact_us->email = $user->email;
-        $contact_us->subject = $request_data['subject'];
-        $contact_us->message = $request_data['message'];
-        $contact_us->save();
+    //         return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+    //     }
+    //     $user = User::where('api_token','=',$request->header('access-token'))->first();
+    //     $contact_us = new ContactUs;
+    //     $contact_us->user_id = $user->id;
+    //     $contact_us->email = $user->email;
+    //     $contact_us->name = $user->first_name . '' . $user->last_name;
+    //     // $contact_us->subject = $request_data['subject'];
+    //     $contact_us->message = $request_data['message'];
+    //     $contact_us->save();
 
-    }else{
-        // a visitor is here
-        $validator = Validator::make($request_data,
+    // }else{
+    //     // a visitor is here
+    //     $validator = Validator::make($request_data,
+    //         [
+    //             "subject" => "required",
+    //             "message" => "required",
+    //             "email"   => "required|email|max:35"
+    //         ]);
+    //     if ($validator->fails()) {
+
+    //         return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+    //     }
+    //     $contact_us = new ContactUs;
+    //     $contact_us->user_id = NULL;
+    //     $contact_us->email   = $request_data['email'];
+    //     $contact_us->subject = $request_data['subject'];
+    //     $contact_us->message = $request_data['message'];
+    //     $contact_us->save();
+    // }
+
+       $validator = Validator::make($request_data,
             [
-                "subject" => "required",
+                "name" => "required",
                 "message" => "required",
                 "email"   => "required|email|max:35"
             ]);
@@ -1032,12 +1081,22 @@ class UsersController extends Controller
             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
         }
         $contact_us = new ContactUs;
-        $contact_us->user_id = NULL;
         $contact_us->email   = $request_data['email'];
-        $contact_us->subject = $request_data['subject'];
+        $contact_us->name = $request_data['name'];
+        //$contact_us->subject = $request_data['subject'];
         $contact_us->message = $request_data['message'];
-        $contact_us->save();
-    }
+        $contact_us->created_by = ($request->header('access-token')) ? User::where('api_token','=',$request->header('access-token'))->first()->id : 0;
+       if($contact_us->save()){
+
+         $request_data['view'] = 'emails.contact_us';
+         $admin_mail= Helpers::mail_contact($request_data , 'admin');
+         // $user_mail= Helpers::mail_contact($request_data , 'user');
+          
+       }
+
+
+
+    //Send Email to the email of the adminstrator
 
 
    return Helpers::Get_Response(200, 'success', 'Contact us has beed added',[],[]);

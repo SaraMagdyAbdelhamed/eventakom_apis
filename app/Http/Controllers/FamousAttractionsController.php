@@ -26,6 +26,9 @@ class FamousAttractionsController extends Controller
         $limit = array_key_exists('limit',$request_data) ? $request_data['limit']:10;
 
          $famous_attractions = FamousAttraction::query()
+            ->whereHas('categories',function($q)use ($request){
+                $q->where('category_id',$request['category_id']);
+            })
             ->with('categories','days','media')
             ->IsActive()
             ->orderBy('name','ASC')

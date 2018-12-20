@@ -8,6 +8,7 @@ use App\Libraries\Base64ToImageService;
 use App\User;
 use App\Notification;
 use App\NotificationType;
+use Carbon\carbon;
 
 
 class NotificationController extends Controller
@@ -18,7 +19,11 @@ class NotificationController extends Controller
 	public function user_notifications(Request $request){
 		//retrive the user Data
 		$user = User::where('api_token','=',$request->header('access-token'))->first();
-		$notifications = $user->notifications()->orderby('created_at','DESC')->get();
+		$notifications = $user->notifications()
+		->where('is_read',0)
+        ->orwhere(function($q){
+			$q->where('is_read',1)->where('created_at','>=',Carbon::now());
+		})->orderby('created_at','DESC')->with('notificationEvent')->get();
 		return Helpers::Get_Response(200, 'success', '', [],$notifications);
 
 	}
