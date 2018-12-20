@@ -490,10 +490,12 @@ class EventsController extends Controller
             // related to this category - created by the login user
             $users_events = $interest->events()
                 ->with('prices.currency','categories','hash_tags','media')
+                ->isActive()
                 ->CreatedByUser($user)
                 ->ShowInMobile();
             $non_users_events = $interest->events()
                 ->with('prices.currency','categories','hash_tags','media')
+                ->isActive()
                 ->NotCreatedByUser($user)
                 ->ShowInMobile();
             // $data = $interest->events()
@@ -520,13 +522,12 @@ class EventsController extends Controller
         }
         else {
             $events = $interest->events()
-                ->with('prices.currency','categories','hash_tags','media');
-//                ->IsActive()
-//                ->ShowInMobile();
+                ->with('prices.currency','categories','hash_tags','media')
+                ->IsActive()
+                ->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
-                    $data = $events;
-//                    $data = $events->UpcomingEvents()->NonExpiredEvents();
+                    $data = $events->UpcomingEvents()->NonExpiredEvents();
                     break;
                 default:
                     $data = $events->PastEvents()->NonExpiredEvents();
