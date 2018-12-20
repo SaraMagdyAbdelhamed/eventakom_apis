@@ -133,7 +133,7 @@ class Event extends Model
             return $query->where('is_active', '=', 1);
         }
     public function ScopeIsNotPast($query){
-        return $query->whereNull('is_past');
+        return $query->where('is_past','=',0);
     }
 
     public function ScopeShowInMobile($query){
@@ -146,7 +146,7 @@ class Event extends Model
     }
 
     public function ScopeUpcomingEvents($query){
-        return $query->where("end_datetime",'>=',Carbon::now())->where('is_past', '!=', '1');
+        return $query->where("end_datetime",'>=',Carbon::now());
 
     }
     public function ScopePastEvents($query){

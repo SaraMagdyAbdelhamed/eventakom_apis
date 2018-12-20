@@ -500,8 +500,8 @@ class EventsController extends Controller
                 ->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
-                    $users_data = $users_events->UpcomingEvents()->NonExpiredEvents();
-                    $not_user_data = $non_users_events->UpcomingEvents()->NonExpiredEvents();
+                    $users_data = $users_events->UpcomingEvents()->ScopeIsNotPast()->NonExpiredEvents();
+                    $not_user_data = $non_users_events->UpcomingEvents()->ScopeIsNotPast()->NonExpiredEvents();
                     break;
                 default:
                     $users_data = $users_events->PastEvents()->NonExpiredEvents();
@@ -520,10 +520,10 @@ class EventsController extends Controller
                 ->ShowInMobile();
             switch ($type) {
                 case 'upcoming':
-                    $data = $events->UpcomingEvents()->NonExpiredEvents();
+                    $data = $events->UpcomingEvents()->ScopeIsNotPast()->NonExpiredEvents();
                     break;
                 default:
-                    $data = $events->PastEvents()->NonExpiredEvents();
+                    $data = $events->PastEvents()->ScopeIsNotPast()->NonExpiredEvents();
                     break;
             }
             $page = array_key_exists('page',$request_data) ? $request_data['page']:1;
