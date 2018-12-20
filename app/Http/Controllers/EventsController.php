@@ -583,18 +583,6 @@ class EventsController extends Controller
                         ->ShowInMobile()
                         ->NonExpiredEvents();
                     $result =$data->WithPaginate($page,$limit)->get();
-                    if(empty($result)) {
-                        $data = Event::BigEvents()->orderBy('sort_order','DESC')
-                            ->with('prices.currency','categories','hash_tags','media')
-                            ->IsActive()
-                            ->IsPast()
-                            ->ShowInMobile()
-                            ->NonExpiredEvents();
-                        $pastresult = $data->WithPaginate($page,$limit)->get();
-                        if(empty($pastresult)) {
-                            return Helpers::Get_Response(202, 'success', '', '',$pastresult);
-                        } 
-                    }
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
@@ -631,24 +619,7 @@ class EventsController extends Controller
                     $data = $events->PastEvents();
                     break;
             }
-
-
             $result =$data->WithPaginate($page,$limit)->get();
-            if($type == 'slider') {
-                if(empty($result)) {
-                        $data = Event::BigEvents()->orderBy('sort_order','DESC')
-                            ->with('prices.currency','categories','hash_tags','media')
-                            ->IsActive()
-                            ->IsPast()
-                            ->ShowInMobile()
-                            ->NonExpiredEvents();
-                        $pastresult = $data->WithPaginate($page,$limit)->get();
-                        if(empty($pastresult)) {
-                            return Helpers::Get_Response(202, 'success', '', '',$pastresult);
-                        } 
-
-                    }
-            }
             return Helpers::Get_Response(200, 'success', '', '',$result);
 
 
