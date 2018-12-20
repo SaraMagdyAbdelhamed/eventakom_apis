@@ -473,25 +473,18 @@ class EventsController extends Controller
             Helpers::Set_locale($request_data['lang_id']);
         }
         //Validate
-        $validator = Validator::make($request_data,
-            [
-                "interest_id" => "required"
-               
-            ]);
+        $validator = Validator::make($request_data,["interest_id" => "required"]);
         if ($validator->fails()) {
             return Helpers::Get_Response(403, 'error', trans('validation.required'), $validator->errors(), []);
         }
-
         $interest = Interest::find($request_data['interest_id']);
         if(!$interest){
             return Helpers::Get_Response(403, 'error', trans('messages.interest_not_found'),[], []);
         }
         if($request->header('access-token')){
             $user = User::where('api_token','=',$request->header('access-token'))->first();
-
             if(!$user){
                 return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
-
             }
             // we want to get all events
             // related to this category - created by the login user
@@ -514,6 +507,7 @@ class EventsController extends Controller
                 case 'upcoming':
                     $users_data = $users_events->UpcomingEvents()->NonExpiredEvents();
                     $not_user_data = $non_users_events->UpcomingEvents()->NonExpiredEvents();
+                    dd($not_user_data);
                     break;
                 default:
                     $users_data = $users_events->PastEvents()->NonExpiredEvents();

@@ -151,7 +151,6 @@ class Event extends Model
     }
     public function ScopePastEvents($query){
         return $query->where("end_datetime",'<',Carbon::now());
-
     }
     public function ScopeWithPaginate($query,$page,$limit){
         return $query->skip(($page-1)*$limit)->take($limit);
