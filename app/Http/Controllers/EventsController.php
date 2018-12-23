@@ -591,7 +591,7 @@ class EventsController extends Controller
                     ->orWhere(function ($query) use ($user) {
                         $query->where('created_by', '!=', $user->id)
                               ->where('is_active', '=', 1);
-                    })->PastEvents()->WithPaginate($page,$limit)->get();
+                    })->BigEvents()->PastEvents()->WithPaginate($page,$limit)->get();
                     if(count($result)==0 && count($past)==0)
                     {
                         return Helpers::Get_Response(202, 'No Data Found', '', '',$result);  
@@ -603,7 +603,7 @@ class EventsController extends Controller
                     // $not_user_data = $non_user_events->PastEvents();
                     // //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
                     // $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
-                    $result = $data->PastEvents()->WithPaginate($page,$limit)->get();
+                    $result = $data->BigEvents()->PastEvents()->WithPaginate($page,$limit)->get();
 
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
