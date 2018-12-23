@@ -556,9 +556,10 @@ class EventsController extends Controller
             if(!$user){
                 return Helpers::Get_Response(403, 'error', trans('messages.worng_token'),[], []);
             }
-            $data = Event::query()
+            $data = Event::BigEvents()->orderBy('sort_order','DESC')
                 ->with('prices.currency','categories','hash_tags','media')
-                ->SuggestedAsBigEvent()
+                ->SuggestedAsBigEvent()                
+                ->ShowInMobile()
                 ->NonExpiredEvents()
                  ->where('created_by', '=', $user->id)
                 ->orWhere(function ($query) use ($user) {
@@ -603,14 +604,15 @@ class EventsController extends Controller
                     // $not_user_data = $non_user_events->PastEvents();
                     // //$result = $not_user_data->union($user_data)->orderBy("id","DESC")->get();
                     // $result = array_merge($user_data->WithPaginate($page,$limit)->get()->toArray(),$not_user_data->WithPaginate($page,$limit)->get()->toArray());
-                    $result = $data->BigEvents()->PastEvents()->WithPaginate($page,$limit)->get();
+                    $result = $data->PastEvents()->WithPaginate($page,$limit)->get();
+                    // dd($result);
 
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
             }
 
         }else{
-            $events = Event::query()
+            $events = Event::BigEvents()->orderBy('sort_order','DESC')
                 ->with('prices.currency','hash_tags','categories','media')
                 ->IsActive()
                 ->ShowInMobile()
@@ -627,6 +629,18 @@ class EventsController extends Controller
                         ->IsNotPast()
                         ->ShowInMobile()
                         ->NonExpiredEvents();
+                    $result =$data->WithPaginate($page,$limit)->get();
+                    $past=Event::BigEvents()->orderBy('sort_order','DESC')
+                        ->with('prices.currency','categories','hash_tags','media')
+                        ->SuggestedAsBigEvent()
+                        ->IsActive()
+                        ->NonExpiredEvents()
+                        ->PastEvents()->WithPaginate($page,$limit)->get();
+                        if(count($result)==0 && count($past)==0)
+                        {
+                            return Helpers::Get_Response(202, 'No Data Found', '', '',$result);  
+                        }
+                    return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
                     $data = $events->PastEvents();
