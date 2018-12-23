@@ -583,6 +583,19 @@ class EventsController extends Controller
                         ->ShowInMobile()
                         ->NonExpiredEvents();
                     $result =$data->WithPaginate($page,$limit)->get();
+                    $past=Event::query()
+                    ->with('prices.currency','categories','hash_tags','media')
+                    ->SuggestedAsBigEvent()
+                    ->NonExpiredEvents()
+                     ->where('created_by', '=', $user->id)
+                    ->orWhere(function ($query) use ($user) {
+                        $query->where('created_by', '!=', $user->id)
+                              ->where('is_active', '=', 1);
+                    })->PastEvents()->WithPaginate($page,$limit)->get();
+                    if(count($result)==0 && count($past)==0)
+                    {
+                        return Helpers::Get_Response(202, 'No Data Found', '', '',$result);  
+                    }
                     return Helpers::Get_Response(200, 'success', '', '',$result);
                     break;
                 default:
