@@ -720,7 +720,10 @@ class UsersController extends Controller
     public function user_interests(Request $request)
     {
         //return all user interests
-
+        $request_data = (array)json_decode($request->getContent(), true);
+        if (array_key_exists('lang_id', $request_data)) {
+            Helpers::Set_locale($request['lang_id']);
+        }
         $user = User::where("api_token", '=', $request->header('access-token'))->first();
         return Helpers::Get_Response(200, 'success', '', [], $user->interests);
 
