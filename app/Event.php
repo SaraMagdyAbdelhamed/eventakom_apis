@@ -169,7 +169,7 @@ class Event extends Model
         }
         else
         {
-            $year=Carbon::now()->year();
+            $year=Carbon::now()->year;
         }
         return $query->whereMonth("end_datetime",Carbon::now()->addMonth()->month)->whereYear("end_datetime",$year);
 
@@ -190,7 +190,7 @@ class Event extends Model
     public function ScopeNonExpiredEvents($query){
         return $query->where("is_expired",'!=',1);
     }
-   
+
 
     /**
      * Query builder scope to list neighboring locations
@@ -222,15 +222,15 @@ class Event extends Model
 
     /**  End Query Scopes  */
     public function getSubscriptionLinkAttribute($value){
-        
+
             $base_url = env('APP_URL');
             $link = $base_url.$value;
             return $link;
 
-        
+
 
     }
 
-    
+
 
     }
