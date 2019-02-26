@@ -135,7 +135,7 @@ class UsersController extends Controller
 
             $user = User::where('mobile', $request['mobile'])->where('tele_code', $request['tele_code'])->first();
             if(!$user){
-             return Helpers::Get_Response(403, 'error', '', $validator->errors(), []);
+             return Helpers::Get_Response(403, 'error',  trans('messages.invalid_mobile_number'), $validator->errors(), []);
             }else{
             // dd($user);
 
